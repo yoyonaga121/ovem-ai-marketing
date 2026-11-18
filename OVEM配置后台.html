@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OVEM 配置后台</title>
+<style>
+  :root{
+    --bg:#F5F7FB;--surface:#FFFFFF;--surface-2:#F8FAFE;--line:#E3E8F2;--line-2:#D4DBE9;
+    --ink:#0F1B2D;--ink-2:#4A5769;--ink-3:#7E8CA2;
+    --brand:#1E3A8A;--brand-2:#2F6FED;--tint:#EDF2FC;--teal:#0E8F8C;--gold:#A1741F;
+    --ok:#15803D;--warn:#B45309;--danger:#B42318;
+    --r:12px;--r-sm:8px;--shadow:0 1px 2px rgba(15,27,45,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
+    font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:12.5px;color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+
+  /* ---------------- 顶栏 ---------------- */
+  .appbar{
+    height:58px;display:flex;align-items:center;gap:18px;
+    padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:30;
+  }
+  .ab-brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .ab-mark{width:30px;height:28px;object-fit:contain;flex:none}
+  .ab-t{display:flex;flex-direction:column;line-height:1.15}
+  .ab-t b{font-size:13.5px;letter-spacing:.02em}
+  .ab-t span{font-size:10px;color:var(--ink-3);letter-spacing:.06em}
+  .ab-div{width:1px;height:22px;background:var(--line)}
+  .ab-crumb{font-size:11.5px;color:var(--ink-3)}
+  .ab-crumb b{color:var(--ink-2);font-weight:600}
+  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .env-pill{
+    display:inline-flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-3);
+    border:1px dashed var(--line-2);border-radius:999px;padding:4px 10px;background:var(--surface-2);
+  }
+  .env-dot{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+  .save-state{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);margin-right:2px}
+  .save-state .dot{width:6px;height:6px;border-radius:50%;background:#B9C4D6}
+  .save-state.is-dirty{color:var(--warn)}
+  .save-state.is-dirty .dot{background:var(--warn)}
+  .save-state.is-saved{color:var(--ok)}
+  .save-state.is-saved .dot{background:var(--ok)}
+  .btn{
+    height:32px;padding:0 12px;border-radius:var(--r-sm);border:1px solid var(--line-2);
+    background:var(--surface);font-size:12px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;
+    transition:border-color .15s,color .15s,background .15s;
+  }
+  .btn:hover{border-color:var(--brand-2);color:var(--brand)}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:#16306F;border-color:#16306F;color:#fff}
+  .btn.ghost{background:transparent}
+  .btn.sm{height:28px;padding:0 10px;font-size:11.5px}
+  .btn.danger:hover{border-color:#E7B7B2;color:var(--danger)}
+
+  /* ---------------- 布局 ---------------- */
+  .shell{display:grid;grid-template-columns:216px minmax(0,1fr) 372px;height:calc(100vh - 58px)}
+  .side{
+    background:var(--surface);border-right:1px solid var(--line);
+    padding:16px 12px 20px;overflow-y:auto;
+  }
+  .nav-group{margin-bottom:18px}
+  .nav-label{font-size:9.5px;letter-spacing:.14em;color:#9AA9C0;padding:0 10px;margin-bottom:6px}
+  .nav-item{
+    display:flex;align-items:center;gap:9px;height:34px;padding:0 10px;border-radius:7px;
+    color:var(--ink-2);font-size:12.5px;position:relative;margin-bottom:2px;border:1px solid transparent;
+  }
+  .nav-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;color:#8A97AC;flex:none}
+  .nav-item:hover{background:var(--surface-2);color:var(--ink)}
+  .nav-item.is-on{background:var(--tint);color:var(--brand);font-weight:600;border-color:#DCE6FB}
+  .nav-item.is-on svg{color:var(--brand)}
+  .nav-item .n-badge{
+    margin-left:auto;font-size:9.5px;color:var(--ink-3);background:#F1F4F9;border-radius:4px;padding:1px 5px;
+  }
+  .nav-item.is-on .n-badge{background:#fff;color:var(--brand)}
+  .side-note{
+    margin-top:22px;padding:11px 12px;border:1px solid var(--line);border-radius:9px;
+    background:var(--surface-2);font-size:10.5px;color:var(--ink-3);line-height:1.65;
+  }
+  .side-note b{display:block;color:var(--ink-2);font-size:11px;margin-bottom:4px}
+
+  .main{padding:24px 28px 70px;overflow-y:auto;min-width:0}
+  .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:18px}
+  .pagehead h1{font-size:21px;font-weight:700;letter-spacing:-.01em}
+  .pagehead p{font-size:12px;color:var(--ink-3);margin-top:5px;max-width:620px}
+  .pagehead .acts{display:flex;gap:8px;flex:none}
+
+  .preview{
+    border-left:1px solid var(--line);background:var(--surface-2);
+    padding:18px 16px 26px;overflow-y:auto;
+  }
+  .pv-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .pv-head b{font-size:12.5px}
+  .pv-head span{font-size:10px;color:var(--ink-3)}
+  .pv-hero{
+    background:#0B1424;border-radius:10px;padding:15px 15px 0;color:#fff;overflow:hidden;
+    box-shadow:0 8px 24px rgba(11,20,36,.18);
+  }
+  .pv-kicker{font-size:8.5px;letter-spacing:.10em;color:rgba(255,255,255,.55);margin-bottom:8px}
+  .pv-title{font-size:16px;line-height:1.42;font-weight:700;letter-spacing:-.01em}
+  .pv-sub{font-size:9.5px;line-height:1.6;color:rgba(255,255,255,.66);margin-top:7px}
+  .pv-roles{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+  .pv-roles span{font-size:8.5px;color:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:2px 7px}
+  .pv-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(255,255,255,.12);margin-top:14px}
+  .pv-metrics div{background:#0B1424;padding:8px 6px 9px;text-align:center}
+  .pv-metrics b{display:block;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
+  .pv-metrics b em{font-style:normal;font-size:9px;margin-left:1px}
+  .pv-metrics span{display:block;font-size:7.5px;color:rgba(255,255,255,.55);margin-top:2px;line-height:1.35}
+
+  .pv-block{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
+  .pv-block h4{font-size:10px;letter-spacing:.08em;color:var(--ink-3);margin-bottom:9px;font-weight:600}
+  .pv-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px dashed #EEF1F7}
+  .pv-row:last-child{border-bottom:0}
+  .pv-row span{color:var(--ink-3)}
+  .pv-row b{font-variant-numeric:tabular-nums;color:var(--ink)}
+  .pv-bar{margin-bottom:7px}
+  .pv-bar-top{display:flex;justify-content:space-between;font-size:10px;color:var(--ink-2);margin-bottom:3px}
+  .pv-bar-track{height:5px;background:#EEF2F9;border-radius:3px;overflow:hidden}
+  .pv-bar-fill{height:100%;background:linear-gradient(90deg,#2F6FED,#1E3A8A);border-radius:3px}
+  .pv-warn{
+    margin-top:12px;border:1px solid #F0DDBB;background:#FDF7EC;border-radius:8px;
+    padding:9px 10px;font-size:10px;line-height:1.6;color:#8A5A12;
+  }
+  .pv-warn b{color:#6B430C}
+  .pv-foot{margin-top:14px;font-size:9.5px;color:#9AA9C0;line-height:1.6}
+
+  /* ---------------- 通用卡片 ---------------- */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px}
+  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+  .card-head h3{font-size:13.5px;font-weight:700}
+  .card-head p{font-size:11px;color:var(--ink-3);margin-top:3px;max-width:640px}
+  .card-head .hint{font-size:10px;color:var(--ink-3);white-space:nowrap}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px}
+  .stat .k{font-size:10px;letter-spacing:.06em;color:var(--ink-3)}
+  .stat .v{font-size:27px;font-weight:700;line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums;color:var(--brand)}
+  .stat .v small{font-size:11px;font-weight:400;color:var(--ink-3);margin-left:4px}
+  .stat .f{font-size:10.5px;color:var(--ink-3);margin-top:5px}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+  /* ---------------- 表单 ---------------- */
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:10.5px;color:var(--ink-3);margin-bottom:5px;letter-spacing:.03em}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid var(--line-2);border-radius:var(--r-sm);
+    padding:8px 10px;background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(47,111,237,.10)}
+  .field textarea{resize:vertical;min-height:64px;line-height:1.7}
+  .field .sub{font-size:10px;color:#9AA9C0;margin-top:4px}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+  /* ---------------- 开关 ---------------- */
+  .switch{position:relative;display:inline-block;width:30px;height:17px;flex:none}
+  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+  .switch i{position:absolute;inset:0;background:#DCE2EE;border-radius:999px;transition:background .18s;pointer-events:none}
+  .switch i::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;background:#fff;border-radius:50%;transition:transform .18s;box-shadow:0 1px 2px rgba(15,27,45,.18)}
+  .switch input:checked + i{background:var(--brand-2)}
+  .switch input:checked + i::after{transform:translateX(13px)}
+  .switch input:focus-visible + i{outline:2px solid var(--brand-2);outline-offset:2px}
+
+  /* ---------------- 产品列表 ---------------- */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .search{position:relative;flex:1;min-width:180px}
+  .search input{width:100%;height:32px;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:0 10px 0 30px;background:var(--surface);outline:none}
+  .search input:focus{border-color:var(--brand-2)}
+  .search svg{position:absolute;left:9px;top:9px;width:14px;height:14px;stroke:#9AA9C0;fill:none;stroke-width:1.8}
+  .toolbar select{height:32px;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:0 8px;background:var(--surface)}
+  .toolbar .count{font-size:11px;color:var(--ink-3);margin-left:auto}
+
+  .plist{display:flex;flex-direction:column}
+  .prow{padding:10px 0;border-bottom:1px solid #EEF1F7}
+  .prow:last-child{border-bottom:0}
+  .prow.is-off{opacity:.55}
+  .prow-top{display:grid;grid-template-columns:34px 32px minmax(150px,1.6fr) minmax(86px,.8fr) 76px 62px 84px;gap:8px;align-items:center}
+  .prow input[data-pfield="price"]{text-align:right;padding-right:8px;font-variant-numeric:tabular-nums}
+  .pno{font-size:10px;color:#9AA9C0;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+  .prow input,.prow select{
+    height:30px;border:1px solid var(--line);border-radius:6px;padding:0 7px;background:var(--surface);width:100%;min-width:0;
+  }
+  .prow input:focus,.prow select:focus{border-color:var(--brand-2);outline:none}
+  .prow-bottom{padding-left:74px;margin-top:6px}
+  .prow-bottom input{height:28px;font-size:11.5px;color:var(--ink-2);background:var(--surface-2)}
+
+  /* ---------------- 渠道 ---------------- */
+  .chgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .chcard{border:1px solid var(--line);border-radius:9px;padding:11px 12px;background:var(--surface-2)}
+  .chcard.is-off{opacity:.55}
+  .ch-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .ch-top .switch{transform:scale(.92);transform-origin:left center}
+  .ch-name{font-size:12.5px;font-weight:600;border:0;background:transparent;padding:0;height:22px;flex:1;min-width:0}
+  .ch-name:focus{outline:none;background:#fff;border-radius:4px;box-shadow:0 0 0 2px rgba(47,111,237,.14)}
+  .ch-fields{display:grid;grid-template-columns:1fr 1.35fr .9fr;gap:6px}
+  .ch-fields input{height:27px;border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:11px;background:#fff;width:100%;min-width:0}
+  .ch-fields input:focus{border-color:var(--brand-2);outline:none}
+
+  /* ---------------- 页面开关 ---------------- */
+  .pagegroup{margin-bottom:14px}
+  .pagegroup h4{font-size:10.5px;letter-spacing:.1em;color:var(--ink-3);margin-bottom:7px}
+  .pagelist{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .pageitem{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:7px;padding:7px 10px;background:var(--surface)}
+  .pageitem.is-locked{background:var(--surface-2)}
+  .pageitem .pcode{font-size:9.5px;color:#9AA9C0;letter-spacing:.06em;width:22px}
+  .pageitem .pname{font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pageitem .lock{margin-left:auto;font-size:9px;color:#9AA9C0}
+  .pageitem .switch{margin-left:auto}
+
+  /* ---------------- 发布 / 差异 ---------------- */
+  .diff{border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .diff-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-bottom:1px solid #EEF1F7;background:#fff}
+  .diff-row:last-child{border-bottom:0}
+  .diff-row .tag{font-size:9.5px;border-radius:4px;padding:2px 6px;background:#FDF3E3;color:var(--gold);flex:none}
+  .diff-row .txt{font-size:11.5px;color:var(--ink-2)}
+  .diff-empty{padding:22px;text-align:center;color:var(--ink-3);font-size:11.5px}
+
+  .code{
+    background:#0B1424;color:#D6E1F5;border-radius:9px;padding:14px 15px;font-family:Consolas,"Cascadia Mono",monospace;
+    font-size:10.5px;line-height:1.7;overflow:auto;max-height:280px;white-space:pre;
+  }
+  .copy-line{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:12px}
+  .copy-line code{font-family:Consolas,monospace;font-size:11px;color:var(--ink-2)}
+
+  .checklist{display:flex;flex-direction:column;gap:7px}
+  .check{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:var(--ink-2)}
+  .check .ok{width:14px;height:14px;border-radius:50%;background:#E8F3EC;color:var(--ok);font-size:9px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px}
+  .check .warn{width:14px;height:14px;border-radius:50%;background:#FDF3E3;color:var(--warn);font-size:9px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px}
+
+  .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .quick button{
+    text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:13px 14px;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .quick button:hover{border-color:var(--brand-2);box-shadow:0 4px 14px rgba(30,58,138,.08)}
+  .quick b{display:block;font-size:12px;color:var(--ink)}
+  .quick span{display:block;font-size:10.5px;color:var(--ink-3);margin-top:3px}
+
+  /* ---------------- toast ---------------- */
+  .toast{
+    position:fixed;left:50%;bottom:34px;transform:translate(-50%,14px);
+    background:#0B1424;color:#fff;font-size:12px;padding:9px 16px;border-radius:999px;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;box-shadow:0 8px 24px rgba(11,20,36,.24);
+  }
+  .toast.is-on{opacity:1;transform:translate(-50%,0)}
+
+  /* ---------------- 响应式 ---------------- */
+  @media (max-width:1280px){
+    .shell{grid-template-columns:200px minmax(0,1fr) 320px}
+    .main{padding:20px 20px 60px}
+  }
+  @media (max-width:1120px){
+    .shell{grid-template-columns:200px minmax(0,1fr)}
+    .preview{display:none}
+  }
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr;height:auto}
+    .side{display:flex;gap:6px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px}
+    .nav-group{display:flex;gap:4px;margin:0}
+    .nav-label,.side-note{display:none}
+    .nav-item{white-space:nowrap}
+    .main{padding:18px 14px 50px}
+    .stats{grid-template-columns:1fr 1fr}
+    .grid-2,.grid-3,.quick,.chgrid,.pagelist{grid-template-columns:1fr}
+    .row-3{grid-template-columns:1fr 1fr}
+    .prow-top{grid-template-columns:34px 30px minmax(120px,1fr) 70px 58px;gap:6px}
+    .prow-top select:nth-of-type(2){display:none}
+    .prow-bottom{padding-left:0}
+  }
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="ab-brand">
+    <img class="ab-mark" src="assets/img/brand/logo.png" alt="OVEM">
+    <div class="ab-t">
+      <b>OVEM 配置后台</b>
+      <span>MARKETING OS · V2 CONFIG</span>
+    </div>
+  </div>
+  <div class="ab-div"></div>
+  <div class="ab-crumb">配置中心　/　<b id="crumb">概览</b></div>
+  <div class="ab-right">
+    <span class="env-pill"><span class="env-dot"></span>本地演示环境 · file://</span>
+    <span class="save-state" id="saveState"><span class="dot"></span><span id="saveText">已同步</span></span>
+    <button class="btn sm" id="btnReset" title="恢复默认配置">恢复默认</button>
+    <button class="btn sm" id="btnOpen" title="保存并打开前台站点">应用并预览</button>
+    <button class="btn primary sm" id="btnSave">保存配置</button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="side" id="sideNav"></aside>
+  <main class="main">
+    <div class="pagehead" id="pageHead"></div>
+    <div id="viewRoot"></div>
+  </main>
+  <aside class="preview" id="previewPane"></aside>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<script>
+/* ============================================================
+   1 · 默认配置（与前台 OVEM_AI营销系统.html 当前数据一致）
+   ============================================================ */
+const DEFAULT_CFG = {
+  meta:{version:"v1.0", note:"", updated:""},
+  brand:{name:"OVEM", sub:"Optics Valley Effect", sub2:"Marketing OS", full:"光谷效应", edition:"2025–2026"},
+  hero:{
+    kicker:"虚拟品牌全案 · 2026.11 · 豆包 / 千问 / WorkBuddy",
+    title:"把一次品牌全案，\n做成一条产线",
+    sub:"光谷效应 Optics Valley Effect　·　20 款消费级生活机器人　·　8 个内容渠道",
+    roles:["AI 营销经理","AI 视觉设计师","AI 产品经理"]
+  },
+  metrics:[
+    {v:20, unit:"", label:"已定义 SKU"},
+    {v:8,  unit:"", label:"内容渠道"},
+    {v:160,unit:"", label:"基础物料位"},
+    {v:480,unit:"", label:"含 A/B 变体"},
+    {v:62, unit:"%",label:"单条成本降幅（测算）"}
+  ],
+  goals:{exposure:1200, engagement:96, firstOrder:2.7, cac:186, budget:1800},
+  products:[
+    {id:"p01",no:1, name:"精准备料辅助机器人", short:"精准备料", scene:"厨房", tier:"旗舰", wave:"W3", price:"4,999", oneliner:"称量、切配、分份，跟着菜谱走", enabled:true},
+    {id:"p02",no:2, name:"厨房台面巡航清洁机器人", short:"台面清洁", scene:"厨房", tier:"主力", wave:"W2", price:"1,999", oneliner:"3cm 机身，钻得进调料架下", enabled:true},
+    {id:"p03",no:3, name:"餐具智能归位机器人", short:"餐具归位", scene:"厨房", tier:"主力", wave:"W2", price:"2,499", oneliner:"洗碗机之后，最后一步交给它", enabled:true},
+    {id:"p04",no:4, name:"冰箱食材管家机器人", short:"食材管家", scene:"厨房", tier:"引流", wave:"W1", price:"899", oneliner:"掌心大小，在冰箱里自己盘点", enabled:true},
+    {id:"p05",no:5, name:"桌面物品归位巡检机器人", short:"桌面巡检", scene:"客厅", tier:"引流", wave:"W1", price:"599", oneliner:"夜里巡逻，早上桌面自己归位", enabled:true},
+    {id:"p06",no:6, name:"智能场景布置机器人", short:"场景布置", scene:"客厅", tier:"旗舰", wave:"W3", price:"5,999", oneliner:"不是开关联动，是真的移动物体", enabled:true},
+    {id:"p07",no:7, name:"全屋空气治理巡航机器人", short:"空气治理", scene:"客厅", tier:"主力", wave:"W2", price:"2,999", oneliner:"先找到污染源，再净化", enabled:true},
+    {id:"p08",no:8, name:"睡眠环境自适应机器人", short:"睡眠自适应", scene:"卧室", tier:"主力", wave:"W2", price:"2,699", oneliner:"监测不是目的，调环境才是", enabled:true},
+    {id:"p09",no:9, name:"夜间陪护服务机器人", short:"夜间陪护", scene:"卧室", tier:"主力", wave:"W2", price:"1,699", oneliner:"半夜口渴，不用起身", enabled:true},
+    {id:"p10",no:10,name:"衣物折叠收纳机器人", short:"衣物折叠", scene:"卧室", tier:"主力", wave:"W2", price:"2,999", oneliner:"丢进去，第二天自己叠好入柜", enabled:true},
+    {id:"p11",no:11,name:"衣柜抽屉精细化整理机器人", short:"抽屉整理", scene:"收纳", tier:"引流", wave:"W1", price:"799", oneliner:"5cm 机身，进得去抽屉", enabled:true},
+    {id:"p12",no:12,name:"浴室全域清洁消毒机器人", short:"浴室清洁", scene:"卫浴个护", tier:"主力", wave:"W2", price:"2,399", oneliner:"墙面、玻璃、地面，一趟走完", enabled:true},
+    {id:"p13",no:13,name:"美妆护肤品智能管理机器人", short:"美妆管理", scene:"卫浴个护", tier:"旗舰", wave:"W3", price:"3,999", oneliner:"该冷的冷，该热的热，按顺序递到手", enabled:true},
+    {id:"p14",no:14,name:"头皮深层护理机器人", short:"头皮护理", scene:"卫浴个护", tier:"旗舰", wave:"W3", price:"4,299", oneliner:"先检测，再决定怎么护理", enabled:true},
+    {id:"p15",no:15,name:"智能美甲定制机器人", short:"美甲定制", scene:"卫浴个护", tier:"旗舰", wave:"W3", price:"4,599", oneliner:"0.1mm 精度，单手十分钟", enabled:true},
+    {id:"p16",no:16,name:"衣物晾晒收纳一体化机器人", short:"晾晒收纳", scene:"阳台玄关", tier:"主力", wave:"W2", price:"2,899", oneliner:"取衣、晾晒、收回、叠好，一条线", enabled:true},
+    {id:"p17",no:17,name:"盆栽智能养护巡航机器人", short:"盆栽养护", scene:"阳台玄关", tier:"引流", wave:"W1", price:"699", oneliner:"多盆巡检，还会搬着花盆追光", enabled:true},
+    {id:"p18",no:18,name:"鞋履全能护理机器人", short:"鞋履护理", scene:"阳台玄关", tier:"引流", wave:"W1", price:"899", oneliner:"先认材质，再决定怎么护理", enabled:true},
+    {id:"p19",no:19,name:"出行物品智能筹备机器人", short:"出行筹备", scene:"出行宠物", tier:"引流", wave:"W1", price:"599", oneliner:"看日程、看天气，提前把包装好", enabled:true},
+    {id:"p20",no:20,name:"宠物全托管陪护机器人", short:"宠物陪护", scene:"出行宠物", tier:"旗舰", wave:"W3", price:"3,999", oneliner:"陪玩、喂食、清理，加班晚归也放心", enabled:true}
+  ],
+  channels:[
+    {name:"官网", count:12, kpi:"留资率 6.2%", cycle:"周更", enabled:true},
+    {name:"移动端", count:10, kpi:"加购率 9.4%", cycle:"周更", enabled:true},
+    {name:"私域", count:18, kpi:"首单转化 12.7%", cycle:"日更", enabled:true},
+    {name:"电商", count:24, kpi:"转化 3.8%", cycle:"双周", enabled:true},
+    {name:"直播", count:9, kpi:"平均停留 68 秒", cycle:"每日", enabled:true},
+    {name:"社媒", count:32, kpi:"互动率 5.1%", cycle:"日更", enabled:true},
+    {name:"投放", count:28, kpi:"CTR 2.4%", cycle:"三日一换", enabled:true},
+    {name:"线下", count:7, kpi:"到店留资 210 人/场", cycle:"月更", enabled:true}
+  ],
+  pages:{
+    p0:true,p1:true,p2:true,p3:true,p4:true,p5:true,p6:true,p7:true,p8:true,
+    p9:true,p10:true,p11:true,p12:true,p13:true,p14:true,p15:true,p16:true
+  }
+};
+
+const PAGE_META = [
+  {id:"p0", no:"P0", name:"系统总览", group:"概览"},
+  {id:"p1", no:"P1", name:"作战室", group:"概览"},
+  {id:"p2", no:"P2", name:"品牌资产中枢", group:"资产"},
+  {id:"p3", no:"P3", name:"产品矩阵", group:"资产"},
+  {id:"p4", no:"P4", name:"单品作战页", group:"生产"},
+  {id:"p5", no:"P5", name:"AI 内容工厂", group:"生产"},
+  {id:"p6", no:"P6", name:"产能地图", group:"生产"},
+  {id:"p7", no:"P7", name:"全渠道分发", group:"分发"},
+  {id:"p8", no:"P8", name:"智能投放", group:"分发"},
+  {id:"p9", no:"P9", name:"私域旅程", group:"分发"},
+  {id:"p10",no:"P10",name:"产品线规划", group:"经营"},
+  {id:"p11",no:"P11",name:"复盘沉淀", group:"经营"},
+  {id:"p12",no:"P12",name:"系统 PRD", group:"经营"},
+  {id:"p13",no:"P13",name:"单品入口页", group:"扩展"},
+  {id:"p14",no:"P14",name:"品类机会", group:"扩展"},
+  {id:"p15",no:"P15",name:"定价与成本", group:"扩展"},
+  {id:"p16",no:"P16",name:"AI 方法论", group:"扩展"}
+];
+
+/* ============================================================
+   2 · 状态与工具
+   ============================================================ */
+const LS_KEY = "ovem_config_v2";
+const $ = s=>document.querySelector(s);
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function nowStr(){
+  const d = new Date();
+  const p = n=>String(n).padStart(2,"0");
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate())
+    + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+function mergeCfg(base, patch){
+  const out = clone(base);
+  if(patch.meta) out.meta = Object.assign({}, out.meta, patch.meta);
+  if(patch.brand) out.brand = Object.assign({}, out.brand, patch.brand);
+  if(patch.hero) out.hero = Object.assign({}, out.hero, patch.hero);
+  if(Array.isArray(patch.metrics) && patch.metrics.length) out.metrics = clone(patch.metrics);
+  if(patch.goals) out.goals = Object.assign({}, out.goals, patch.goals);
+  if(Array.isArray(patch.products) && patch.products.length){
+    out.products = out.products.map(p=>{
+      const c = patch.products.find(x=>x && x.id === p.id);
+      return c ? Object.assign({}, p, c) : p;
+    });
+  }
+  if(Array.isArray(patch.channels) && patch.channels.length){
+    out.channels = out.channels.map((ch, i)=>{
+      const c = patch.channels.find(x=>x && x.name === ch.name) || patch.channels[i];
+      return c ? Object.assign({}, ch, c) : ch;
+    });
+  }
+  if(patch.pages) out.pages = Object.assign({}, out.pages, patch.pages);
+  return out;
+}
+
+function loadCfg(){
+  let base = clone(DEFAULT_CFG);
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw) base = mergeCfg(base, JSON.parse(raw));
+  }catch(e){}
+  return base;
+}
+
+let cfg = loadCfg();
+let savedSnap = JSON.stringify(cfg);
+let view = "overview";
+let pFilter = {q:"", tier:"全部"};
+
+const enabledProducts = ()=>cfg.products.filter(p=>p.enabled !== false);
+const enabledChannels = ()=>cfg.channels.filter(c=>c.enabled !== false);
+const visiblePages = ()=>PAGE_META.filter(p=>cfg.pages[p.id] !== false);
+
+/* ============================================================
+   3 · 导航
+   ============================================================ */
+const ICONS = {
+  overview:'<path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/>',
+  brand:'<path d="M12 3l7 4v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V7l7-4Z"/><path d="M9.5 12.5l1.8 1.8 3.4-3.6"/>',
+  products:'<path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5v-7Z"/><path d="M12 12l8-3.5M12 12v8M12 12 4 8.5"/>',
+  channels:'<path d="M4 18V9M9 18V5M14 18v-6M19 18v-9"/><path d="M3 21h18"/>',
+  metrics:'<path d="M4 19h16"/><path d="M7 19V9M12 19V5M17 19v-7"/><circle cx="7" cy="9" r="1"/><circle cx="12" cy="5" r="1"/>',
+  pages:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M8 13h4"/>',
+  publish:'<path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>'
+};
+
+const NAV_GROUPS = [
+  {label:"配置", items:[
+    {id:"overview",name:"概览",icon:"overview"},
+    {id:"brand",name:"品牌与封面",icon:"brand"},
+    {id:"products",name:"产品矩阵",icon:"products"},
+    {id:"channels",name:"渠道矩阵",icon:"channels"},
+    {id:"metrics",name:"指标与目标",icon:"metrics"},
+    {id:"pages",name:"页面与导航",icon:"pages"}
+  ]},
+  {label:"发布", items:[
+    {id:"publish",name:"变更与发布",icon:"publish"}
+  ]}
+];
+
+function navBadge(id){
+  if(id === "products") return enabledProducts().length + "/" + cfg.products.length;
+  if(id === "channels") return enabledChannels().length + "/" + cfg.channels.length;
+  if(id === "pages") return visiblePages().length + "/" + PAGE_META.length;
+  return "";
+}
+
+function renderNav(){
+  const html = NAV_GROUPS.map(g=>{
+    return '<div class="nav-group"><div class="nav-label">' + g.label + "</div>"
+      + g.items.map(it=>{
+        const badge = navBadge(it.id);
+        return '<button class="nav-item' + (view === it.id ? " is-on" : "") + '" data-nav="' + it.id + '">'
+          + '<svg viewBox="0 0 24 24">' + ICONS[it.icon] + "</svg>"
+          + "<span>" + it.name + "</span>"
+          + (badge ? '<span class="n-badge">' + badge + "</span>" : "")
+          + "</button>";
+      }).join("") + "</div>";
+  }).join("");
+  $("#sideNav").innerHTML = html
+    + '<div class="side-note"><b>配置口径</b>改动只作用于展示层，示范数据仍保留原声明；停用产品会从前台列表与作战页同步移除。</div>';
+}
+
+/* ============================================================
+   4 · 视图
+   ============================================================ */
+const HEADS = {
+  overview:{crumb:"概览", title:"配置概览", desc:"一个后台统管品牌、产品、渠道、指标与页面可见性；保存后立即作用于前台站点。"},
+  brand:{crumb:"品牌与封面", title:"品牌与封面", desc:"品牌识别、P0 封面文案与五项封面指标。改动会直接覆盖前台 P0 深色封面带。"},
+  products:{crumb:"产品矩阵", title:"产品矩阵", desc:"20 款产品的名称、简称、梯队、批次、价格与一句话卖点；停用即从前台列表与作战页移除。"},
+  channels:{crumb:"渠道矩阵", title:"渠道矩阵", desc:"8 个内容渠道的物料条数、核心指标与更新节奏；停用即从前台渠道页移除。"},
+  metrics:{crumb:"指标与目标", title:"指标与目标", desc:"封面五项指标与年度经营目标。封面指标可一键按当前产品与渠道数重算。"},
+  pages:{crumb:"页面与导航", title:"页面与导航", desc:"控制 17 个页面是否出现在侧栏与演示序列；内容本身保留，随时可恢复。"},
+  publish:{crumb:"变更与发布", title:"变更与发布", desc:"查看本次改动、导出配置文件，或直接应用到本地前台站点。"}
+};
+
+function viewOverview(){
+  const p = enabledProducts().length, c = enabledChannels().length;
+  const slots = p * c, variants = slots * 3, vis = visiblePages().length;
+  const diffRows = diffList();
+
+  const checks = [
+    {ok: !!cfg.brand.name && !!cfg.brand.full, t:"品牌名与品牌全称已填写"},
+    {ok: !!cfg.hero.title.trim(), t:"封面主标已填写"},
+    {ok: p > 0, t:"至少 1 款产品处于启用状态"},
+    {ok: c > 0, t:"至少 1 个渠道处于启用状态"},
+    {ok: cfg.pages.p0 !== false, t:"P0 系统总览保持可见（演示入口）"},
+    {ok: cfg.meta.version && cfg.meta.version.trim(), t:"配置版本号已填写"}
+  ];
+
+  return '<div class="stats">'
+    + '<div class="stat"><div class="k">启用产品</div><div class="v">' + p + '<small>/ ' + cfg.products.length + "</small></div><div class=\"f\">停用 " + (cfg.products.length - p) + " 款</div></div>"
+    + '<div class="stat"><div class="k">启用渠道</div><div class="v">' + c + '<small>/ ' + cfg.channels.length + "</small></div><div class=\"f\">物料条数 " + cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? Number(b.count)||0 : 0),0) + "</div></div>"
+    + '<div class="stat"><div class="k">基础物料位</div><div class="v">' + slots + "</div><div class=\"f\">产品 × 渠道自动推导</div></div>"
+    + '<div class="stat"><div class="k">可见页面</div><div class="v">' + vis + '<small>/ ' + PAGE_META.length + "</small></div><div class=\"f\">隐藏 " + (PAGE_META.length - vis) + " 页</div></div>"
+    + "</div>"
+    + '<div class="grid-2">'
+    + '<div class="card"><div class="card-head"><div><h3>配置健康检查</h3><p>发布前逐项确认，避免前台出现空标题或空列表。</p></div></div><div class="checklist">'
+    + checks.map(x=>'<div class="check"><span class="' + (x.ok ? "ok" : "warn") + '">' + (x.ok ? "✓" : "!") + "</span><span>" + x.t + "</span></div>").join("")
+    + "</div></div>"
+    + '<div class="card"><div class="card-head"><div><h3>当前配置</h3><p>保存后写入浏览器本地配置，前台读取后立即生效。</p></div><span class="hint">' + esc(cfg.meta.version) + "</span></div>"
+    + '<div class="pv-row"><span>配置版本</span><b>' + esc(cfg.meta.version) + "</b></div>"
+    + '<div class="pv-row"><span>最近保存</span><b>' + (cfg.meta.updated ? esc(cfg.meta.updated) : "尚未保存") + "</b></div>"
+    + '<div class="pv-row"><span>存储位置</span><b>localStorage · ' + LS_KEY + "</b></div>"
+    + '<div class="pv-row"><span>生效范围</span><b>OVEM_AI营销系统.html</b></div>'
+    + '<div class="pv-row"><span>变更条目</span><b>' + diffRows.length + " 项</b></div>"
+    + "</div></div>"
+    + '<div class="card"><div class="card-head"><div><h3>模块入口</h3><p>三类高频操作：改产品、改渠道、改可见页面。</p></div></div><div class="quick">'
+    + '<button data-nav="products"><b>产品矩阵</b><span>' + p + " 款启用 · 价格与卖点可编辑</span></button>"
+    + '<button data-nav="channels"><b>渠道矩阵</b><span>' + c + " 个渠道 · 物料与指标</span></button>"
+    + '<button data-nav="pages"><b>页面与导航</b><span>' + vis + " / " + PAGE_META.length + " 页可见</span></button>"
+    + "</div></div>"
+    + '<div class="card"><div class="card-head"><div><h3>本次改动</h3><p>与默认配置对比，保存前确认影响范围。</p></div><button class="btn sm" data-nav="publish">查看全部</button></div>'
+    + renderDiff(diffRows.slice(0,6), "当前配置与默认版本一致，没有待发布改动。")
+    + "</div>";
+}
+
+function viewBrand(){
+  const b = cfg.brand, h = cfg.hero;
+  return '<div class="card"><div class="card-head"><div><h3>品牌标识</h3><p>侧栏品牌块与后台标题共用这套字段。</p></div></div>'
+    + '<div class="row-3">'
+    + field("品牌缩写", "brand", "name", b.name, "前台侧栏主标识")
+    + field("英文名", "brand", "sub", b.sub, "侧栏第二行")
+    + field("业务线", "brand", "sub2", b.sub2, "侧栏第三行")
+    + "</div>"
+    + '<div class="row-2">'
+    + field("品牌全称", "brand", "full", b.full, "用于封面副标与文案拼装")
+    + field("版本年份", "brand", "edition", b.edition, "封面图注年份")
+    + "</div></div>"
+
+    + '<div class="card"><div class="card-head"><div><h3>封面文案</h3><p>P0 深色封面带的三段文字与三枚身份标签。</p></div><span class="hint">主标换行即控制两行排版</span></div>'
+    + field("眉标", "hero", "kicker", h.kicker, "建议保留署名与时间")
+    + '<div class="field"><label>主标（换行分两行）</label><textarea data-sec="hero" data-field="title">' + esc(h.title) + "</textarea></div>"
+    + '<div class="field"><label>副标</label><textarea data-sec="hero" data-field="sub">' + esc(h.sub) + "</textarea></div>"
+    + '<div class="row-3"><div class="field"><label>身份标签 1</label><input data-sec="hero" data-field="roles.0" value="' + esc(h.roles[0]) + '"></div>'
+    + '<div class="field"><label>身份标签 2</label><input data-sec="hero" data-field="roles.1" value="' + esc(h.roles[1]) + '"></div>'
+    + '<div class="field"><label>身份标签 3</label><input data-sec="hero" data-field="roles.2" value="' + esc(h.roles[2]) + '"></div></div>'
+    + "</div>"
+
+    + '<div class="card"><div class="card-head"><div><h3>封面五项指标</h3><p>对应 P0 封面带底部数据条；第三、四项应由产品与渠道数推导。</p></div><button class="btn sm" data-act="syncCounts">按当前计数重算</button></div>'
+    + '<div class="row-3">' + cfg.metrics.map((m,i)=>
+        '<div class="field"><label>' + esc(m.label) + "</label>"
+        + '<input type="number" data-metric="' + i + '" data-field="v" value="' + esc(m.v) + '">'
+        + '<div class="sub">单位：' + (m.unit ? esc(m.unit) : "无") + "</div></div>").join("")
+    + "</div>"
+    + '<p class="sub" style="font-size:10.5px;color:#9AA9C0">重算会把 SKU、渠道、物料位、变体四项同步为当前启用数量，并重写封面副标中的数量。</p>'
+    + "</div>";
+}
+
+function field(label, sec, key, val, sub){
+  return '<div class="field"><label>' + label + "</label><input data-sec=\"" + sec + "\" data-field=\"" + key + "\" value=\"" + esc(val) + "\">"
+    + (sub ? '<div class="sub">' + sub + "</div>" : "") + "</div>";
+}
+
+function viewProducts(){
+  const p = enabledProducts().length;
+  const rows = cfg.products.map(prod=>{
+    const off = prod.enabled === false;
+    const search = (prod.name + " " + prod.short + " " + prod.oneliner).toLowerCase();
+    return '<div class="prow' + (off ? " is-off" : "") + '" data-id="' + prod.id + '" data-tier="' + esc(prod.tier) + '" data-search="' + esc(search) + '">'
+      + '<div class="prow-top">'
+      + '<label class="switch"><input type="checkbox" data-pid="' + prod.id + '" data-pfield="enabled"' + (off ? "" : " checked") + '><i></i></label>'
+      + '<span class="pno">P' + String(prod.no).padStart(2,"0") + "</span>"
+      + '<input data-pid="' + prod.id + '" data-pfield="name" value="' + esc(prod.name) + '" aria-label="产品名称">'
+      + '<input data-pid="' + prod.id + '" data-pfield="short" value="' + esc(prod.short) + '" aria-label="简称">'
+      + '<select data-pid="' + prod.id + '" data-pfield="tier" aria-label="梯队">' + ["引流","主力","旗舰"].map(t=>'<option' + (prod.tier === t ? " selected" : "") + ">" + t + "</option>").join("") + "</select>"
+      + '<select data-pid="' + prod.id + '" data-pfield="wave" aria-label="批次">' + ["W1","W2","W3"].map(w=>'<option' + (prod.wave === w ? " selected" : "") + ">" + w + "</option>").join("") + "</select>"
+      + '<input data-pid="' + prod.id + '" data-pfield="price" value="' + esc(prod.price) + '" aria-label="价格">'
+      + "</div>"
+      + '<div class="prow-bottom"><input data-pid="' + prod.id + '" data-pfield="oneliner" value="' + esc(prod.oneliner) + '" aria-label="一句话卖点"></div>'
+      + "</div>";
+  }).join("");
+
+  return '<div class="card"><div class="card-head"><div><h3>产品清单</h3><p>共 ' + cfg.products.length + " 款；启用 " + p + " 款。停用产品不会出现在 P3 矩阵、P4 作战页与 P13 入口页。</p></div>"
+    + '<span class="hint" id="prodCount">显示 ' + p + " / " + cfg.products.length + "</span></div>"
+    + '<div class="toolbar">'
+    + '<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg><input id="prodSearch" placeholder="搜索产品名 / 简称 / 卖点"></div>'
+    + '<select id="prodTier"><option>全部</option><option>引流</option><option>主力</option><option>旗舰</option></select>'
+    + '<button class="btn sm" data-act="allOn">全部启用</button>'
+    + '<button class="btn sm" data-act="allOff">全部停用</button>'
+    + "</div>"
+    + '<div class="plist" id="prodList">' + rows + "</div></div>"
+    + '<p class="sub" style="font-size:10.5px;color:#9AA9C0;margin-top:-4px">提示：价格字段前台按原样输出，建议保留千分位；梯队与批次会影响 P3 的筛选与配色。</p>';
+}
+
+function viewChannels(){
+  const c = enabledChannels().length;
+  const total = cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? Number(b.count)||0 : 0),0);
+  const cards = cfg.channels.map((ch, i)=>{
+    const off = ch.enabled === false;
+    return '<div class="chcard' + (off ? " is-off" : "") + '">'
+      + '<div class="ch-top"><label class="switch"><input type="checkbox" data-ci="' + i + '" data-cfield="enabled"' + (off ? "" : " checked") + "><i></i></label>"
+      + '<input class="ch-name" data-ci="' + i + '" data-cfield="name" value="' + esc(ch.name) + '" aria-label="渠道名称">'
+      + "</div>"
+      + '<div class="ch-fields">'
+      + '<input type="number" data-ci="' + i + '" data-cfield="count" value="' + esc(ch.count) + '" aria-label="物料条数" title="物料条数">'
+      + '<input data-ci="' + i + '" data-cfield="kpi" value="' + esc(ch.kpi) + '" aria-label="核心指标" title="核心指标">'
+      + '<input data-ci="' + i + '" data-cfield="cycle" value="' + esc(ch.cycle) + '" aria-label="更新周期" title="更新周期">'
+      + "</div></div>";
+  }).join("");
+
+  return '<div class="card"><div class="card-head"><div><h3>渠道清单</h3><p>8 个渠道；启用 ' + c + " 个，物料合计 " + total + " 条。字段依次为：物料条数 / 核心指标 / 更新周期。</p></div>"
+    + '<button class="btn sm" data-nav="pages">看渠道页可见性</button></div>'
+    + '<div class="chgrid">' + cards + "</div></div>"
+    + '<div class="card"><div class="card-head"><div><h3>渠道结构</h3><p>按物料条数排序，用于判断产能是否集中在少数渠道。</p></div></div>'
+    + renderChannelBars()
+    + "</div>";
+}
+
+function renderChannelBars(){
+  const list = cfg.channels.filter(x=>x.enabled !== false).slice().sort((a,b)=>(Number(b.count)||0) - (Number(a.count)||0));
+  const max = Math.max.apply(null, list.map(x=>Number(x.count)||0).concat([1]));
+  return list.map(ch=>'<div class="pv-bar"><div class="pv-bar-top"><span>' + esc(ch.name) + "　" + esc(ch.kpi) + '</span><b>' + (Number(ch.count)||0) + ' 条</b></div>'
+    + '<div class="pv-bar-track"><div class="pv-bar-fill" style="width:' + Math.round((Number(ch.count)||0) / max * 100) + '%"></div></div></div>').join("")
+    || '<div class="diff-empty">没有启用中的渠道</div>';
+}
+
+function viewMetrics(){
+  const g = cfg.goals;
+  const p = enabledProducts().length, c = enabledChannels().length;
+  return '<div class="card"><div class="card-head"><div><h3>年度经营目标</h3><p>这一组是配置层口径，用于对外说明目标设定；V1 前台尚未绑定，改动不会直接改写页面数字。</p></div><span class="hint">示范数据</span></div>'
+    + '<div class="row-3">'
+    + '<div class="field"><label>曝光目标（万）</label><input type="number" data-sec="goals" data-field="exposure" value="' + esc(g.exposure) + '"></div>'
+    + '<div class="field"><label>互动目标（万）</label><input type="number" data-sec="goals" data-field="engagement" value="' + esc(g.engagement) + '"></div>'
+    + '<div class="field"><label>首购目标（万单）</label><input type="number" data-sec="goals" data-field="firstOrder" value="' + esc(g.firstOrder) + '"></div>'
+    + '<div class="field"><label>CAC（元）</label><input type="number" data-sec="goals" data-field="cac" value="' + esc(g.cac) + '"></div>'
+    + '<div class="field"><label>年度预算（万元）</label><input type="number" data-sec="goals" data-field="budget" value="' + esc(g.budget) + '"></div>'
+    + '<div class="field"><label>可支撑首购量（万单，自动）</label><input value="' + Math.round(g.budget / Math.max(1,g.cac) * 1000) / 1000 + '" disabled><div class="sub">年度预算 ÷ CAC 的粗算口径，仅作参考</div></div>'
+    + "</div></div>"
+
+    + '<div class="card"><div class="card-head"><div><h3>封面指标（前台生效）</h3><p>当前启用 ' + p + " 款产品 × " + c + " 个渠道 = " + (p * c) + " 个基础物料位，含 A/B 变体约 " + (p * c * 3) + " 条。</p></div>"
+    + '<button class="btn sm" data-act="syncCounts">同步计数</button></div>'
+    + '<div class="row-3">' + cfg.metrics.map((m,i)=>
+      '<div class="field"><label>' + esc(m.label) + "</label>"
+      + '<input type="number" data-metric="' + i + '" data-field="v" value="' + esc(m.v) + '">'
+      + '<div class="sub">单位：' + (m.unit ? esc(m.unit) : "无") + "</div></div>").join("")
+    + "</div>"
+    + '<div class="pv-warn"><b>口径提醒</b>　封面第 1、2 项应与启用产品数、启用渠道数一致；第 3、4 项由二者相乘推导。点「同步计数」会一次改齐并重写副标。</div>'
+    + "</div>";
+}
+
+function viewPages(){
+  const groups = ["概览","资产","生产","分发","经营","扩展"];
+  const blocks = groups.map(g=>{
+    const items = PAGE_META.filter(p=>p.group === g).map(p=>{
+      const locked = p.id === "p0";
+      const on = locked || cfg.pages[p.id] !== false;
+      return '<div class="pageitem' + (locked ? " is-locked" : "") + '">'
+        + '<span class="pcode">' + p.no + "</span>"
+        + '<span class="pname">' + p.name + "</span>"
+        + (locked
+            ? '<span class="lock">锁定</span><label class="switch"><input type="checkbox" checked disabled><i></i></label>'
+            : '<label class="switch"><input type="checkbox" data-page="' + p.id + '"' + (on ? " checked" : "") + "><i></i></label>")
+        + "</div>";
+    }).join("");
+    return '<div class="pagegroup"><h4>' + g + "　" + PAGE_META.filter(p=>p.group === g).length + ' 页</h4><div class="pagelist">' + items + "</div></div>";
+  }).join("");
+
+  const vis = visiblePages().length;
+  return '<div class="card"><div class="card-head"><div><h3>17 页导航开关</h3><p>关闭后该页从侧栏、移动端导航与演示序列中移除；页面内容仍保留在文件中，重新开启即恢复。</p></div>'
+    + '<span class="hint">可见 ' + vis + " / " + PAGE_META.length + "</span></div>"
+    + blocks
+    + '<div class="pv-warn"><b>注意</b>　P0 为演示入口，固定锁定；隐藏页面不会删除内容，但演示时的 17 段序列会按可见页面自动缩短。</div>'
+    + "</div>";
+}
+
+function viewPublish(){
+  const diff = diffList();
+  const js = buildJS();
+  const snippet = '<script src="ovem-config.js"><\/script>';
+  return '<div class="grid-2">'
+    + '<div class="card"><div class="card-head"><div><h3>版本信息</h3><p>写进配置文件与后台状态栏。</p></div></div>'
+    + '<div class="field"><label>配置版本</label><input data-sec="meta" data-field="version" value="' + esc(cfg.meta.version) + '"></div>'
+    + '<div class="field"><label>发布说明</label><textarea data-sec="meta" data-field="note" placeholder="例如：新增两款宠物场景 SKU，停用 W1 中转化偏低的 2 款">' + esc(cfg.meta.note) + "</textarea></div>"
+    + '<div class="pv-row"><span>最近保存</span><b>' + (cfg.meta.updated ? esc(cfg.meta.updated) : "尚未保存") + "</b></div>"
+    + "</div>"
+    + '<div class="card"><div class="card-head"><div><h3>变更摘要</h3><p>与默认配置逐段对比。</p></div><span class="hint">' + diff.length + " 项</span></div>"
+    + renderDiff(diff, "没有改动，当前就是默认配置。")
+    + "</div></div>"
+
+    + '<div class="card"><div class="card-head"><div><h3>应用与导出</h3><p>本地演示优先用「保存配置」；交付或部署时导出配置文件。</p></div></div>'
+    + '<div class="copy-line"><code>' + snippet.replace(/</g,"&lt;") + "</code><button class=\"btn sm\" data-act=\"copySnippet\">复制引入代码</button></div>"
+    + '<div class="toolbar" style="margin-bottom:12px">'
+    + '<button class="btn primary sm" data-act="save">保存到浏览器并生效</button>'
+    + '<button class="btn sm" data-act="exportJS">导出 ovem-config.js</button>'
+    + '<button class="btn sm" data-act="exportJSON">导出 config.json</button>'
+    + '<button class="btn sm" data-act="import">导入配置</button>'
+    + '<button class="btn sm danger" data-act="reset">恢复默认</button>'
+    + "</div>"
+    + '<div class="code">' + esc(js.length > 520 ? js.slice(0,520) + "\n… 共 " + js.length + " 字符" : js) + "</div>"
+    + "</div>"
+
+    + '<div class="card"><div class="card-head"><div><h3>部署说明</h3><p>两种通道，按场景选择。</p></div></div>'
+    + '<div class="checklist">'
+    + '<div class="check"><span class="ok">1</span><span><b>本地演示</b>：点「保存配置」写入浏览器 localStorage，再点「应用并预览」打开前台，配置立即生效。</span></div>'
+    + '<div class="check"><span class="ok">2</span><span><b>交付部署</b>：导出 ovem-config.js 放到站点同目录，前台已内置 <code>&lt;script src="ovem-config.js"&gt;</code> 读取；浏览器本地配置优先覆盖文件配置。</span></div>'
+    + '<div class="check"><span class="ok">3</span><span><b>回滚</b>：点「恢复默认」清空本地覆盖；已部署的文件用导出的旧版本替换即可。</span></div>'
+    + '<div class="check"><span class="warn">!</span><span><b>边界</b>：V1 覆盖品牌、封面、产品、渠道、页面可见性；P1 / P10 正文里的固定数字、造价与复盘样张仍是静态内容，不随配置变化。</span></div>'
+    + "</div></div>";
+}
+
+/* ============================================================
+   5 · 差异 / 预览 / 保存
+   ============================================================ */
+function diffList(){
+  const base = DEFAULT_CFG, rows = [];
+  const changed = (a, b)=>JSON.stringify(a) !== JSON.stringify(b);
+
+  if(changed(base.brand, cfg.brand)) rows.push({tag:"品牌", txt:"品牌标识、全称或版本年份已修改"});
+  if(changed(base.hero, cfg.hero)) rows.push({tag:"封面", txt:"封面眉标、主标、副标或身份标签已修改"});
+  if(changed(base.metrics, cfg.metrics)) rows.push({tag:"指标", txt:"封面五项指标已修改"});
+  if(changed(base.goals, cfg.goals)) rows.push({tag:"目标", txt:"年度经营目标已修改"});
+
+  const keyOf = p=>[p.name,p.short,p.tier,p.wave,p.price,p.oneliner,p.enabled !== false].join("|");
+  const changedP = cfg.products.filter((p,i)=>base.products[i] && keyOf(p) !== keyOf(base.products[i])).length;
+  const offP = cfg.products.filter(p=>p.enabled === false).length;
+  if(changedP || offP){
+    const t = [];
+    if(changedP) t.push(changedP + " 款字段修改");
+    if(offP) t.push(offP + " 款停用");
+    rows.push({tag:"产品", txt:t.join("，") + "（共 " + cfg.products.length + " 款）"});
+  }
+
+  const changedC = cfg.channels.filter((c,i)=>base.channels[i] && JSON.stringify(c) !== JSON.stringify(base.channels[i])).length;
+  const offC = cfg.channels.filter(c=>c.enabled === false).length;
+  if(changedC || offC){
+    const t = [];
+    if(changedC) t.push(changedC + " 个渠道字段修改");
+    if(offC) t.push(offC + " 个渠道停用");
+    rows.push({tag:"渠道", txt:t.join("，")});
+  }
+
+  const hidden = PAGE_META.filter(p=>cfg.pages[p.id] === false);
+  if(hidden.length) rows.push({tag:"页面", txt:"隐藏 " + hidden.length + " 页：" + hidden.map(p=>p.no).join("、")});
+
+  if(cfg.meta.version !== base.meta.version) rows.push({tag:"版本", txt:"配置版本 " + base.meta.version + " → " + cfg.meta.version});
+  return rows;
+}
+
+function renderDiff(rows, empty){
+  if(!rows.length) return '<div class="diff-empty">' + empty + "</div>";
+  return '<div class="diff">' + rows.map(r=>'<div class="diff-row"><span class="tag">' + r.tag + '</span><div class="txt">' + esc(r.txt) + "</div></div>").join("") + "</div>";
+}
+
+function renderPreview(){
+  const p = enabledProducts().length, c = enabledChannels().length;
+  const hidden = PAGE_META.length - visiblePages().length;
+  const m = cfg.metrics;
+  const mism = (Number(m[0].v) !== p) || (Number(m[1].v) !== c);
+
+  const heroMetrics = m.map(x=>'<div><b>' + esc(x.v) + (x.unit ? "<em>" + esc(x.unit) + "</em>" : "") + "<span>" + esc(x.label) + "</span></div>").join("");
+  const roles = cfg.hero.roles.filter(Boolean).map(r=>"<span>" + esc(r) + "</span>").join("");
+  const lines = String(cfg.hero.title).split("\n");
+
+  const bars = cfg.channels.filter(x=>x.enabled !== false).slice().sort((a,b)=>(Number(b.count)||0)-(Number(a.count)||0)).slice(0,5);
+  const max = Math.max.apply(null, bars.map(x=>Number(x.count)||0).concat([1]));
+
+  $("#previewPane").innerHTML =
+    '<div class="pv-head"><b>实时预览</b><span>P0 封面带 + 配置摘要</span></div>'
+    + '<div class="pv-hero">'
+    + '<div class="pv-kicker">' + esc(cfg.hero.kicker) + "</div>"
+    + '<div class="pv-title">' + lines.map(esc).join("<br>") + "</div>"
+    + '<div class="pv-sub">' + esc(cfg.hero.sub) + "</div>"
+    + '<div class="pv-roles">' + roles + "</div>"
+    + '<div class="pv-metrics">' + heroMetrics + "</div>"
+    + "</div>"
+
+    + '<div class="pv-block"><h4>配置摘要</h4>'
+    + '<div class="pv-row"><span>启用产品</span><b>' + p + " / " + cfg.products.length + "</b></div>"
+    + '<div class="pv-row"><span>启用渠道</span><b>' + c + " / " + cfg.channels.length + "</b></div>"
+    + '<div class="pv-row"><span>基础物料位</span><b>' + (p * c) + "</b></div>"
+    + '<div class="pv-row"><span>含 A/B 变体</span><b>' + (p * c * 3) + "</b></div>"
+    + '<div class="pv-row"><span>可见页面</span><b>' + visiblePages().length + " / " + PAGE_META.length + "</b></div>"
+    + '<div class="pv-row"><span>隐藏页面</span><b>' + hidden + "</b></div>"
+    + "</div>"
+
+    + '<div class="pv-block"><h4>渠道物料 TOP 5</h4>'
+    + (bars.length ? bars.map(ch=>'<div class="pv-bar"><div class="pv-bar-top"><span>' + esc(ch.name) + '</span><b>' + (Number(ch.count)||0) + ' 条</b></div><div class="pv-bar-track"><div class="pv-bar-fill" style="width:' + Math.round((Number(ch.count)||0)/max*100) + '%"></div></div></div>').join("")
+        : '<div class="diff-empty">无启用渠道</div>')
+    + "</div>"
+
+    + (mism ? '<div class="pv-warn"><b>指标不一致</b>　封面写的是 ' + esc(m[0].v) + " 款 / " + esc(m[1].v) + " 渠道，当前启用 " + p + " 款 / " + c + " 渠道。可在「指标与目标」里点同步计数。</div>" : "")
+    + '<p class="pv-foot">预览仅还原 P0 封面结构；进入前台后，产品矩阵、渠道页与导航会按同一份配置渲染。</p>';
+}
+
+function updateSaveState(){
+  const dirty = JSON.stringify(cfg) !== savedSnap;
+  const el = $("#saveState");
+  if(dirty){
+    el.className = "save-state is-dirty";
+    $("#saveText").textContent = "有未保存变更";
+  } else if(!cfg.meta.updated){
+    el.className = "save-state";
+    $("#saveText").textContent = "默认配置";
+  } else {
+    el.className = "save-state is-saved";
+    $("#saveText").textContent = "已保存";
+  }
+}
+
+function onChange(){
+  renderPreview();
+  updateSaveState();
+}
+
+function syncCounts(){
+  const p = enabledProducts().length, c = enabledChannels().length;
+  cfg.metrics[0].v = p;
+  cfg.metrics[1].v = c;
+  cfg.metrics[2].v = p * c;
+  cfg.metrics[3].v = p * c * 3;
+  cfg.hero.sub = cfg.brand.full + " " + cfg.brand.sub + "　·　" + p + " 款消费级生活机器人　·　" + c + " 个内容渠道";
+}
+
+function saveCfg(silent){
+  cfg.meta.updated = nowStr();
+  try{
+    localStorage.setItem(LS_KEY, JSON.stringify(cfg));
+    savedSnap = JSON.stringify(cfg);
+    updateSaveState();
+    if(!silent) toast("配置已保存，前台刷新后生效");
+  }catch(e){
+    toast("浏览器禁止本地存储，请改用「导出 ovem-config.js」");
+  }
+}
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("is-on");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove("is-on"), 2200);
+}
+
+/* ============================================================
+   6 · 导出 / 导入
+   ============================================================ */
+function buildJS(){
+  const head = "/* OVEM V2 展示配置 · 由配置后台生成 · " + nowStr() + " */\n"
+    + "/* 用法：与 OVEM_AI营销系统.html 同目录，主站已内置 <script src=\"ovem-config.js\"> */\n";
+  return head + "window.OVEM_CONFIG = " + JSON.stringify(cfg, null, 2) + ";\n";
+}
+
+function download(name, text, mime){
+  const blob = new Blob([text], {type:mime || "text/plain;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+function copyText(text, okMsg){
+  const done = ()=>toast(okMsg || "已复制");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallback());
+  } else fallback();
+  function fallback(){
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand("copy"); done(); }catch(e){ toast("复制失败，请手动选中"); }
+    ta.remove();
+  }
+}
+
+/* ============================================================
+   7 · 渲染与事件
+   ============================================================ */
+function renderView(){
+  const head = HEADS[view];
+  $("#crumb").textContent = head.crumb;
+  $("#pageHead").innerHTML = '<div><h1>' + head.title + "</h1><p>" + head.desc + "</p></div>"
+    + '<div class="acts">'
+    + (view === "overview" ? '<button class="btn sm" data-act="save">保存配置</button><button class="btn primary sm" data-act="open">应用并预览</button>' : "")
+    + "</div>";
+
+  const map = {overview:viewOverview, brand:viewBrand, products:viewProducts, channels:viewChannels, metrics:viewMetrics, pages:viewPages, publish:viewPublish};
+  $("#viewRoot").innerHTML = (map[view] || viewOverview)();
+  renderNav();
+  renderPreview();
+  updateSaveState();
+
+  if(view === "products"){
+    const s = $("#prodSearch"), t = $("#prodTier");
+    if(s) s.addEventListener("input", e=>{ pFilter.q = e.target.value; applyProductFilter(); });
+    if(t) t.addEventListener("change", e=>{ pFilter.tier = e.target.value; applyProductFilter(); });
+    applyProductFilter();
+  }
+}
+
+function applyProductFilter(){
+  const q = pFilter.q.trim().toLowerCase();
+  let shown = 0;
+  document.querySelectorAll("#prodList .prow").forEach(row=>{
+    const okQ = !q || (row.dataset.search || "").toLowerCase().includes(q);
+    const okT = pFilter.tier === "全部" || row.dataset.tier === pFilter.tier;
+    const on = okQ && okT;
+    row.style.display = on ? "" : "none";
+    if(on) shown++;
+  });
+  const cnt = $("#prodCount");
+  if(cnt) cnt.textContent = "显示 " + shown + " / " + cfg.products.length;
+}
+
+$("#sideNav").addEventListener("click", e=>{
+  const b = e.target.closest("[data-nav]");
+  if(!b) return;
+  view = b.dataset.nav;
+  renderView();
+  $(".main").scrollTop = 0;
+});
+
+$("#pageHead").addEventListener("click", e=>{
+  const b = e.target.closest("[data-act]");
+  if(b) doAction(b.dataset.act);
+});
+
+$("#viewRoot").addEventListener("click", e=>{
+  const b = e.target.closest("[data-act]");
+  if(b) doAction(b.dataset.act);
+  const n = e.target.closest("[data-nav]");
+  if(n){ view = n.dataset.nav; renderView(); }
+});
+
+function doAction(act){
+  if(act === "save"){ saveCfg(); return; }
+  if(act === "open"){ saveCfg(true); window.open("OVEM_AI营销系统.html#p0", "_blank"); toast("已打开前台站点"); return; }
+  if(act === "reset"){
+    if(confirm("恢复默认配置？当前所有改动与本地保存都会被清除。")){
+      cfg = clone(DEFAULT_CFG);
+      savedSnap = JSON.stringify(cfg);
+      try{ localStorage.removeItem(LS_KEY); }catch(e){}
+      renderView();
+      toast("已恢复默认配置");
+    }
+    return;
+  }
+  if(act === "exportJS"){ saveCfg(true); download("ovem-config.js", buildJS(), "text/javascript;charset=utf-8"); toast("已导出 ovem-config.js"); return; }
+  if(act === "exportJSON"){ download("ovem-config.json", JSON.stringify(cfg, null, 2), "application/json;charset=utf-8"); toast("已导出 config.json"); return; }
+  if(act === "import"){ $("#importFile").click(); return; }
+  if(act === "copySnippet"){ copyText('<script src="ovem-config.js"><\/script>', "引入代码已复制"); return; }
+  if(act === "allOn" || act === "allOff"){
+    cfg.products.forEach(p=>{ p.enabled = act === "allOn"; });
+    syncCounts();
+    renderView(); return;
+  }
+  if(act === "syncCounts"){
+    syncCounts();
+    renderView(); toast("封面计数已同步"); return;
+  }
+}
+
+$("#viewRoot").addEventListener("input", e=>{
+  const t = e.target;
+  const num = v=>v === "" ? 0 : Number(v);
+
+  if(t.dataset.pid && t.dataset.pfield){
+    const p = cfg.products.find(x=>x.id === t.dataset.pid);
+    if(!p) return;
+    const f = t.dataset.pfield;
+    p[f] = f === "enabled" ? t.checked : t.value;
+    if(f === "enabled"){
+      const row = t.closest(".prow");
+      if(row) row.classList.toggle("is-off", !t.checked);
+      syncCounts();
+      renderNav();
+    }
+    onChange(); return;
+  }
+
+  if(t.dataset.ci !== undefined && t.dataset.cfield){
+    const ch = cfg.channels[Number(t.dataset.ci)];
+    if(!ch) return;
+    const f = t.dataset.cfield;
+    ch[f] = f === "enabled" ? t.checked : (f === "count" ? num(t.value) : t.value);
+    if(f === "enabled"){
+      const card = t.closest(".chcard");
+      if(card) card.classList.toggle("is-off", !t.checked);
+      syncCounts();
+      renderNav();
+    }
+    onChange(); return;
+  }
+
+  if(t.dataset.page){
+    cfg.pages[t.dataset.page] = t.checked;
+    renderNav(); onChange(); return;
+  }
+
+  if(t.dataset.metric !== undefined && t.dataset.field){
+    const m = cfg.metrics[Number(t.dataset.metric)];
+    if(m){ m.v = num(t.value); onChange(); }
+    return;
+  }
+
+  if(t.dataset.sec && t.dataset.field){
+    const sec = t.dataset.sec, f = t.dataset.field, val = t.type === "number" ? num(t.value) : t.value;
+    if(sec === "brand" || sec === "hero" || sec === "meta" || sec === "goals"){
+      if(f.indexOf("roles.") === 0){
+        const idx = Number(f.split(".")[1]);
+        if(idx >= 0 && idx < 3) cfg.hero.roles[idx] = val;
+      } else {
+        cfg[sec][f] = val;
+      }
+      onChange();
+    }
+  }
+});
+
+$("#importFile").addEventListener("change", e=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const patch = JSON.parse(reader.result);
+      cfg = mergeCfg(cfg, patch);
+      savedSnap = "";
+      renderView();
+      toast("配置已导入，保存后生效");
+    }catch(err){ toast("导入失败：不是有效的配置文件"); }
+  };
+  reader.readAsText(file, "utf-8");
+  e.target.value = "";
+});
+
+$("#btnSave").addEventListener("click", ()=>saveCfg());
+$("#btnOpen").addEventListener("click", ()=>doAction("open"));
+$("#btnReset").addEventListener("click", ()=>doAction("reset"));
+
+document.addEventListener("keydown", e=>{
+  if((e.ctrlKey || e.metaKey) && e.key === "s"){ e.preventDefault(); saveCfg(); }
+});
+
+/* 初始化 */
+renderView();
+
+</script>
+</body>
+</html>
