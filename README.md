@@ -22,3 +22,7 @@ OVEM（Optics Valley Effect）是一个虚构的消费级生活机器人品牌�
 - 本项目为虚拟品牌案例，页面内数据为演示数据。
 - 后台配置保存在浏览器 `localStorage`，不依赖服务端。
 - 页面为单文件 HTML，可直接本地打开，也可通过任意静态托管访问。
+
+## 更新
+
+修改 `OVEM_AI营销系统.html` 后，同步覆盖 `index.html`，再提交并推送 `main` 分支；GitHub Pages 会自动重新构建。`_backup/`、`_preview/`、`_tools/` 为本地工作目录，不参与部署。
