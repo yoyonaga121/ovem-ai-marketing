@@ -717,6 +717,13 @@ th.sortable:hover{color:var(--brand)}
 }
 
 /* ============================ 响应式 ============================ */
+@media (max-width:599px){
+  .top-chips{flex-wrap:nowrap;gap:6px}
+  .top-chips #demoBtn,
+  .top-chips .chip-muted,
+  .top-chips .chip-warn,
+  .top-chips .chip:not(.chip-cfg){display:none}
+}
 @media (min-width:600px){
   .content{padding:24px 24px 64px}
   .p0-title{font-size:36px}
