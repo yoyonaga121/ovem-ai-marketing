@@ -2152,6 +2152,13 @@ function renderProducts(){
    ============================================================ */
 function renderMap(){
   const grid = el("mapGrid");
+  if(!PRODUCTS.length || !CHANNELS.length){
+    grid.innerHTML = '<div class="empty-state">当前没有启用的产品或渠道，请在配置后台启用后查看产能地图。</div>';
+    el("kpiDone").textContent = 0;
+    el("kpiWait").textContent = 0;
+    el("kpiTotal").textContent = 0;
+    return;
+  }
   const head = '<div class="map-head"><span class="h-label">SKU / 渠道</span>'
     + CHANNELS.map(c=>"<span>" + c + "</span>").join("") + "</div>";
   let rows = "";
@@ -2222,7 +2229,9 @@ function copyText(text, okMsg){
 
 function buildPromptText(){
   const p = currentProduct();
-  const ch = el("fChannel").value;
+  if(!p) return "当前没有启用的产品，请在配置后台启用至少一款产品。";
+  const ch = el("fChannel").value || CHANNELS[0];
+  if(!ch) return "当前没有启用的渠道，请在配置后台启用至少一个渠道。";
   const tone = el("fTone").value;
   const aud = el("fAudience").value || "目标人群";
   const t = TEMPLATES[CHANNEL_TPL[ch]];
@@ -2256,6 +2265,15 @@ function materialsFor(p){
 }
 
 function renderBattle(p){
+  if(!p){
+    el("battleHook").textContent = "当前没有启用的产品";
+    el("battleSpec").innerHTML = "<dt>提示</dt><dd>请在配置后台启用至少一款产品</dd>";
+    el("battleProof").innerHTML = "";
+    el("battleScenes").innerHTML = "";
+    el("matList").innerHTML = "";
+    el("matSummary").textContent = "0 条内容。";
+    return;
+  }
   battleId = p.id;
   const sel = el("battleSelect");
   if(sel && sel.value !== p.id){ sel.value = p.id; }
@@ -2472,14 +2490,20 @@ function buildFactory(){
     o.value = p.id; o.textContent = p.name;
     ps.appendChild(o);
   });
-  ps.value = "p20";
+  if(PRODUCTS.length){ ps.value = PRODUCTS.some(p=>p.id === "p20") ? "p20" : PRODUCTS[0].id; }
+  else {
+    const o = document.createElement("option");
+    o.value = ""; o.textContent = "无启用产品";
+    ps.appendChild(o);
+    el("btnGen").disabled = true;
+  }
   const cs = el("fChannel");
   CHANNELS.forEach(c=>{
     const o = document.createElement("option");
     o.value = c; o.textContent = c;
     cs.appendChild(o);
   });
-  cs.value = "投放";
+  cs.value = CHANNELS.indexOf("投放") >= 0 ? "投放" : (CHANNELS[0] || "");
   ps.addEventListener("change", updatePrompt);
   cs.addEventListener("change", updatePrompt);
   el("fTone").addEventListener("change", updatePrompt);
@@ -2490,7 +2514,9 @@ function currentProduct(){ return PRODUCTS.find(p=>p.id === el("fProduct").value
 
 function updatePrompt(){
   const p = currentProduct();
-  const ch = el("fChannel").value;
+  if(!p){ el("promptBox").textContent = "当前没有启用的产品，请在配置后台启用至少一款产品。"; return; }
+  const ch = el("fChannel").value || CHANNELS[0];
+  if(!ch){ el("promptBox").textContent = "当前没有启用的渠道，请在配置后台启用至少一个渠道。"; return; }
   const tone = el("fTone").value;
   const aud = el("fAudience").value || "目标人群";
   const t = TEMPLATES[CHANNEL_TPL[ch]];
@@ -2597,6 +2623,7 @@ function runGeneration(){
 
 function finishGeneration(){
   const p = currentProduct();
+  if(!p){ toast("当前没有启用的产品，无法生成"); return; }
   const aud = el("fAudience").value || "目标人群";
   const tone = el("fTone").value;
   const g = el("resGrid");
@@ -2885,6 +2912,10 @@ const JOURNEY = [
 function renderChannels(){
   const tabs = el("chTabs");
   tabs.innerHTML = "";
+  if(!CHANNEL_DATA.length){
+    el("chDetail").innerHTML = '<div class="empty-state">当前没有启用的渠道，请在配置后台启用后查看渠道规范。</div>';
+    return;
+  }
   CHANNEL_DATA.forEach((c,i)=>{
     const b = document.createElement("button");
     b.className = "ch-tab" + (i === 0 ? " is-on" : "");
@@ -3095,12 +3126,13 @@ function applyConfig(){
   if(Array.isArray(cfg.channels) && cfg.channels.length){
     for(let i = CHANNEL_DATA.length - 1; i >= 0; i--){
       const ch = CHANNEL_DATA[i];
-      const c = cfg.channels.find(x=>x.name === ch.name) || cfg.channels[i];
+      const c = cfg.channels.find(x=>x && (x.origName || x.name) === ch.name) || cfg.channels[i];
       if(!c) continue;
       if(c.enabled === false){ CHANNEL_DATA.splice(i, 1); continue; }
-      ["name","count","kpi","cycle"].forEach(k=>{
-        if(c[k] !== undefined && c[k] !== "") ch[k] = c[k];
+      ["count","kpi","cycle"].forEach(k=>{
+        if(c[k] !== undefined && c[k] !== "") ch[k] = k === "count" ? Number(c[k]) : c[k];
       });
+      if(c.name) ch.name = c.name;
     }
     if(Array.isArray(CHANNELS)){
       CHANNELS.length = 0;

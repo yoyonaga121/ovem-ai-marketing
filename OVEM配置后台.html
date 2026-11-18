@@ -291,7 +291,7 @@
   <div class="ab-div"></div>
   <div class="ab-crumb">配置中心　/　<b id="crumb">概览</b></div>
   <div class="ab-right">
-    <span class="env-pill"><span class="env-dot"></span>本地演示环境 · file://</span>
+    <span class="env-pill"><span class="env-dot"></span><span id="envText">本地演示环境 · file://</span></span>
     <span class="save-state" id="saveState"><span class="dot"></span><span id="saveText">已同步</span></span>
     <button class="btn sm" id="btnReset" title="恢复默认配置">恢复默认</button>
     <button class="btn sm" id="btnOpen" title="保存并打开前台站点">应用并预览</button>
@@ -422,7 +422,7 @@ function mergeCfg(base, patch){
   }
   if(Array.isArray(patch.channels) && patch.channels.length){
     out.channels = out.channels.map((ch, i)=>{
-      const c = patch.channels.find(x=>x && x.name === ch.name) || patch.channels[i];
+      const c = patch.channels.find(x=>x && (x.origName || x.name) === (ch.origName || ch.name)) || patch.channels[i];
       return c ? Object.assign({}, ch, c) : ch;
     });
   }
@@ -527,7 +527,7 @@ function viewOverview(){
 
   return '<div class="stats">'
     + '<div class="stat"><div class="k">启用产品</div><div class="v">' + p + '<small>/ ' + cfg.products.length + "</small></div><div class=\"f\">停用 " + (cfg.products.length - p) + " 款</div></div>"
-    + '<div class="stat"><div class="k">启用渠道</div><div class="v">' + c + '<small>/ ' + cfg.channels.length + "</small></div><div class=\"f\">物料条数 " + cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? Number(b.count)||0 : 0),0) + "</div></div>"
+    + '<div class="stat"><div class="k">启用渠道</div><div class="v">' + c + '<small>/ ' + cfg.channels.length + "</small></div><div class=\"f\">物料条数 " + cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? (Number(b.count)||0) : 0),0) + "</div></div>"
     + '<div class="stat"><div class="k">基础物料位</div><div class="v">' + slots + "</div><div class=\"f\">产品 × 渠道自动推导</div></div>"
     + '<div class="stat"><div class="k">可见页面</div><div class="v">' + vis + '<small>/ ' + PAGE_META.length + "</small></div><div class=\"f\">隐藏 " + (PAGE_META.length - vis) + " 页</div></div>"
     + "</div>"
@@ -622,7 +622,7 @@ function viewProducts(){
 
 function viewChannels(){
   const c = enabledChannels().length;
-  const total = cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? Number(b.count)||0 : 0),0);
+  const total = cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? (Number(b.count)||0) : 0),0);
   const cards = cfg.channels.map((ch, i)=>{
     const off = ch.enabled === false;
     return '<div class="chcard' + (off ? " is-off" : "") + '">'
@@ -758,7 +758,8 @@ function diffList(){
     rows.push({tag:"产品", txt:t.join("，") + "（共 " + cfg.products.length + " 款）"});
   }
 
-  const changedC = cfg.channels.filter((c,i)=>base.channels[i] && JSON.stringify(c) !== JSON.stringify(base.channels[i])).length;
+  const chKey = x=>{ const o = Object.assign({}, x); delete o.origName; return JSON.stringify(o); };
+  const changedC = cfg.channels.filter((c,i)=>base.channels[i] && chKey(c) !== chKey(base.channels[i])).length;
   const offC = cfg.channels.filter(c=>c.enabled === false).length;
   if(changedC || offC){
     const t = [];
@@ -850,6 +851,7 @@ function syncCounts(){
 }
 
 function saveCfg(silent){
+  cfg.channels.forEach(ch=>{ ch.count = Number(ch.count) || 0; });
   cfg.meta.updated = nowStr();
   try{
     localStorage.setItem(LS_KEY, JSON.stringify(cfg));
@@ -1014,6 +1016,7 @@ $("#viewRoot").addEventListener("input", e=>{
     const ch = cfg.channels[Number(t.dataset.ci)];
     if(!ch) return;
     const f = t.dataset.cfield;
+    if(f === "name" && !ch.origName) ch.origName = ch.name;
     ch[f] = f === "enabled" ? t.checked : (f === "count" ? num(t.value) : t.value);
     if(f === "enabled"){
       const card = t.closest(".chcard");
@@ -1075,6 +1078,19 @@ document.addEventListener("keydown", e=>{
 });
 
 /* 初始化 */
+(function(){
+  const proto = location.protocol;
+  const t = $("#envText");
+  if(t) t.textContent = proto === "file:" ? "本地演示环境 · file://" : (proto === "https:" ? "线上部署环境 · https" : "本地服务环境 · http");
+})();
+const __saveCfg = saveCfg;
+saveCfg = function(silent){
+  if(!enabledProducts().length || !enabledChannels().length){
+    toast("至少保留 1 款启用产品与 1 个启用渠道，前台才能正常展示");
+    return;
+  }
+  __saveCfg(silent);
+};
 renderView();
 
 </script>
