@@ -13,11 +13,11 @@ function Start-LocalNode($name, $nodeArgs, $outLog, $errLog) {
   $p = Start-Process -FilePath "node" -ArgumentList $nodeArgs -WorkingDirectory $Root `
     -RedirectStandardOutput (Join-Path $Root $outLog) `
     -RedirectStandardError (Join-Path $Root $errLog) -PassThru
-  Write-Host ("[start] {0} · PID {1}" -f $name, $p.Id) -ForegroundColor Cyan
+  Write-Host ("[start] {0} - PID {1}" -f $name, $p.Id) -ForegroundColor Cyan
   return $p
 }
 
-Write-Host "OVEM B3 demo · local fake Ark + Node" -ForegroundColor Green
+Write-Host "OVEM B3 demo - local fake Ark + Node" -ForegroundColor Green
 
 if (-not (Test-Port 4399)) {
   Start-LocalNode "fake Ark" "tools/fake-ark.js" "fakeark.log" "fakeark.err" | Out-Null
@@ -35,7 +35,7 @@ if (-not (Test-Port 4318)) {
 
 try {
   $health = Invoke-RestMethod -Uri "http://127.0.0.1:4318/api/health" -TimeoutSec 5
-  Write-Host ("[ok] {0} · live={1}" -f $health.version, $health.live) -ForegroundColor Green
+  Write-Host ("[ok] {0} - live={1}" -f $health.version, $health.live) -ForegroundColor Green
 } catch {
   Write-Host "[warn] health 未就绪，请看 server.err" -ForegroundColor Yellow
 }
