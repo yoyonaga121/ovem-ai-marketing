@@ -6,7 +6,7 @@ OVEM（Optics Valley Effect）是一个虚构的消费级生活机器人品牌�
 
 - **在线演示（静态）**：https://yoyonaga121.github.io/ovem-ai-marketing/
 - **本地完整版**：启动 `node server/server.js` 后打开 `http://127.0.0.1:4318/index.html`
-- GitHub Pages 无 Node/SQLite：P0 Agent 卡、P0 摘要、P4 产物卡、P7 渠道状态共用 `data/ovem-demo-run.js` 的静态演示 run（含 3 个占位产物）；`workbench.html` 仍可跑 mock/replay，`live` 与登录需本地服务；`login.html` 在静态域名下显示提示并返回首页。
+- GitHub Pages 无 Node/SQLite：无本地成果时，P0 Agent 卡、P0 摘要、P4 产物卡、P7 渠道状态共用 `data/ovem-demo-run.js` 的静态演示 run（含 3 个占位产物）；`workbench.html` 仍可跑 mock/replay，`live` 与登录需本地服务；`login.html` 在静态域名下显示提示并返回首页。
 
 ---
 
