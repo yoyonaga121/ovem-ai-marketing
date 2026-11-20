@@ -4,3 +4,13 @@ _tools/
 *.log
 Thumbs.db
 .DS_Store
+
+# B3 local service
+server/ovem.db
+server/ovem.db-*
+server/.secret
+server/data/
+published/
+.env
+.env.local
+node_modules/

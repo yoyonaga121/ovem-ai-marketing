@@ -1,0 +1,12 @@
+{
+  "name": "ovem-b3",
+  "version": "4.0.0",
+  "private": true,
+  "description": "OVEM B3 local multi-tenant workbench",
+  "scripts": {
+    "start": "node server/server.js",
+    "seed": "node server/seed.js",
+    "verify": "node tools/verify-b3.js",
+    "e2e": "node tools/b3-e2e.js"
+  }
+}
