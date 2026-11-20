@@ -2,11 +2,11 @@
   "stage": "S3",
   "title": "Agent 工作台壳层",
   "suite": "A3",
-  "at": "2026-11-20T07:44:25.914Z",
+  "at": "2026-11-20T07:48:12.281Z",
   "git": {
-    "ref": "b2af0da",
-    "tag": "v3.0-s2",
-    "dirty": true
+    "ref": "88c6ddb",
+    "tag": "v3.0-s3",
+    "dirty": false
   },
   "source": {
     "shell": "workbench.html",
