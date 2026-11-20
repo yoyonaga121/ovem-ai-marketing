@@ -124,7 +124,7 @@ OVEM站点_v2.0/
 | S2 | 运行时与工具层（5 模块 + A2 自检） | `d1383d8` / `v3.0-s2` | `docs/v3/reports/S2.json` | `docs/v3/evidence/S2_A2-04_run.png` |
 | S3 | 工作台壳层（6 视图 / 3 预设 / 闸门 / A3 自检） | `88c6ddb` / `v3.0-s3` | `docs/v3/reports/S3.json` + `S3.browser.json` | `docs/v3/evidence/S3_*.png`（8 张） |
 | S4 | 成果层联动（17 页血缘 / P4 / P7 / 后台运行记录） | `66cdd47` / `v3.0-s4` | `docs/v3/reports/S4.json` + `S4.browser.json` | `docs/v3/evidence/S4_*.png`（5 张） |
-| S5 | 评测与演示（20 条任务 / 两版 Prompt 回归 / 闸门 / 离线 replay / 5 分钟脚本） | `待回填` / `v3.0-s5` | `docs/v3/reports/S5.json` + `S5.browser.json` | `docs/v3/evidence/S5_*.png`（6 张） |
+| S5 | 评测与演示（20 条任务 / 两版 Prompt 回归 / 闸门 / 离线 replay / 5 分钟脚本） | `848dad8` / `v3.0-s5` | `docs/v3/reports/S5.json` + `S5.browser.json` | `docs/v3/evidence/S5_*.png`（6 张） |
 
 **Agent 配置（S1 交付）**
 
