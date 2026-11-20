@@ -270,6 +270,51 @@ button{cursor:pointer}
 .page-card.is-focus{border-color:rgba(251,191,36,.6);box-shadow:0 0 0 2px rgba(251,191,36,.12)}
 .group-block.is-focus .group-head h3{color:var(--amber)}
 
+/* B1 单壳页面浏览器 */
+.site-browser{display:flex;flex-direction:column;gap:10px;min-width:0}
+.site-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.02)}
+.site-toolbar .tb-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--ink-3);margin-right:2px}
+.site-filter{border:1px solid var(--line);background:transparent;color:var(--ink-3);border-radius:999px;padding:4px 9px;font-size:10px;font-family:var(--mono)}
+.site-filter:hover{color:var(--ink);border-color:var(--line-2)}
+.site-filter.is-active{color:var(--cyan-2);border-color:rgba(34,211,238,.38);background:rgba(34,211,238,.08)}
+.page-tabs{display:flex;gap:5px;overflow-x:auto;padding:8px 10px;border:1px solid var(--line);border-radius:11px;background:#07111E;scrollbar-width:thin}
+.page-tab{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink-2);border-radius:8px;padding:6px 9px;font-size:10.5px;white-space:nowrap;transition:.14s}
+.page-tab:hover{border-color:rgba(34,211,238,.35);color:var(--ink)}
+.page-tab.is-active{border-color:rgba(34,211,238,.55);background:linear-gradient(180deg,rgba(34,211,238,.14),rgba(34,211,238,.04));color:var(--cyan-2);box-shadow:0 0 18px rgba(34,211,238,.08)}
+.page-tab .pt-no{font-family:var(--mono);font-size:8.5px;color:var(--ink-3)}
+.page-tab.is-active .pt-no{color:var(--cyan)}
+.page-tab .pt-dot{width:5px;height:5px;border-radius:50%;background:#64748B}
+.page-tab[data-group="成果"] .pt-dot{background:var(--green)}
+.page-tab[data-group="知识"] .pt-dot{background:#A78BFA}
+.page-tab[data-group="策略"] .pt-dot{background:var(--blue)}
+.page-tab[data-group="执行"] .pt-dot{background:var(--cyan)}
+.page-tab[data-group="复盘"] .pt-dot{background:var(--amber)}
+.page-tab[data-group="文档"] .pt-dot{background:var(--ink-3)}
+.page-stage{border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(14,26,43,.92),rgba(10,19,32,.92));overflow:hidden;min-width:0}
+.page-stage-head{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);min-width:0}
+.page-stage-title{display:flex;align-items:baseline;gap:8px;min-width:0}
+.page-stage-no{font-family:var(--mono);font-size:9px;color:var(--cyan);border:1px solid rgba(34,211,238,.3);border-radius:5px;padding:2px 5px;white-space:nowrap}
+.page-stage-title b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.page-stage-title p{margin:0;font-family:var(--mono);font-size:9px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.page-stage-tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.page-stage-tools .stage-meta{font-family:var(--mono);font-size:9px;color:var(--ink-3);white-space:nowrap}
+.page-stage-tools .tiny-btn{white-space:nowrap}
+.page-stage-tools .open-new{font-family:var(--mono);font-size:9.5px;color:var(--cyan);border-bottom:1px dashed rgba(34,211,238,.35);padding-bottom:1px;white-space:nowrap}
+.page-frame-wrap{position:relative;height:clamp(440px,calc(100dvh - 335px),760px);background:#050A12}
+.page-frame{display:block;width:100%;height:100%;border:0;background:#F5F7FA}
+.page-frame-fallback{position:absolute;inset:0;display:grid;place-items:center;padding:28px;background:radial-gradient(520px 300px at 50% 30%,rgba(34,211,238,.10),transparent 68%),#08111F;text-align:center}
+.page-frame-fallback .pf-orbit{width:56px;height:56px;border:1px solid rgba(34,211,238,.3);border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--cyan);margin:0 auto 13px;background:radial-gradient(circle,rgba(34,211,238,.12),transparent 70%)}
+.page-frame-fallback h4{margin:0 0 6px;font-size:13px;color:var(--ink-2)}
+.page-frame-fallback p{margin:0 0 12px;font-size:10.5px;line-height:1.7;color:var(--ink-3);max-width:420px}
+.page-frame-fallback .btn-ghost{display:inline-block}
+@media (max-width:980px){
+  .site-toolbar{gap:6px}
+  .site-filter{font-size:9px;padding:4px 8px}
+  .page-stage-head{flex-wrap:wrap}
+  .page-stage-tools{margin-left:0;width:100%;justify-content:space-between}
+  .page-frame-wrap{height:64dvh;min-height:420px}
+}
+
 /* 运行记录 */
 .runs-table{width:100%;border-collapse:collapse;font-size:11px}
 .runs-table th{text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--ink-3);padding:10px 12px;border-bottom:1px solid var(--line)}
@@ -396,11 +441,11 @@ button{cursor:pointer}
   .plan-grid,.skeleton{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 @media (max-width:980px){
-  .app{grid-template-columns:1fr;grid-template-rows:64px auto minmax(0,1fr)}
-  .rail{grid-row:2;flex-direction:row;overflow:auto;gap:4px;border-right:0;border-bottom:1px solid var(--line);padding:8px}
+  .app{grid-template-columns:1fr;grid-template-rows:64px auto minmax(0,1fr);min-width:0}
+  .rail{grid-row:2;flex-direction:row;overflow:auto;gap:4px;border-right:0;border-bottom:1px solid var(--line);padding:8px;min-width:0}
   .rail-label,.rail-card,.rail-foot,.rail-spacer{display:none}
-  .nav-item{min-width:118px;margin:0}
-  .main{grid-row:3}
+  .nav-item{min-width:104px;margin:0;flex:0 0 auto}
+  .main{grid-row:3;min-width:0}
   .work-grid{grid-template-columns:1fr}
   .mission-panel{position:static}
   .top-meta{display:none}
@@ -409,6 +454,23 @@ button{cursor:pointer}
   .eval-actions{margin-left:0;flex-wrap:wrap}
   .eval-compare{padding:12px}
   .eval-side b{font-size:23px}
+}
+@media (max-width:680px){
+  .topbar{padding:0 12px;gap:8px;min-width:0}
+  .brand{min-width:0;gap:8px}
+  .brand small{display:none}
+  .brand b{font-size:13px;letter-spacing:.16em}
+  .top-right{gap:6px;min-width:0;margin-left:auto}
+  .provider-label,.speed,.live{display:none}
+  .seg button{padding:4px 8px;font-size:10px}
+  .view-head h1{font-size:21px}
+  .main{padding:16px 12px 28px}
+  .site-summary{gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .site-summary .right{margin-left:0;text-align:left}
+  .page-stage-head{padding:10px 11px}
+  .page-stage-tools{gap:6px}
+  .page-stage-tools .open-new{font-size:9px}
+  .page-frame-wrap{height:58dvh;min-height:360px}
 }
 </style>
 </head>
@@ -561,14 +623,53 @@ button{cursor:pointer}
     <!-- ===== 视图：成果视图 ===== -->
     <section class="view" id="view-site" hidden>
       <div class="view-head">
-        <div><div class="eyebrow">OUTPUT LAYER / 03</div><h1>17 页成果视图</h1><p>版式与内容保持 v2.0 不动，壳页只负责入口编排。每页会在 S4 接入血缘条与本次 run 的产物。</p></div>
+        <div><div class="eyebrow">OUTPUT LAYER / 03</div><h1>17 页成果视图</h1><p>B1 单壳整合：页面正文仍是 `index.html` 单源，工作台只换容器。左侧 tab 切换，iframe 内直接查看，不再新窗口跳转。</p></div>
+        <div class="head-actions"><span class="state-pill" id="siteFrameState">IFRAME · READY</span></div>
       </div>
       <div class="site-summary">
         <b id="siteCount">17/17</b>
-        <p>按 6 组归类：成果 5 · 知识 1 · 策略 4 · 执行 4 · 复盘 1 · 文档 2。<br>所有链接直达 `index.html#pN`，不复制第二份内容。</p>
-        <div class="right">SOURCE OF TRUTH<br>data/ovem-schema.js · pages[]</div>
+        <p>6 组归类：成果 5 · 知识 1 · 策略 4 · 执行 4 · 复盘 1 · 文档 2。<br>17 个 tab 按 `data/ovem-schema.js` 的 pages[] 排序，iframe 只加载 `index.html#pN`。</p>
+        <div class="right">B1 SINGLE SHELL<br>iframe · no duplicated DOM</div>
       </div>
-      <div id="siteGroups"></div>
+      <div class="site-browser">
+        <div class="site-toolbar" id="siteFilters">
+          <span class="tb-label">GROUP</span>
+          <button type="button" class="site-filter is-active" data-group="全部">全部 <span id="filterAllCount">17</span></button>
+          <button type="button" class="site-filter" data-group="成果">成果 5</button>
+          <button type="button" class="site-filter" data-group="知识">知识 1</button>
+          <button type="button" class="site-filter" data-group="策略">策略 4</button>
+          <button type="button" class="site-filter" data-group="执行">执行 4</button>
+          <button type="button" class="site-filter" data-group="复盘">复盘 1</button>
+          <button type="button" class="site-filter" data-group="文档">文档 2</button>
+        </div>
+        <div class="page-tabs" id="pageTabs" role="tablist" aria-label="17 页导航"></div>
+        <section class="page-stage">
+          <div class="page-stage-head">
+            <div class="page-stage-title">
+              <span class="page-stage-no" id="pageFrameNo">P0</span>
+              <b id="pageFrameTitle">OVEM 总览</b>
+              <p id="pageFrameDesc">—</p>
+            </div>
+            <div class="page-stage-tools">
+              <span class="stage-meta" id="pageFrameMeta">iframe · index.html#p0</span>
+              <button type="button" class="tiny-btn" id="pageFrameReload">刷新</button>
+              <a class="open-new" id="pageOpenNew" href="index.html#p0" target="_blank" rel="noopener">新窗口打开 ↗</a>
+            </div>
+          </div>
+          <div class="page-frame-wrap">
+            <iframe class="page-frame" id="pageFrame" title="OVEM 页面预览" loading="lazy" src="about:blank"></iframe>
+            <div class="page-frame-fallback" id="pageFrameFallback" hidden>
+              <div>
+                <div class="pf-orbit">P?</div>
+                <h4>iframe 没有加载出来</h4>
+                <p>浏览器可能拦截了本地 iframe，或 `index.html` 不在同目录。页面正文不受影响，用新窗口打开即可继续演示。</p>
+                <a class="btn-ghost" id="pageFallbackOpen" href="index.html#p0" target="_blank" rel="noopener">新窗口打开 →</a>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div id="siteGroups" hidden></div>
+      </div>
     </section>
 
     <!-- ===== 视图：评测 ===== -->

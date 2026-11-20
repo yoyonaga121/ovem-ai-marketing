@@ -139,6 +139,109 @@ window.OVEM_RT = window.OVEM_RT || {};
     }).join("");
     wrap.innerHTML = html;
     txt("siteCount", PAGES.length + "/17");
+    txt("filterAllCount", String(PAGES.length));
+
+    /* B1：17 个 tab 按 pages[] 排序；正文不复制，只换容器 */
+    var tabs = id("pageTabs");
+    tabs.innerHTML = PAGES.map(function (p) {
+      var group = pageGroupOf(p.id);
+      return '<button type="button" class="page-tab" role="tab" data-page="' + esc(p.id) + '" data-group="' + esc(group) +
+        '" aria-selected="false" title="' + esc(p.name) + '">' +
+        '<span class="pt-dot"></span><span class="pt-no">' + esc(p.no) + '</span><span>' + esc(p.name) + '</span></button>';
+    }).join("");
+    qa(".page-tab", tabs).forEach(function (b) {
+      b.addEventListener("click", function () { selectPage(b.dataset.page, true); });
+    });
+
+    /* 隐藏的分组索引保留给 A3 自检与无障碍外链；页面正文仍只有 index.html 一份 */
+    qa("#siteGroups .page-link").forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        selectPage(a.dataset.page, true);
+      });
+    });
+
+    qa("#siteFilters .site-filter").forEach(function (b) {
+      b.addEventListener("click", function () { filterSite(b.dataset.group); });
+    });
+    id("pageFrameReload").addEventListener("click", function () { reloadPageFrame(); });
+    id("pageFrame").addEventListener("load", function () {
+      var frame = id("pageFrame");
+      if (frame.dataset.page) frame.dataset.loaded = frame.dataset.page;
+      id("pageFrameFallback").hidden = true;
+      if (S.pageLoadTimer) { clearTimeout(S.pageLoadTimer); S.pageLoadTimer = null; }
+      txt("siteFrameState", "IFRAME · READY");
+    });
+    id("pageFrame").addEventListener("error", function () { showPageFallback(); });
+  }
+
+  function pageGroupOf(pid) {
+    var g = PAGE_GROUPS.filter(function (x) { return x.ids.indexOf(pid) >= 0; })[0];
+    return g ? g.key : "其他";
+  }
+
+  function filterSite(group) {
+    qa("#siteFilters .site-filter").forEach(function (b) {
+      b.classList.toggle("is-active", b.dataset.group === group);
+    });
+    qa(".page-tab").forEach(function (b) {
+      b.hidden = group !== "全部" && b.dataset.group !== group;
+    });
+    if (group !== "全部") {
+      var cur = q(".page-tab.is-active");
+      if (!cur || cur.hidden) {
+        var first = qa(".page-tab").filter(function (b) { return !b.hidden; })[0];
+        if (first) selectPage(first.dataset.page, true);
+      }
+    }
+  }
+
+  function selectPage(pid, updateHash) {
+    var p = pageOf(pid);
+    if (!p || !PAGES.length) return;
+    S.focusPage = p.id;
+    qa(".page-tab").forEach(function (b) {
+      var on = b.dataset.page === p.id;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    qa("#siteGroups .page-link").forEach(function (a) { a.classList.toggle("is-focus", a.dataset.page === p.id); });
+    txt("pageFrameNo", p.no);
+    txt("pageFrameTitle", p.name);
+    txt("pageFrameDesc", p.desc || "");
+    txt("pageFrameMeta", "iframe · index.html#" + p.id);
+    var open = id("pageOpenNew");
+    open.href = "index.html#" + p.id;
+    var fallback = id("pageFallbackOpen");
+    fallback.href = "index.html#" + p.id;
+    var frame = id("pageFrame");
+    var next = "index.html#" + p.id;
+    id("pageFrameFallback").hidden = true;
+    txt("siteFrameState", frame.dataset.loaded === p.id ? "IFRAME · READY" : "IFRAME · LOADING");
+    if (frame.dataset.page !== p.id) {
+      frame.dataset.page = p.id;
+      frame.dataset.loaded = "";
+      frame.src = next;
+      if (S.pageLoadTimer) clearTimeout(S.pageLoadTimer);
+      S.pageLoadTimer = setTimeout(function () {
+        if (frame.dataset.loaded !== p.id) showPageFallback();
+      }, 3200);
+    }
+    if (updateHash && location.hash !== "#/site/" + p.id) location.hash = "#/site/" + p.id;
+  }
+
+  function reloadPageFrame() {
+    var frame = id("pageFrame");
+    var p = S.focusPage || (PAGES[0] && PAGES[0].id) || "p0";
+    frame.dataset.page = "";
+    frame.dataset.loaded = "";
+    selectPage(p, false);
+  }
+
+  function showPageFallback() {
+    id("pageFrameFallback").hidden = false;
+    txt("siteFrameState", "IFRAME · FALLBACK");
   }
 
   function selectPreset(key, silent) {
@@ -169,7 +272,13 @@ window.OVEM_RT = window.OVEM_RT || {};
     if (m) {
       S.focusPage = m[1];
       showView("site");
-      highlightFocus();
+      selectPage(m[1], false);
+      return;
+    }
+    var site = /^#\/site(?:\/(p\d+))?$/.exec(hash);
+    if (site) {
+      showView("site");
+      selectPage(site[1] || S.focusPage || (PAGES[0] && PAGES[0].id) || "p0", false);
       return;
     }
     var name = hash.replace(/^#\//, "");
@@ -186,6 +295,11 @@ window.OVEM_RT = window.OVEM_RT || {};
     });
     qa(".nav-item").forEach(function (a) { a.classList.toggle("is-active", a.dataset.view === name); });
     if (name === "runs") refreshHistory();
+    if (name === "site") {
+      var p = S.focusPage || (PAGES[0] && PAGES[0].id) || "p0";
+      if (!S.focusPage) S.focusPage = p;
+      if (id("pageFrame").dataset.page !== p) selectPage(p, false);
+    }
   }
 
   function highlightFocus() {
