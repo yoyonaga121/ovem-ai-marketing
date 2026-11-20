@@ -1,9 +1,9 @@
 {
   "stage": "S0",
-  "generatedAt": "2026-11-20T06:49:29.473Z",
+  "generatedAt": "2026-11-20T06:50:02.642Z",
   "git": {
-    "ref": "7e44ea7",
-    "dirty": true,
+    "ref": "954f1fe",
+    "dirty": false,
     "tag": "v3.0-s0"
   },
   "cases": [
@@ -11,13 +11,13 @@
       "id": "A0-01",
       "ok": true,
       "detail": "v1 index.html MD5=77D55499DA0095B83163E4BA6DD37967（与基线一致）",
-      "ms": 2
+      "ms": 3
     },
     {
       "id": "A0-02",
       "ok": true,
       "detail": "1 段内联脚本全部可编译",
-      "ms": 4
+      "ms": 3
     },
     {
       "id": "A0-03",
@@ -29,7 +29,7 @@
       "id": "A0-04",
       "ok": true,
       "detail": "data=v2.0.0/schema=2.0.0 · 产品20 渠道8 · 契约页17 分区7 规则5",
-      "ms": 2
+      "ms": 1
     },
     {
       "id": "A0-05",
