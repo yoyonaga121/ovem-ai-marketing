@@ -2,11 +2,11 @@
   "stage": "S4",
   "title": "成果层联动",
   "suite": "A4",
-  "at": "2026-11-20T07:57:57.825Z",
+  "at": "2026-11-20T08:00:29.743Z",
   "git": {
-    "ref": "e9e57b3",
-    "tag": "v3.0-s3",
-    "dirty": true
+    "ref": "66cdd47",
+    "tag": "v3.0-s4",
+    "dirty": false
   },
   "source": {
     "lineage": "runtime/ovem-lineage.js",
