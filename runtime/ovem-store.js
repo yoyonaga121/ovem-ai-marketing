@@ -135,6 +135,13 @@ window.OVEM_RT = window.OVEM_RT || {};
     return tx(store, "readwrite", function (os) { os.clear(); return true; });
   }
 
+  function removeMany(store, keys) {
+    keys = keys || [];
+    if (!keys.length) return Promise.resolve(0);
+    if (mode === "memory") { keys.forEach(function (k) { memStore(store).delete(k); }); return Promise.resolve(keys.length); }
+    return tx(store, "readwrite", function (os) { keys.forEach(function (k) { os.delete(k); }); return keys.length; });
+  }
+
   function info() {
     if (mode === "memory") {
       return Promise.resolve({
@@ -185,6 +192,7 @@ window.OVEM_RT = window.OVEM_RT || {};
     list: list,
     count: count,
     clear: clear,
+    removeMany: removeMany,
     reset: reset,
     mode: function () { return mode; }
   };

@@ -71,13 +71,14 @@ add("S3-02", "6 个视图 section · 6 组导航一一对应", views.length === 
   && wantViews.every(v => views.indexOf(v) >= 0 && navs.indexOf(v) >= 0),
   "views=" + views.length + "/6 · nav=" + navs.length + "/6 · " + views.join("/"));
 
-/* 8 个 classic script 顺序 */
+/* 8 个核心 classic script 顺序（S5 可在 core 之后追加评测模块） */
 const srcs = [...html.matchAll(/<script\s+src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const want = ["data/ovem-data.js", "data/ovem-schema.js", "data/ovem-agent.js",
   "runtime/ovem-trace.js", "runtime/ovem-store.js", "runtime/ovem-tools.js", EXEC, UI];
-const orderOk = srcs.length === want.length && want.every((s, i) => srcs[i] === s);
-add("S3-03", "8 个 classic script 按依赖顺序加载", orderOk,
-  "scripts=" + srcs.length + "/8 · order=" + (orderOk ? "data→trace→store→tools→executor→ui" : srcs.join(" → ")));
+const corePos = want.map(s => srcs.indexOf(s));
+const orderOk = want.every(s => srcs.indexOf(s) >= 0) && corePos.every((p, i) => i === 0 || p > corePos[i - 1]);
+add("S3-03", "8 个核心 classic script 按依赖顺序加载", orderOk,
+  "scripts=" + srcs.length + "（core 8 + S5 增量） · order=" + (orderOk ? "data→trace→store→tools→executor→ui" : srcs.join(" → ")));
 
 /* 3 条预设 */
 const presetBlock = ui.slice(ui.indexOf("var PRESETS"), ui.indexOf("var S ="));

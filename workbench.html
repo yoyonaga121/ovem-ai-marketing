@@ -291,6 +291,49 @@ button{cursor:pointer}
 .ph-card p{margin:0;font-size:11px;color:var(--ink-3);line-height:1.7}
 .ph-card ul{margin:9px 0 0;padding-left:16px;color:var(--ink-2);font-size:10.5px;line-height:1.8}
 .ph-card .soon{display:inline-block;margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--amber);border:1px solid rgba(251,191,36,.3);border-radius:999px;padding:3px 8px}
+
+/* 评测视图 */
+.eval-actions{margin-left:auto;display:flex;align-items:center;gap:9px}
+.eval-badge{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--ink-3);border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:rgba(255,255,255,.02)}
+.eval-badge.pass{color:var(--green);border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.06)}
+.eval-badge.fail{color:var(--red);border-color:rgba(251,113,133,.35);background:rgba(251,113,133,.06)}
+.eval-badge.run{color:var(--cyan);border-color:rgba(34,211,238,.35);background:rgba(34,211,238,.06)}
+.eval-kpis .kv b{font-size:22px}
+.eval-progress-panel{margin-top:12px;padding:12px 16px}
+.eval-progress-top{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink-2)}
+.eval-progress-top b{font-weight:500}
+.eval-progress-track{height:5px;border-radius:999px;background:rgba(120,160,220,.12);margin-top:8px;overflow:hidden}
+.eval-progress-track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#3B82F6);transition:width .25s}
+.eval-progress-note{margin-top:7px;font-family:var(--mono);font-size:9px;color:var(--ink-3)}
+.eval-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;margin-top:12px}
+.eval-compare{display:grid;grid-template-columns:1fr 30px 1fr;align-items:center;gap:0;padding:16px}
+.eval-side{border:1px solid var(--line);border-radius:10px;padding:13px;background:rgba(255,255,255,.02)}
+.eval-side label{display:block;font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.08em}
+.eval-side b{display:block;font-family:var(--mono);font-size:27px;line-height:1.15;margin-top:5px;color:var(--ink-2)}
+.eval-side span{display:block;font-size:10px;color:var(--ink-3);margin-top:4px;font-family:var(--mono)}
+.eval-side.cand{border-color:rgba(34,211,238,.28);background:linear-gradient(135deg,rgba(34,211,238,.09),rgba(34,211,238,.02))}
+.eval-side.cand b{color:var(--cyan)}
+.eval-arrow{text-align:center;color:var(--ink-3);font-family:var(--mono);font-size:14px}
+.eval-note{padding:0 16px 14px;font-size:10px;line-height:1.75;color:var(--ink-3)}
+.eval-fail-list{max-height:174px;overflow:auto;padding:4px 0}
+.eval-fail-item{display:grid;grid-template-columns:52px minmax(0,1fr);gap:9px;padding:8px 16px;border-bottom:1px solid rgba(120,160,220,.07);font-size:10px;color:var(--ink-2)}
+.eval-fail-item b{font-family:var(--mono);font-size:9px;color:var(--amber)}
+.eval-fail-item em{display:block;margin-top:2px;font-style:normal;color:var(--ink-3);font-family:var(--mono);font-size:9px;line-height:1.5}
+.eval-table-panel{margin-top:12px}
+.eval-table-wrap{max-height:380px;overflow:auto}
+.eval-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:9.5px}
+.eval-table th{position:sticky;top:0;z-index:2;text-align:left;padding:8px 10px;color:var(--ink-3);font-weight:500;letter-spacing:.06em;background:#0C1728;border-bottom:1px solid var(--line)}
+.eval-table th:first-child,.eval-table td:first-child{padding-left:16px}
+.eval-table td{padding:7px 10px;border-bottom:1px solid rgba(120,160,220,.08);color:var(--ink-2);vertical-align:top}
+.eval-table tbody tr{cursor:pointer}
+.eval-table tbody tr:hover{background:rgba(34,211,238,.055)}
+.eval-table .task-id{color:var(--ink);font-weight:600}
+.eval-table .sub{display:block;color:var(--ink-3);font-size:9px;margin-top:2px}
+.eval-pass{color:var(--green)}
+.eval-fail{color:var(--red)}
+.eval-na{color:var(--ink-3)}
+.eval-issue{max-width:290px;white-space:normal;line-height:1.5;color:var(--ink-3)}
+
 .admin-hero{display:flex;gap:18px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:18px;background:linear-gradient(110deg,rgba(34,211,238,.08),rgba(59,130,246,.04))}
 .admin-hero h2{margin:0;font-size:18px}
 .admin-hero p{margin:6px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.7;max-width:680px}
@@ -361,7 +404,11 @@ button{cursor:pointer}
   .work-grid{grid-template-columns:1fr}
   .mission-panel{position:static}
   .top-meta{display:none}
-  .placeholder-grid,.about-grid,.kv-grid{grid-template-columns:1fr}
+  .placeholder-grid,.about-grid,.kv-grid,.eval-grid{grid-template-columns:1fr}
+  .view-head{flex-wrap:wrap;align-items:flex-start}
+  .eval-actions{margin-left:0;flex-wrap:wrap}
+  .eval-compare{padding:12px}
+  .eval-side b{font-size:23px}
 }
 </style>
 </head>
@@ -369,7 +416,7 @@ button{cursor:pointer}
 <div class="app">
   <header class="topbar">
     <div class="brand"><span class="mark"></span><div><b>OVEM</b><small>AGENT WORKBENCH</small></div></div>
-    <div class="top-meta"><span>Optics Valley Effect · Marketing OS</span><span class="tag">v3.0 · S3</span></div>
+    <div class="top-meta"><span>Optics Valley Effect · Marketing OS</span><span class="tag">v3.0 · S5</span></div>
     <div class="top-right">
       <span class="provider-label" id="providerLabel">mock · 延迟 ×8</span>
       <div class="seg" id="modeSeg">
@@ -527,19 +574,57 @@ button{cursor:pointer}
     <!-- ===== 视图：评测 ===== -->
     <section class="view" id="view-eval" hidden>
       <div class="view-head">
-        <div><div class="eyebrow">EVALUATION / 04</div><h1>评测与回归</h1><p>这一块在 S5 接入：20 条评测集、Prompt 回归、批量跑与通过率报告。</p></div>
+        <div><div class="eyebrow">EVALUATION / 04</div><h1>评测与回归</h1><p>20 条固定任务，同一批 artifacts 用两版 Prompt 口径复算。跑批只改运行态，不改成果层。</p></div>
+        <div class="eval-actions">
+          <span class="eval-badge" id="evalStateBadge">NOT RUN</span>
+          <button class="btn-ghost" id="evalExport" disabled>导出报告 JSON</button>
+          <button class="btn-run" id="evalRun">跑全量 20 条</button>
+        </div>
       </div>
-      <div class="placeholder-grid">
-        <div class="ph-card"><div class="ph-tag">EVAL SET</div><h3>20 条任务</h3><p>每条任务固定 brief、期望渠道、比例、主色占比与安全区阈值。</p><ul><li>评测集只增不改，带 version</li><li>结果落 eval store</li></ul><span class="soon">S5 接入</span></div>
-        <div class="ph-card"><div class="ph-tag">REGRESSION</div><h3>Prompt 回归</h3><p>Prompt v1.1 → v1.2 时比较通过率、平均步数与成本。</p><ul><li>对比报告自动生成</li><li>失败样例可回放</li></ul><span class="soon">S5 接入</span></div>
-        <div class="ph-card"><div class="ph-tag">BATCH</div><h3>批量执行</h3><p>一次跑完 20 条，实时显示进度与异常，不阻塞工作台主流程。</p><ul><li>通过率 ≥ 90%</li><li>可中断 / 可重跑</li></ul><span class="soon">S5 接入</span></div>
+      <div class="kv-grid eval-kpis">
+        <div class="kv"><label>DATASET</label><b id="evalCount">20</b><span>v3.0.0 · p01–p20 · 固定 seed</span></div>
+        <div class="kv"><label>BASELINE · v1.1.0</label><b id="evalBaseRate">—</b><span id="evalBaseMeta">尚未跑批</span></div>
+        <div class="kv"><label>CANDIDATE · v1.2.0</label><b id="evalCandRate">—</b><span id="evalCandMeta">通过率目标 ≥ 90%</span></div>
+        <div class="kv"><label>REGRESSION</label><b id="evalDelta">—</b><span id="evalDeltaMeta">同 artifacts · 换 rubric</span></div>
       </div>
-      <section class="panel" style="margin-top:14px">
-        <div class="panel-head"><h3>当前可用的评测口径</h3><span class="muted">FROM S2</span></div>
-        <div style="padding:14px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-          <div class="kv"><label>A2 SELFTEST</label><b>7/7</b><span>工具契约 / 7 步 / 重试 / 闸门 / 对账</span></div>
-          <div class="kv"><label>COST / TASK</b></label><b>¥0.1168</b><span>mock 计价 · K5 ≤ ¥0.15</span></div>
-          <div class="kv"><label>TRACE</label><b>30</b><span>正常链路的完整事件数</span></div>
+
+      <section class="panel eval-progress-panel" id="evalProgressPanel" hidden>
+        <div class="eval-progress-top"><b id="evalProgressText">准备中</b><span id="evalProgressPct">0%</span></div>
+        <div class="eval-progress-track"><i id="evalProgressBar"></i></div>
+        <div class="eval-progress-note">顺序执行 · 单条 7 步 / 9 调用 · mock provider · 写入 evals store</div>
+      </section>
+
+      <div class="eval-grid">
+        <section class="panel">
+          <div class="panel-head"><h3>Prompt 回归</h3><span class="muted">v1.1.0 → v1.2.0</span></div>
+          <div class="eval-compare">
+            <div class="eval-side base">
+              <label>BASELINE</label><b id="evalBaseBig">—</b>
+              <span id="evalBaseSmall">dominant ≥ 37%</span>
+            </div>
+            <div class="eval-arrow">→</div>
+            <div class="eval-side cand">
+              <label>CANDIDATE</label><b id="evalCandBig">—</b>
+              <span id="evalCandSmall">dominant ≥ 35%</span>
+            </div>
+          </div>
+          <div class="eval-note">只改主色阈值：37% → 35%；QA 分数 ≥ 80、安全区 ≥ 48px 不变。通过率变化来自同一批 artifacts 复算，不换生成结果。</div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><h3>失败样例</h3><span class="muted" id="evalFailCount">跑批后生成</span></div>
+          <div class="eval-fail-list" id="evalFailList">
+            <div class="empty-wide">跑批后显示 baseline 失败、candidate 通过的样例，用于对照讲解。</div>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel eval-table-panel">
+        <div class="panel-head"><h3>20 条任务明细</h3><span class="muted">点击行可回放该 run</span></div>
+        <div class="eval-table-wrap">
+          <table class="eval-table">
+            <thead><tr><th>TASK</th><th>PRODUCT / CHANNELS</th><th>RUN</th><th>COST</th><th>v1.1.0</th><th>v1.2.0</th><th>ISSUE</th></tr></thead>
+            <tbody id="evalRows"></tbody>
+          </table>
         </div>
       </section>
     </section>
@@ -618,11 +703,14 @@ button{cursor:pointer}
 <script src="data/ovem-data.js"></script>
 <script src="data/ovem-schema.js"></script>
 <script src="data/ovem-agent.js"></script>
+<script src="data/ovem-evals.js"></script>
 <script src="runtime/ovem-trace.js"></script>
 <script src="runtime/ovem-store.js"></script>
 <script src="runtime/ovem-tools.js"></script>
 <script src="runtime/ovem-executor.js"></script>
+<script src="runtime/ovem-eval.js"></script>
 <script src="runtime/ovem-ui.js"></script>
+<script src="runtime/ovem-eval-ui.js"></script>
 </body>
 </html>
 

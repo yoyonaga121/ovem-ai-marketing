@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-20T08:16:00.000Z",
+  "A5-03": {
+    "runId": "R-0056",
+    "status": "failed",
+    "artifacts": 0,
+    "cost": 0.1084,
+    "pct": 108,
+    "budget": 0.1,
+    "decision": "hitl.reject",
+    "plan": ["ok", "ok", "ok", "ok", "fail", "blocked", "blocked"]
+  },
+  "A5-04": {
+    "online": false,
+    "ms": 15952,
+    "runId": "R-E-01",
+    "state": "review",
+    "cost": 0.1168,
+    "artifacts": 3,
+    "trace": 30,
+    "candidate": true
+  },
+  "A5-05": {
+    "steps": 5,
+    "totalSec": 318,
+    "path": "docs/演示脚本_5分钟.md"
+  },
+  "store": {
+    "missions": 23,
+    "runs": 56,
+    "traces": 1664,
+    "artifacts": 138,
+    "reviews": 14,
+    "evals": 40
+  }
+}

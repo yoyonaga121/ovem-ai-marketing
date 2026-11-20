@@ -37,6 +37,7 @@ OVEM站点_v2.0/
 │  ├─ ovem-data.js         # 单一数据源（meta + brand/hero/metrics/goals/channels/products/scenes）
 │  ├─ ovem-schema.js       # 字段契约（7 个配置分区 / 17 页定义 / 5 条跨字段规则 / 每字段 consumers）
 │  ├─ ovem-agent.js        # v3.0：Agent 配置（3 Agent / 9 工具 / 4 Prompt / 6 护栏 / 17 页血缘）
+│  ├─ ovem-evals.js        # v3.0-S5：20 条评测任务 + v1.1.0 / v1.2.0 两版 rubric
 │  └─ ovem-agent.schema.js # v3.0：Agent 字段契约 + R1–R7 七条跨字段规则
 ├─ runtime/                # v3.0：零 DOM 运行时 + 壳层渲染 + 成果层联动
 │  ├─ ovem-trace.js        # 事件总线（11 类事件 / 单调 seq / 成本累加）
@@ -44,9 +45,12 @@ OVEM站点_v2.0/
 │  ├─ ovem-tools.js        # 9 工具 mock（可注入延迟、单价与失败）
 │  ├─ ovem-executor.js     # 计划 / 执行 / 裁决 / 重试 / 预算闸门 / 人工审批回调
 │  ├─ ovem-ui.js           # 工作台壳层：渲染 Plan / Trace / Artifacts、闸门弹窗、A3 自检
+│  ├─ ovem-eval.js         # S5：批量执行 20 条 / 双版本复算 / 40 条 evals 落库
+│  ├─ ovem-eval-ui.js      # S5：评测面板（进度 / KPI / 回归 / 失败样例 / 明细回放）
 │  ├─ ovem-lineage.js      # 成果层：17 页血缘条 / P0 run 摘要 / P4 产物 / P7 渠道状态 / A4 自检
 │  └─ selftest.js          # A2 七条运行时用例
 ├─ docs/v3/                # 阶段报告（reports/）与验收证据（evidence/）+ 三张架构图
+├─ docs/演示脚本_5分钟.md    # S5：5 步演示动作、台词、预期数字与 5:18 计时表
 ├─ tools/                  # 迁移、自检与验收脚本（保留作证据，可重跑）
 │  ├─ migrate-v1-data.js   # 从 v1 HTML 内联 const 块抽取数据 → data/ovem-data.js
 │  ├─ refactor-v2.js       # 按标记位把 v1 前台改造成 v2 数据层
@@ -56,6 +60,7 @@ OVEM站点_v2.0/
 │  ├─ verify-runtime.js    # S2：运行时静态核对 + 浏览器 A2 结果合并
 │  ├─ verify-workbench.js  # S3：壳层静态核对 + 浏览器 A3 结果合并
 │  ├─ verify-lineage.js    # S4：血缘静态核对 + A4/后台结果合并
+│  ├─ verify-evals.js      # S5：评测集 / 回归 / 闸门 / 离线 / 演示脚本核对
 │  └─ selftest.html        # 浏览器自检台（A0 基线 / A2 运行时）
 ├─ assets/                 # 品牌视觉、产品设定图、渠道物料、宣传片
 └─ _backup/ _preview/ _tools/  # 本地工作目录（已 gitignore，不参与部署）
@@ -106,11 +111,11 @@ OVEM站点_v2.0/
 
 ---
 
-## 七、v3.0 · Agent 工作台改造（进行中）
+## 七、v3.0 · Agent 工作台改造（已完成）
 
 完整路线见仓库根目录 `../04_Agent工作台_方案A执行路线图.md`（六阶段 / 12 工作日 / 37 条验收用例）。
 
-**当前进度：S0 基线冻结（5/5）、S1 Agent 配置层（6/6 + A1-07）、S2 运行时与工具层（7/7 + 静态 8/8）、S3 工作台壳层（8/8 + 静态 9/9）、S4 成果层联动（5/5 + 静态 9/9）已完成**
+**当前进度：S0 基线冻结（5/5）、S1 Agent 配置层（6/6 + A1-07）、S2 运行时与工具层（7/7 + 静态 8/8）、S3 工作台壳层（8/8 + 静态 9/9）、S4 成果层联动（5/5 + 静态 9/9）、S5 评测与演示（5/5 + 静态 10/10）已完成**
 
 | 阶段 | 内容 | commit / tag | 报告 | 证据 |
 |---|---|---|---|---|
@@ -118,7 +123,8 @@ OVEM站点_v2.0/
 | S1 | Agent 配置层（第 12 分区） | `0d31779` / `v3.0-s1` | `docs/v3/reports/S1.json` | `docs/v3/evidence/S1_A1-07_agent.png` |
 | S2 | 运行时与工具层（5 模块 + A2 自检） | `d1383d8` / `v3.0-s2` | `docs/v3/reports/S2.json` | `docs/v3/evidence/S2_A2-04_run.png` |
 | S3 | 工作台壳层（6 视图 / 3 预设 / 闸门 / A3 自检） | `88c6ddb` / `v3.0-s3` | `docs/v3/reports/S3.json` + `S3.browser.json` | `docs/v3/evidence/S3_*.png`（8 张） |
-| S4 | 成果层联动（17 页血缘 / P4 / P7 / 后台运行记录） | 见 tag `v3.0-s4` | `docs/v3/reports/S4.json` + `S4.browser.json` | `docs/v3/evidence/S4_*.png`（5 张） |
+| S4 | 成果层联动（17 页血缘 / P4 / P7 / 后台运行记录） | `66cdd47` / `v3.0-s4` | `docs/v3/reports/S4.json` + `S4.browser.json` | `docs/v3/evidence/S4_*.png`（5 张） |
+| S5 | 评测与演示（20 条任务 / 两版 Prompt 回归 / 闸门 / 离线 replay / 5 分钟脚本） | `待回填` / `v3.0-s5` | `docs/v3/reports/S5.json` + `S5.browser.json` | `docs/v3/evidence/S5_*.png`（6 张） |
 
 **Agent 配置（S1 交付）**
 
@@ -144,9 +150,13 @@ node tools/verify-workbench.js
 # S4：成果层联动核对（静态 9 项 + A4 5/5 + 后台运行记录对照）
 node tools/verify-lineage.js
 
+# S5：评测核对（20 条任务 / 100% 候选通过 / 45%→100% 回归 / 闸门 / 离线 replay / 5:18 脚本）
+node tools/verify-evals.js
+
 # 浏览器：tools/selftest.html?suite=A0（基线建库）；?suite=A2（9 工具 / 7 步 / 重试 / 闸门 / 对账）
 # 浏览器：workbench.html?selftest=1（A3 八条；右下角徽标可点击导出 S3.browser.json）
 # 浏览器：index.html?selftest=1（A4 五条；右下角徽标可点击导出 S4.browser.json）
+# 浏览器：workbench.html → 评测（A5 五条；跑全量 20 条后导出 S5.browser.json）
 ```
 
 **运行态口径（S2 落地）**
@@ -177,7 +187,17 @@ node tools/verify-lineage.js
 - 后台「Agent 管理 · 运行记录」只读 IndexedDB：条数、runId、状态、步骤 / 调用、成本、开始时间，与前台 / store 三方对齐。
 - 验收：A4 **5/5**、静态 **9/9**；最新 run `R-0034`（review / ¥0.1168 / 3 artifacts）；后台 34 条、`console error=0`；截图 5 张见 `docs/v3/evidence/S4_*.png`。
 
-**后续阶段**：S5 评测与演示编排。
+**S5 评测与演示（已交付）**
+
+- `data/ovem-evals.js`：20 条任务覆盖 p01–p20、四组渠道组合、固定 seed；每条预算 ¥0.2，`expect` 固定渠道数 / 比例 / 主色 / 安全区。
+- `runtime/ovem-eval.js`：顺序跑 20 条，复用同一执行器（7 步 / 9 调用）；同一批 artifacts 用 v1.1.0 / v1.2.0 rubric 复算；结果落 `evals` store 40 条（20×2）。
+- 评测面板：跑批进度、baseline 45% → candidate 100%、+55pp、11 条修复 / 0 条回归、失败样例、20 行明细、点击回放、导出 JSON。
+- 实测：candidate **20/20（100%）**；baseline **9/20（45%）**；单任务 ¥0.1168，总成本 ¥2.336；跑批 1.4–1.5s（speed 300/800）。
+- 护栏：预算 ¥0.10、pct=108%、`hitl.reject` → `failed`，artifact=0；offline + replay 跑完 `R-E-01`（30 events / 3 artifacts）。
+- 演示：`docs/演示脚本_5分钟.md` 5 步、总时长 **5:18**，逐段给出动作、台词、预期数字。
+- 验收：A5 **5/5**、静态 **10/10**；截图 6 张见 `docs/v3/evidence/S5_*.png`，报告 `S5.json` / `S5.browser.json` / `S5.manual.json`。
+
+**后续阶段**：方案 A 已完成；方案 B（真实 provider + 发布链路 + 多租户）待启动。
 
 
 

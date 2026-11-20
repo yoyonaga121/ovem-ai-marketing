@@ -1,0 +1,428 @@
+{
+  "suite": "A5",
+  "generatedAt": "2026-11-20T08:15:14.346Z",
+  "dataset": {
+    "version": "v3.0.0",
+    "count": 20,
+    "created": "2026-11-20"
+  },
+  "prompt": {
+    "base": "v1.1.0",
+    "candidate": "v1.2.0"
+  },
+  "durationMs": 1410,
+  "baseline": {
+    "total": 20,
+    "passed": 9,
+    "failed": 11,
+    "passRate": 45,
+    "avgSteps": 7,
+    "avgCost": 0.1168,
+    "totalCost": 2.336
+  },
+  "candidate": {
+    "total": 20,
+    "passed": 20,
+    "failed": 0,
+    "passRate": 100,
+    "avgSteps": 7,
+    "avgCost": 0.1168,
+    "totalCost": 2.336
+  },
+  "regression": {
+    "passRate": 55,
+    "avgSteps": 0,
+    "avgCost": 0,
+    "fixed": 11,
+    "broken": 0
+  },
+  "tasks": [
+    {
+      "taskId": "E-01",
+      "title": "P01 旗舰物料包 · A",
+      "productId": "p01",
+      "channels": [
+        "c01",
+        "c02",
+        "c06"
+      ],
+      "runId": "R-E-01",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-02",
+      "title": "P02 新品首屏 · B",
+      "productId": "p02",
+      "channels": [
+        "c01",
+        "c03",
+        "c08"
+      ],
+      "runId": "R-E-02",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c08 主色 36.64% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-03",
+      "title": "P03 社媒种草 · C",
+      "productId": "p03",
+      "channels": [
+        "c02",
+        "c06",
+        "c08"
+      ],
+      "runId": "R-E-03",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-04",
+      "title": "P04 电商详情 · D",
+      "productId": "p04",
+      "channels": [
+        "c01",
+        "c04",
+        "c06"
+      ],
+      "runId": "R-E-04",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c06 主色 36.65% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-05",
+      "title": "P05 私域欢迎页 · A",
+      "productId": "p05",
+      "channels": [
+        "c01",
+        "c02",
+        "c06"
+      ],
+      "runId": "R-E-05",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-06",
+      "title": "P06 直播间贴片 · B",
+      "productId": "p06",
+      "channels": [
+        "c01",
+        "c03",
+        "c08"
+      ],
+      "runId": "R-E-06",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c03 主色 35.13% < 37%",
+        "c08 主色 36.79% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-07",
+      "title": "P07 渠道规范组 · C",
+      "productId": "p07",
+      "channels": [
+        "c02",
+        "c06",
+        "c08"
+      ],
+      "runId": "R-E-07",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-08",
+      "title": "P08 投放素材组 · D",
+      "productId": "p08",
+      "channels": [
+        "c01",
+        "c04",
+        "c06"
+      ],
+      "runId": "R-E-08",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c01 主色 36.84% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-09",
+      "title": "P09 私域 SOP · A",
+      "productId": "p09",
+      "channels": [
+        "c01",
+        "c02",
+        "c06"
+      ],
+      "runId": "R-E-09",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c02 主色 35.58% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-10",
+      "title": "P10 产线物料 · B",
+      "productId": "p10",
+      "channels": [
+        "c01",
+        "c03",
+        "c08"
+      ],
+      "runId": "R-E-10",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c03 主色 36.17% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-11",
+      "title": "P11 复盘图表 · C",
+      "productId": "p11",
+      "channels": [
+        "c02",
+        "c06",
+        "c08"
+      ],
+      "runId": "R-E-11",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-12",
+      "title": "P12 PRD 封面 · D",
+      "productId": "p12",
+      "channels": [
+        "c01",
+        "c04",
+        "c06"
+      ],
+      "runId": "R-E-12",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-13",
+      "title": "P13 单品入口 · A",
+      "productId": "p13",
+      "channels": [
+        "c01",
+        "c02",
+        "c06"
+      ],
+      "runId": "R-E-13",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-14",
+      "title": "P14 品类机会 · B",
+      "productId": "p14",
+      "channels": [
+        "c01",
+        "c03",
+        "c08"
+      ],
+      "runId": "R-E-14",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-15",
+      "title": "P15 定价卡 · C",
+      "productId": "p15",
+      "channels": [
+        "c02",
+        "c06",
+        "c08"
+      ],
+      "runId": "R-E-15",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": true,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": []
+    },
+    {
+      "taskId": "E-16",
+      "title": "P16 AI 方法论 · D",
+      "productId": "p16",
+      "channels": [
+        "c01",
+        "c04",
+        "c06"
+      ],
+      "runId": "R-E-16",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c04 主色 35.12% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-17",
+      "title": "P17 家庭场景 · A",
+      "productId": "p17",
+      "channels": [
+        "c01",
+        "c02",
+        "c06"
+      ],
+      "runId": "R-E-17",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c01 主色 35.52% < 37%",
+        "c02 主色 36.46% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-18",
+      "title": "P18 宠物场景 · B",
+      "productId": "p18",
+      "channels": [
+        "c01",
+        "c03",
+        "c08"
+      ],
+      "runId": "R-E-18",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c01 主色 36.44% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-19",
+      "title": "P19 清洁场景 · C",
+      "productId": "p19",
+      "channels": [
+        "c02",
+        "c06",
+        "c08"
+      ],
+      "runId": "R-E-19",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c08 主色 35.58% < 37%"
+      ]
+    },
+    {
+      "taskId": "E-20",
+      "title": "P20 旗舰封版 · D",
+      "productId": "p20",
+      "channels": [
+        "c01",
+        "c04",
+        "c06"
+      ],
+      "runId": "R-E-20",
+      "costCny": 0.1168,
+      "steps": 7,
+      "artifacts": 3,
+      "base": false,
+      "candidate": true,
+      "issues": [],
+      "baseIssues": [
+        "c06 主色 35.73% < 37%"
+      ]
+    }
+  ],
+  "stage": "S5",
+  "title": "评测 · 护栏 · 演示编排",
+  "note": "壳页评测面板「跑全量 20 条」导出；同一批 artifacts 用 v1.1.0 / v1.2.0 复算"
+}

@@ -1,0 +1,197 @@
+{
+  "stage": "S5",
+  "title": "评测 · 护栏 · 演示编排",
+  "suite": "A5",
+  "at": "2026-11-20T08:18:25.226Z",
+  "git": {
+    "ref": "2b0d7df",
+    "tag": "v3.0-s4",
+    "dirty": true
+  },
+  "source": {
+    "dataset": "data/ovem-evals.js",
+    "evaluator": "runtime/ovem-eval.js",
+    "panel": "runtime/ovem-eval-ui.js",
+    "shell": "workbench.html",
+    "browser": "docs/v3/reports/S5.browser.json",
+    "manual": "docs/v3/reports/S5.manual.json",
+    "demo": "docs/演示脚本_5分钟.md"
+  },
+  "metrics": {
+    "tasks": 20,
+    "baselinePass": 9,
+    "baselineRate": 45,
+    "candidatePass": 20,
+    "candidateRate": 100,
+    "fixed": 11,
+    "broken": 0,
+    "avgSteps": 7,
+    "avgCost": 0.1168,
+    "totalCost": 2.336,
+    "durationMs": 1410,
+    "evalsRecords": 40,
+    "gateRun": "R-0056",
+    "gateStatus": "failed",
+    "offlineRun": "R-E-01",
+    "demoTotalSec": 318
+  },
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "pending": 0
+  },
+  "cases": [
+    {
+      "id": "A5-01",
+      "title": "20 条任务执行完成，passRate ≥ 90%",
+      "status": "pass",
+      "detail": "candidate=20/20 · passRate=100% · 目标 ≥90%"
+    },
+    {
+      "id": "A5-02",
+      "title": "Prompt v1.1.0 → v1.2.0 回归报告生成",
+      "status": "pass",
+      "detail": "baseline=9/20 (45%) → candidate=20/20 (100%) · fixed=11 · broken=0"
+    },
+    {
+      "id": "A5-03",
+      "title": "预算超限 + hitl.reject → failed 且 artifact=0",
+      "status": "pass",
+      "detail": "run=R-0056 · pct=108% · status=failed · artifacts=0 · plan=ok/ok/ok/ok/fail/blocked/blocked"
+    },
+    {
+      "id": "A5-04",
+      "title": "offline + replay 跑完 1 条 Mission",
+      "status": "pass",
+      "detail": "online=false · run=R-E-01 · state=review · trace=30 · artifacts=3 · 15952ms"
+    },
+    {
+      "id": "A5-05",
+      "title": "演示 5 步走查，总时长 ≤ 5:30",
+      "status": "pass",
+      "detail": "steps=5 · total=5:18 · ≤5:30"
+    }
+  ],
+  "staticChecks": [
+    {
+      "id": "S5-01",
+      "title": "评测数据 / 执行器 / 面板存在且语法通过",
+      "ok": true,
+      "detail": "files=4/4 · syntax=3/3 通过"
+    },
+    {
+      "id": "S5-02",
+      "title": "20 条任务 × 20 个产品 × 四组渠道，固定 seed",
+      "ok": true,
+      "detail": "tasks=20 · products=20/20 · seeds=20/20 · channelGroups=4/4 · missingProducts=0"
+    },
+    {
+      "id": "S5-03",
+      "title": "Prompt 两版 rubric：37% → 35%，QA / 安全区不变",
+      "ok": true,
+      "detail": "base=37% · candidate=35% · minScore=80 · safeArea=48px"
+    },
+    {
+      "id": "S5-04",
+      "title": "evals store 已建（keyPath=id，3 索引，支持 removeMany）",
+      "ok": true,
+      "detail": "store=evals · keyPath=id · indexes=taskId/promptVersion/passed · removeMany=✓"
+    },
+    {
+      "id": "S5-05",
+      "title": "评测面板接入：按钮 / 进度 / 双版本 / 明细 / 导出",
+      "ok": true,
+      "detail": "scripts=11 · eval order=✓ · panel=6/6"
+    },
+    {
+      "id": "S5-06",
+      "title": "S5.browser.json：20 条结果完整，任务 ID 与数据集一致",
+      "ok": true,
+      "detail": "tasks=20/20 · ids=20/20 · candidate=20/20"
+    },
+    {
+      "id": "S5-07",
+      "title": "6 张验收截图归档",
+      "ok": true,
+      "detail": "6/6 张存在"
+    },
+    {
+      "id": "S5-08",
+      "title": "5 分钟脚本：5 步齐全，总时长 ≤ 5:30",
+      "ok": true,
+      "detail": "doc=✓ · steps=5/5 · totalSec=318"
+    },
+    {
+      "id": "S5-09",
+      "title": "评测结果落库 40 条（20 任务 × 2 版本）",
+      "ok": true,
+      "detail": "evals=40/40 · runs=56"
+    },
+    {
+      "id": "S5-10",
+      "title": "评测视图不再是 S5 占位卡",
+      "ok": true,
+      "detail": "placeholder=已移除"
+    }
+  ],
+  "browser": {
+    "status": "pass",
+    "note": "20 条评测在壳页顺序跑完；同一批 artifacts 用 v1.1.0 / v1.2.0 复算；闸门与离线 replay 单独实测",
+    "checklist": [
+      "20/20 candidate · 100%",
+      "baseline 9/20 · 45%",
+      "+55pp · 11 fixed · 0 broken",
+      "gate reject failed / 0 artifacts",
+      "offline replay review / 3 artifacts",
+      "5 步脚本 5:18"
+    ]
+  },
+  "artifacts": [
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S5_A5-01_eval.png",
+      "note": "评测总览 20/20 · 45% → 100%"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S5_A5-02_regression.png",
+      "note": "Prompt v1.1.0 → v1.2.0 回归对比"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S5_A5-03_gate.png",
+      "note": "预算闸门 108% · 待人工决策"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S5_A5-03_reject.png",
+      "note": "hitl.reject 决策回执"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S5_A5-03_failed.png",
+      "note": "驳回后 failed · step6/7 BLOCKED · 0 产物"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S5_A5-04_offline.png",
+      "note": "offline + replay 跑完 R-E-01 · 30 events / 3 产物"
+    },
+    {
+      "type": "data",
+      "path": "docs/v3/reports/S5.browser.json",
+      "note": "20 条评测原始报告（壳页导出）"
+    },
+    {
+      "type": "data",
+      "path": "docs/v3/reports/S5.manual.json",
+      "note": "A5-03 / A5-04 / A5-05 实测数据"
+    },
+    {
+      "type": "doc",
+      "path": "docs/演示脚本_5分钟.md",
+      "note": "5 步演示脚本 + 计时总表"
+    }
+  ]
+}
