@@ -805,6 +805,7 @@ th.sortable:hover{color:var(--brand)}
         <span class="crumb-name" id="crumbName">系统总览</span>
       </div>
       <div class="top-chips">
+        <a class="demo-entry" href="workbench.html" style="text-decoration:none" title="打开 Agent 工作台">Agent 工作台</a>
         <a class="demo-entry" href="OVEM配置后台.html" target="_blank" rel="noopener" style="text-decoration:none" title="打开 OVEM 配置后台">配置后台</a>
         <button class="demo-entry" id="demoBtn" title="按 D 标准演示 · F 60 秒版 · 空格暂停 · ESC 退出">演示模式</button>
         <span class="chip chip-muted" id="chipVersion">样张 v0.2</span>
@@ -3324,6 +3325,13 @@ document.addEventListener("keydown", e=>{
   if(!demo.on && (e.key === "f" || e.key === "F")){ demoStart(DEMO_FAST); }
 });
 </script>
+
+<!-- v3.0 成果层联动：只读 IndexedDB，给 17 页注入血缘条与本次 run 产物 -->
+<script src="data/ovem-schema.js"></script>
+<script src="data/ovem-agent.js"></script>
+<script src="runtime/ovem-trace.js"></script>
+<script src="runtime/ovem-store.js"></script>
+<script src="runtime/ovem-lineage.js"></script>
 
 </body>
 </html>

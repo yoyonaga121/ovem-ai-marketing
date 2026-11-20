@@ -38,12 +38,13 @@ OVEM站点_v2.0/
 │  ├─ ovem-schema.js       # 字段契约（7 个配置分区 / 17 页定义 / 5 条跨字段规则 / 每字段 consumers）
 │  ├─ ovem-agent.js        # v3.0：Agent 配置（3 Agent / 9 工具 / 4 Prompt / 6 护栏 / 17 页血缘）
 │  └─ ovem-agent.schema.js # v3.0：Agent 字段契约 + R1–R7 七条跨字段规则
-├─ runtime/                # v3.0：零 DOM 运行时 + 壳层渲染
+├─ runtime/                # v3.0：零 DOM 运行时 + 壳层渲染 + 成果层联动
 │  ├─ ovem-trace.js        # 事件总线（11 类事件 / 单调 seq / 成本累加）
 │  ├─ ovem-store.js        # IndexedDB 封装（ovem-os-v3 v1 · 6 store / 18 索引）
 │  ├─ ovem-tools.js        # 9 工具 mock（可注入延迟、单价与失败）
 │  ├─ ovem-executor.js     # 计划 / 执行 / 裁决 / 重试 / 预算闸门 / 人工审批回调
 │  ├─ ovem-ui.js           # 工作台壳层：渲染 Plan / Trace / Artifacts、闸门弹窗、A3 自检
+│  ├─ ovem-lineage.js      # 成果层：17 页血缘条 / P0 run 摘要 / P4 产物 / P7 渠道状态 / A4 自检
 │  └─ selftest.js          # A2 七条运行时用例
 ├─ docs/v3/                # 阶段报告（reports/）与验收证据（evidence/）+ 三张架构图
 ├─ tools/                  # 迁移、自检与验收脚本（保留作证据，可重跑）
@@ -54,6 +55,7 @@ OVEM站点_v2.0/
 │  ├─ verify-agent-config.js # S1：Agent 配置核对（A1 套件 + R1–R7 矩阵）
 │  ├─ verify-runtime.js    # S2：运行时静态核对 + 浏览器 A2 结果合并
 │  ├─ verify-workbench.js  # S3：壳层静态核对 + 浏览器 A3 结果合并
+│  ├─ verify-lineage.js    # S4：血缘静态核对 + A4/后台结果合并
 │  └─ selftest.html        # 浏览器自检台（A0 基线 / A2 运行时）
 ├─ assets/                 # 品牌视觉、产品设定图、渠道物料、宣传片
 └─ _backup/ _preview/ _tools/  # 本地工作目录（已 gitignore，不参与部署）
@@ -108,7 +110,7 @@ OVEM站点_v2.0/
 
 完整路线见仓库根目录 `../04_Agent工作台_方案A执行路线图.md`（六阶段 / 12 工作日 / 37 条验收用例）。
 
-**当前进度：S0 基线冻结（5/5）、S1 Agent 配置层（6/6 + A1-07）、S2 运行时与工具层（7/7 + 静态 8/8）、S3 工作台壳层（8/8 + 静态 9/9）已完成**
+**当前进度：S0 基线冻结（5/5）、S1 Agent 配置层（6/6 + A1-07）、S2 运行时与工具层（7/7 + 静态 8/8）、S3 工作台壳层（8/8 + 静态 9/9）、S4 成果层联动（5/5 + 静态 9/9）已完成**
 
 | 阶段 | 内容 | commit / tag | 报告 | 证据 |
 |---|---|---|---|---|
@@ -116,6 +118,7 @@ OVEM站点_v2.0/
 | S1 | Agent 配置层（第 12 分区） | `0d31779` / `v3.0-s1` | `docs/v3/reports/S1.json` | `docs/v3/evidence/S1_A1-07_agent.png` |
 | S2 | 运行时与工具层（5 模块 + A2 自检） | `d1383d8` / `v3.0-s2` | `docs/v3/reports/S2.json` | `docs/v3/evidence/S2_A2-04_run.png` |
 | S3 | 工作台壳层（6 视图 / 3 预设 / 闸门 / A3 自检） | `88c6ddb` / `v3.0-s3` | `docs/v3/reports/S3.json` + `S3.browser.json` | `docs/v3/evidence/S3_*.png`（8 张） |
+| S4 | 成果层联动（17 页血缘 / P4 / P7 / 后台运行记录） | 见 tag `v3.0-s4` | `docs/v3/reports/S4.json` + `S4.browser.json` | `docs/v3/evidence/S4_*.png`（5 张） |
 
 **Agent 配置（S1 交付）**
 
@@ -138,8 +141,12 @@ node tools/verify-runtime.js
 # S3：工作台壳层核对（静态 9 项 + 浏览器 A3 8/8 合并）
 node tools/verify-workbench.js
 
+# S4：成果层联动核对（静态 9 项 + A4 5/5 + 后台运行记录对照）
+node tools/verify-lineage.js
+
 # 浏览器：tools/selftest.html?suite=A0（基线建库）；?suite=A2（9 工具 / 7 步 / 重试 / 闸门 / 对账）
 # 浏览器：workbench.html?selftest=1（A3 八条；右下角徽标可点击导出 S3.browser.json）
+# 浏览器：index.html?selftest=1（A4 五条；右下角徽标可点击导出 S4.browser.json）
 ```
 
 **运行态口径（S2 落地）**
@@ -163,7 +170,14 @@ node tools/verify-workbench.js
 - `mock / replay` 可切换，provider 标签与工具延迟同步变化；`?selftest=1` 跑 A3 八条，结果写入 `window.__WB_SELFTEST__`，右下角徽标可点击导出 JSON。
 - 验收：A3 **8/8**、静态 **9/9**；正常 ¥0.1168、重试 ¥0.2136、闸门批准后 ¥0.1168；证据 8 张见 `docs/v3/evidence/S3_*.png`。
 
-**后续阶段**：S4 成果层联动 → S5 评测与演示编排。
+**S4 成果层（已交付）**
+
+- `runtime/ovem-lineage.js` 只读 `ovem-os-v3`：17 页各注入一条血缘条（工具链 + 最新 run + 状态），每页有且仅有一条，重复渲染先删后插。
+- P0 增「最近一次 Agent 运行」摘要：runId、时间、7 步 / 9 调用、成本、产物数、耗时；P4 增本次 run 三张产物卡（`data-run-id` 与最新 run 一致）；P7 增渠道状态条（`review → 待审`、`done → 在投`、`retired → 退役`）。
+- 后台「Agent 管理 · 运行记录」只读 IndexedDB：条数、runId、状态、步骤 / 调用、成本、开始时间，与前台 / store 三方对齐。
+- 验收：A4 **5/5**、静态 **9/9**；最新 run `R-0034`（review / ¥0.1168 / 3 artifacts）；后台 34 条、`console error=0`；截图 5 张见 `docs/v3/evidence/S4_*.png`。
+
+**后续阶段**：S5 评测与演示编排。
 
 
 

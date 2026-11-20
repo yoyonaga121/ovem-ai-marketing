@@ -237,6 +237,7 @@ input:disabled{background:#F8FAFC;color:var(--muted)}
 <script src="data/ovem-schema.js"></script>
 <script src="data/ovem-agent.js"></script>
 <script src="data/ovem-agent.schema.js"></script>
+<script src="runtime/ovem-store.js"></script>
 <script>
 /* ============================================================
    OVEM 配置中台 v2.0
@@ -619,6 +620,7 @@ function render(){
   el("content").innerHTML =
     '<div class="shead"><div><h1>' + esc(title) + "</h1>" + (desc ? "<p>" + esc(desc) + "</p>" : "") + "</div></div>" + body;
   refreshBadges();
+  if(view === "agent") loadAgentRuns();
 }
 
 /* ---------------- 概览 ---------------- */
@@ -1138,6 +1140,10 @@ function vAgent(){
           + '<td><span class="chip">' + v.length + "</span></td></tr>";
       }).join("") + "</tbody></table></div></div>"
 
+    + '<div class="card"><div class="card-h"><div><h3>运行记录</h3><p>只读 IndexedDB：工作台每跑一条 Mission，这里同步出现 run、成本与时间，不写回配置。</p></div>'
+      + '<div class="right"><span class="chip" id="agentRunCount">读取中</span></div></div>'
+      + '<div class="card-b"><div id="agentRuns" data-count="0"><div class="empty">读取 ovem-os-v3 · runs…</div></div></div></div>'
+
     + '<div class="card"><div class="card-h"><div><h3>发布与快照</h3><p>Agent 配置单独发布、单独留档，不跟业务数据混在一次提交里。</p></div>'
       + '<div class="right"><span class="chip ' + (diffs.length ? "dirty" : "ok") + '">' + (diffs.length ? "待发布 " + diffs.length + " 项" : "与已发布一致") + "</span></div></div>"
       + '<div class="card-b">'
@@ -1166,6 +1172,45 @@ function vAgent(){
         : '<div class="empty">还没有 Agent 快照。建议在每次发布 Agent 配置前存一份。</div>')
       + "</div></div>";
 }
+
+/* 运行记录只读 IndexedDB；不参与配置 diff、不写回业务数据。 */
+async function loadAgentRuns(){
+  const host = document.getElementById("agentRuns");
+  if(!host) return;
+  if(!window.OVEM_RT || !window.OVEM_RT.Store){
+    host.innerHTML = '<div class="empty">运行时 Store 未加载；请确认 runtime/ovem-store.js 已引入。</div>';
+    return;
+  }
+  try{
+    const runs = await window.OVEM_RT.Store.list("runs");
+    runs.sort((a, b) => String(b.startedAt || "").localeCompare(String(a.startedAt || "")) || String(b.id || "").localeCompare(String(a.id || "")));
+    host.dataset.count = String(runs.length);
+    window.__AGENT_RUNS__ = { count: runs.length, latest: runs[0] || null };
+    const chip = document.getElementById("agentRunCount");
+    if(chip) chip.textContent = runs.length + " 条 run";
+    if(!runs.length){
+      host.innerHTML = '<div class="empty">还没有 run。打开 <a href="workbench.html" style="color:#2563EB">Agent 工作台</a> 跑一条 Mission，刷新本页即可看到。</div>';
+      return;
+    }
+    host.innerHTML = '<table class="agtable"><thead><tr><th>RUN</th><th>MISSION</th><th>状态</th><th>步骤 / 调用</th><th>成本</th><th>开始</th></tr></thead><tbody>'
+      + runs.slice(0, 8).map(r => {
+        const st = r.stats || {};
+        const pill = r.status === "review" ? "dirty" : (r.status === "failed" ? "err" : (r.status === "blocked" ? "dirty" : "ok"));
+        return '<tr data-run-row data-run-id="' + esc(r.id) + '" data-cost="' + esc(String(st.costCny == null ? "" : st.costCny)) + '" data-started="' + esc(r.startedAt || "") + '">'
+          + '<td><code>' + esc(r.id) + '</code></td>'
+          + '<td>' + esc(r.missionId || "—") + '</td>'
+          + '<td><span class="chip ' + pill + '">' + esc(r.status) + '</span></td>'
+          + '<td>' + Number(st.steps || 0) + ' / ' + Number(st.toolCalls || 0) + '</td>'
+          + '<td>¥' + Number(st.costCny || 0).toFixed(4) + '</td>'
+          + '<td style="font-size:10.5px;color:#64748B">' + esc(r.startedAt || "—") + '</td></tr>';
+      }).join("")
+      + "</tbody></table>"
+      + '<div class="sub" style="margin-top:9px">显示最近 ' + Math.min(runs.length, 8) + ' / ' + runs.length + ' 条；数据源 <code>ovem-os-v3 · runs</code>，刷新页面重新读取。</div>';
+  }catch(e){
+    host.innerHTML = '<div class="empty">读取失败：' + esc(String((e && e.message) || e)) + '</div>';
+  }
+}
+
 function agentFileText(data){
   const stamp = new Date().toISOString();
   return "/* ============================================================\n"

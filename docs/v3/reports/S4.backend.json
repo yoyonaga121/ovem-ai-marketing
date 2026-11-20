@@ -1,0 +1,21 @@
+{
+  "suite": "A4-backend",
+  "generatedAt": "2026-11-20T07:58:00.000Z",
+  "source": "OVEM配置后台.html · Agent 管理 · 运行记录（只读 ovem-os-v3 · runs）",
+  "count": 34,
+  "shown": 8,
+  "latest": {
+    "id": "R-0034",
+    "missionId": "M-261120-01",
+    "status": "review",
+    "cost": 0.1168,
+    "steps": 7,
+    "toolCalls": 9,
+    "startedAt": "2026-11-20T07:54:20.025Z"
+  },
+  "rows": [
+    { "id": "R-0034", "cost": 0.1168, "startedAt": "2026-11-20T07:54:20.025Z", "status": "review" },
+    { "id": "R-0033", "cost": 0.1084, "startedAt": "2026-11-20T07:43:52.692Z", "status": "failed" },
+    { "id": "R-0032", "cost": 0.1168, "startedAt": "2026-11-20T07:43:30.760Z", "status": "review" }
+  ]
+}

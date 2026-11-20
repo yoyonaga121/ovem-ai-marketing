@@ -1,0 +1,58 @@
+{
+  "suite": "A4",
+  "generatedAt": "2026-11-20T07:57:45.329Z",
+  "cases": [
+    {
+      "id": "A4-01",
+      "name": "17/17 页血缘条存在且每页仅一条",
+      "ok": true,
+      "detail": "strips=17/17 · unique=17/17 · one-per-page=true"
+    },
+    {
+      "id": "A4-02",
+      "name": "P4 产物卡 runId = 最新 run",
+      "ok": true,
+      "detail": "latest=R-0034 · cards=3 · runId 全一致"
+    },
+    {
+      "id": "A4-03",
+      "name": "P7 渠道状态由 artifacts.status 派生",
+      "ok": true,
+      "detail": "artifacts=3 · p7-status-count=3 · runId=R-0034"
+    },
+    {
+      "id": "A4-04",
+      "name": "P0 摘要与 store 最新 run 同源",
+      "ok": true,
+      "detail": "runs=34 · latest=R-0034 · cost=¥0.1168"
+    },
+    {
+      "id": "A4-05",
+      "name": "页面无运行时异常",
+      "ok": true,
+      "detail": "errors=0 · clean"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0
+  },
+  "runs": {
+    "count": 34,
+    "latest": {
+      "id": "R-0034",
+      "state": "review",
+      "cost": 0.1168,
+      "startedAt": "2026-11-20T07:54:20.025Z",
+      "endedAt": "2026-11-20T07:54:20.875Z"
+    }
+  },
+  "metrics": {
+    "strips": 17,
+    "pages": 17,
+    "artifacts": 3,
+    "p7Statuses": 3,
+    "errors": 0
+  }
+}
