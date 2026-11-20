@@ -13,6 +13,9 @@
   };
 
   function isHttp() { return /^https?:/.test(location.protocol); }
+  function isStaticDeploy() {
+    return !isHttp() || /\.github\.io$/i.test(location.hostname);
+  }
   function q(id) { return document.getElementById(id); }
   function setText(id, v) { var e = q(id); if (e) e.textContent = v; }
 
@@ -47,7 +50,9 @@
   async function boot() {
     if (S.booted) return S;
     S.booted = true;
-    if (!isHttp()) { renderSession(); return S; }
+    /* GitHub Pages / file:// 是静态展示：不探测 /api/health，避免 404 控制台噪声；
+       工作台仍可用 mock/replay，只是 live 与登录态不可用。 */
+    if (isStaticDeploy()) { renderSession(); return S; }
     try {
       await request("/api/health");
       var me = await request("/api/auth/me");

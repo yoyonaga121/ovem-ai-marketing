@@ -903,7 +903,7 @@ th.sortable:hover{color:var(--brand)}
                     <button type="button" class="is-active" data-p0media="agent" role="tab" aria-selected="true">AGENT 运行</button>
                     <button type="button" data-p0media="film" role="tab" aria-selected="false">品牌片</button>
                   </div>
-                  <span class="p0-media-live"><i></i>B3 · LOCAL</span>
+                  <span class="p0-media-live"><i></i><span id="p0MediaSource">B3 · LOCAL</span></span>
                 </div>
                 <div class="p0-agent" id="p0AgentCard" aria-label="Agent runtime 展示运行">
                   <div class="pa-head">
@@ -951,7 +951,7 @@ th.sortable:hover{color:var(--brand)}
                     </div>
                   </div>
                 </div>
-                <figcaption id="p0MediaCaption">Agent runtime · content-orchestrator / B3 本地演示 · <a href="workbench.html#/runs">运行档案 →</a></figcaption>
+                <figcaption id="p0MediaCaption">Agent runtime · content-orchestrator / B3 演示 · <a href="workbench.html#/runs">运行档案 →</a></figcaption>
               </figure>
             </div>
           </div>
@@ -1926,6 +1926,8 @@ th.sortable:hover{color:var(--brand)}
 
 <!-- 数据层 v2.0：唯一业务数据源，由 OVEM配置后台.html 发布后覆盖 -->
 <script src="data/ovem-data.js"></script>
+<!-- GitHub Pages 静态兜底：无 Node/SQLite 服务端时，P0 Agent 卡显示固定演示 run -->
+<script src="data/ovem-demo-run.js"></script>
 
 <script>
 /* ============================================================

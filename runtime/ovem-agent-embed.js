@@ -3,7 +3,11 @@
    ------------------------------------------------------------
    默认占据 P0 原“企业宣传片”位置，展示 content-orchestrator
    最近一条可用运行；品牌片仍保留在同一位置，可切换查看。
-   数据优先级：同源 /api/runs（登录后） → IndexedDB 成果层 → 空态
+   数据优先级：IndexedDB 成果层 → 同源 /api/runs（登录后）
+                → data/ovem-demo-run.js 静态演示 → 空态
+   优先使用成果层，保证 P0 卡与 P4/P7、P0 血缘摘要始终是同一 run；
+   仅在没有本地 run 时采用服务端或静态演示数据。
+   静态托管（GitHub Pages）没有 Node/SQLite，使用固定演示 run；
    不修改 17 页正文以外的任何页面。
    ============================================================ */
 (function () {
@@ -46,6 +50,12 @@
   }
   function statusClass(s) {
     return ({ review: "is-review", done: "is-done", failed: "is-failed", blocked: "is-failed" })[s] || "";
+  }
+  function sourceLabel(s) {
+    return ({ server: "服务端", local: "本地回放", static: "静态演示" })[s] || "服务端";
+  }
+  function isGithubPages() {
+    return /\.github\.io$/i.test(location.hostname);
   }
   function pickRun(runs) {
     if (!runs || !runs.length) return null;
@@ -93,13 +103,14 @@
     }).join("");
   }
 
-  /* 服务端 run 优先时，同步 P0 顶部血缘条与底部摘要，避免同一屏两套口径 */
-  function syncP0Run(run) {
+  /* 展示 run 优先时，同步 P0 顶部血缘条与底部摘要，避免同一屏两套口径 */
+  function syncP0Run(run, source) {
     if (!run) return;
     var st = run.stats || {};
     var done = Math.max(0, Math.min(7, Number(st.steps) || 0));
     var status = run.status || "review";
     var count = artifactCount(run);
+    var src = sourceLabel(source);
 
     var strip = q("#view-p0 .ln-strip");
     if (strip) {
@@ -121,7 +132,7 @@
       sum.innerHTML = '<div><h4>P0 展示运行 · ' + esc(run.id || "—") + " · " + esc(run.missionId || "") + "</h4>"
         + "<p>" + esc(timeText(run.startedAt)) + " → " + esc(timeText(run.endedAt)) + " · " + esc(run.agentId || "content-orchestrator")
         + " · " + esc(run.mode || "mock") + " · <span style=\"color:var(--brand-2);font-weight:600\">" + esc(statusText(status)) + "</span>"
-        + " · 服务端</p></div>"
+        + " · " + esc(src) + "</p></div>"
         + '<div class="ln-sum-stats">'
         + "<div><b>" + done + "/7</b><span>步骤</span></div>"
         + "<div><b>" + Number(st.toolCalls || 0) + "</b><span>工具调用</span></div>"
@@ -138,6 +149,10 @@
     var done = Math.max(0, Math.min(7, Number(st.steps) || 0));
     var status = run ? (run.status || "review") : "ready";
     var count = artifactCount(run, data && data.artifactCount);
+    var source = data && data.source;
+    var src = run ? sourceLabel(source) : "本地演示";
+    var sourceNode = q("#p0MediaSource");
+    if (sourceNode) sourceNode.textContent = source === "static" ? "B3 · STATIC" : "B3 · LOCAL";
 
     var statusNode = q("#paStatus");
     if (statusNode) {
@@ -160,13 +175,13 @@
     if (artifacts) artifacts.textContent = run ? String(count) : "—";
     var runNode = q("#paRun");
     if (runNode) runNode.textContent = run
-      ? run.id + " · " + statusText(status) + (data.source === "local" ? " · 本地回放" : " · 服务端")
+      ? run.id + " · " + statusText(status) + " · " + src
       : "尚无运行记录 · 去跑一条";
     renderSteps(run, done);
   }
 
   async function loadServer() {
-    if (!/^https?:/.test(location.protocol)) return null;
+    if (!/^https?:/.test(location.protocol) || isGithubPages()) return null;
     try {
       var res = await fetch("/api/runs", {
         method: "GET",
@@ -199,6 +214,23 @@
     }
   }
 
+  function loadStatic() {
+    var demo = window.OVEM_DEMO_RUN;
+    if (!demo || !demo.id) return null;
+    return {
+      run: demo,
+      source: "static",
+      artifacts: demo.artifacts || [],
+      artifactCount: artifactCount(demo)
+    };
+  }
+
+  /* 静态演示时把同一 run/artifacts 写回成果层，避免 P0 与 P4/P7 口径分裂 */
+  function applyStaticRun(stat) {
+    if (!stat || !window.OVEM_LINEAGE || !window.OVEM_LINEAGE.applyDisplayRun) return;
+    window.OVEM_LINEAGE.applyDisplayRun(stat.run, stat.artifacts, "static");
+  }
+
   async function waitLineage() {
     if (!window.OVEM_LINEAGE) return false;
     try {
@@ -226,7 +258,7 @@
     if (caption) {
       caption.innerHTML = isFilm
         ? '品牌主视觉 · 企业宣传片 / 2025–2026 Edition'
-        : 'Agent runtime · content-orchestrator / B3 本地演示 · <a href="workbench.html#/runs">运行档案 →</a>';
+        : 'Agent runtime · content-orchestrator / B3 演示 · <a href="workbench.html#/runs">运行档案 →</a>';
     }
     if (video) {
       if (isFilm) {
@@ -250,16 +282,25 @@
   async function boot() {
     bindTabs();
     render(null);
+    /* 成果层优先：P0 卡与 P4/P7、P0 摘要共用同一条 run */
+    var local = await loadLocal();
+    if (local) {
+      render(local);
+      return;
+    }
     var server = await loadServer();
     if (server) {
       await waitLineage();
       render(server);
-      syncP0Run(server.run);
+      syncP0Run(server.run, server.source);
       return;
     }
-    var local = await loadLocal();
-    if (local) {
-      render(local);
+    var stat = loadStatic();
+    if (stat) {
+      await waitLineage();
+      applyStaticRun(stat);
+      render(stat);
+      syncP0Run(stat.run, stat.source);
       return;
     }
     render(null);

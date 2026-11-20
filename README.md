@@ -1,8 +1,12 @@
 # OVEM · 光谷效应
 
-AI 营销操作系统 · 虚拟品牌全案作品集（**v3.0 Agent 工作台**）
+AI 营销操作系统 · 虚拟品牌全案作品集（**v4.0 Agent 工作台**）
 
 OVEM（Optics Valley Effect）是一个虚构的消费级生活机器人品牌。本项目把一次品牌全案做成**可配置的内容产线**：17 页营销系统前台 + 一套 schema 驱动的配置中台，覆盖 20 款产品、8 个内容渠道、160 个基础物料位与 480 个 A/B 变体。
+
+- **在线演示（静态）**：https://yoyonaga121.github.io/ovem-ai-marketing/
+- **本地完整版**：启动 `node server/server.js` 后打开 `http://127.0.0.1:4318/index.html`
+- GitHub Pages 无 Node/SQLite：P0 Agent 卡、P0 摘要、P4 产物卡、P7 渠道状态共用 `data/ovem-demo-run.js` 的静态演示 run（含 3 个占位产物）；`workbench.html` 仍可跑 mock/replay，`live` 与登录需本地服务；`login.html` 在静态域名下显示提示并返回首页。
 
 ---
 
@@ -198,7 +202,7 @@ node tools/verify-evals.js
 - 演示：`docs/演示脚本_5分钟.md` 5 步、总时长 **5:18**，逐段给出动作、台词、预期数字。
 - 验收：A5 **5/5**、静态 **10/10**；截图 6 张见 `docs/v3/evidence/S5_*.png`，报告 `S5.json` / `S5.browser.json` / `S5.manual.json`。
 
-**后续阶段**：方案 A 已完成；方案 B（真实 provider + 发布链路 + 多租户）待启动。
+**后续阶段**：方案 A（S0–S5）、B3（provider + Job）、B4（发布审批 + 审计）已完成；真实火山方舟 key / endpoint 待配置，当前固定 fake Ark 演示。
 
 
 

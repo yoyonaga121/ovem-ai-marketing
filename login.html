@@ -91,6 +91,15 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;background:ra
   var qs = new URLSearchParams(location.search);
   var next = qs.get("next") || "/workbench.html";
   if (!/^\//.test(next) || next.indexOf("//") >= 0) next = "/workbench.html";
+  var STATIC_DEPLOY = location.protocol === "file:" || /\.github\.io$/i.test(location.hostname);
+  if (STATIC_DEPLOY) {
+    form.noValidate = true;
+    btn.type = "button";
+    btn.textContent = "静态演示 · 返回作品集 →";
+    err.textContent = "当前是 GitHub Pages 静态演示：登录与 live API 不可用。返回首页可查看 P0 Agent 卡，或进入工作台使用 mock/replay。";
+    err.classList.add("is-on");
+    btn.addEventListener("click", function () { location.href = "index.html"; });
+  }
   document.querySelectorAll("[data-email]").forEach(function (b) {
     b.addEventListener("click", function () {
       email.value = b.getAttribute("data-email");

@@ -68,10 +68,10 @@ add("S4-02", "17 页 section + 17 条 lineage 一一对应", pageOk,
   "sections=" + sections.length + "/17 · lineage=" + lineageKeys.length + "/17");
 
 const srcs = [...html.matchAll(/<script\s+src="([^"]+)"><\/script>/g)].map(m => m[1]);
-const wantTail = ["data/ovem-schema.js", "data/ovem-agent.js", "runtime/ovem-trace.js", "runtime/ovem-store.js", LINEAGE];
-const tail = srcs.slice(-5);
-const tailOk = tail.length === 5 && wantTail.every((s, i) => tail[i] === s);
-add("S4-03", "成果层按 schema→agent→trace→store→lineage 顺序加载", tailOk,
+const wantTail = ["data/ovem-schema.js", "data/ovem-agent.js", "runtime/ovem-trace.js", "runtime/ovem-store.js", LINEAGE, "runtime/ovem-agent-embed.js"];
+const tail = srcs.slice(-6);
+const tailOk = tail.length === 6 && wantTail.every((s, i) => tail[i] === s);
+add("S4-03", "成果层按 schema→agent→trace→store→lineage→embed 顺序加载", tailOk,
   tail.join(" → "));
 
 const topOk = /href="workbench\.html"[^>]*>Agent 工作台/.test(html);

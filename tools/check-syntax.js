@@ -4,7 +4,14 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
-const files = ["index.html", "OVEM配置后台.html"];
+const files = [
+  "index.html",
+  "workbench.html",
+  "login.html",
+  "OVEM配置后台.html",
+  "OVEM_AI营销系统.html",
+  "tools/selftest.html"
+];
 
 for (const f of files) {
   const full = path.join(ROOT, f);

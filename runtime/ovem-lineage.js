@@ -22,7 +22,8 @@ window.OVEM_RT = window.OVEM_RT || {};
     run: null,
     runs: [],
     artifacts: [],
-    error: null
+    error: null,
+    displaySource: ""
   };
   var ERRORS = [];
 
@@ -149,11 +150,13 @@ window.OVEM_RT = window.OVEM_RT || {};
         STATE.run = STATE.runs[0] || null;
         STATE.artifacts = STATE.run ? await RT.Store.list("artifacts", { index: "runId", value: STATE.run.id }) : [];
         STATE.error = null;
+        STATE.displaySource = "";
       } catch (e) {
         STATE.error = String((e && e.message) || e);
         STATE.runs = [];
         STATE.run = null;
         STATE.artifacts = [];
+        STATE.displaySource = "";
       }
       STATE.loaded = true;
       STATE.loading = null;
@@ -161,6 +164,34 @@ window.OVEM_RT = window.OVEM_RT || {};
       return STATE;
     })();
     return STATE.loading;
+  }
+
+  /* 静态托管时用演示 run/artifacts 接管成果层，保证 P0/P4/P7 同源。
+     仅在 index.html 没有本地成果层记录时由 P0 嵌入卡调用。 */
+  var displayWaiters = [];
+  function applyDisplayRun(run, artifacts, source) {
+    if (!run) return;
+    STATE.run = run;
+    STATE.artifacts = Array.isArray(artifacts) ? artifacts : [];
+    STATE.displaySource = source || "static";
+    STATE.loaded = true;
+    STATE.loading = null;
+    STATE.error = null;
+    renderAll();
+    displayWaiters.splice(0).forEach(function (fn) { fn(true); });
+  }
+  function waitDisplay(ms) {
+    if (STATE.run) return Promise.resolve(true);
+    return new Promise(function (resolve) {
+      var done = false;
+      function finish(v) {
+        if (done) return;
+        done = true;
+        resolve(v);
+      }
+      displayWaiters.push(finish);
+      setTimeout(function () { finish(false); }, ms);
+    });
   }
 
   /* ---------- 渲染 ---------- */
@@ -240,7 +271,7 @@ window.OVEM_RT = window.OVEM_RT || {};
     box.className = "ln-p4";
     box.setAttribute("data-run-id", STATE.run ? STATE.run.id : "");
     box.setAttribute("data-count", String(STATE.artifacts.length));
-    var head = '<div class="ln-p4-h"><b>本次 run 产出</b><span>' + (STATE.run ? esc(STATE.run.id) : "尚无 run") + " · " + STATE.artifacts.length + " 件</span></div>";
+    var head = '<div class="ln-p4-h"><b>本次 run 产出</b><span>' + (STATE.run ? esc(STATE.run.id) : "尚无 run") + (STATE.displaySource === "static" ? " · 静态演示" : "") + " · " + STATE.artifacts.length + " 件</span></div>";
     if (!STATE.run || !STATE.artifacts.length) {
       box.innerHTML = head + '<div class="ln-p4-empty">还没有产物。跑完 M-A 后，官网首屏 / 移动端 / 小红书三张会在这里出现，并带 runId 与审核状态。</div>';
     } else {
@@ -283,7 +314,7 @@ window.OVEM_RT = window.OVEM_RT || {};
     }).join("");
     box.innerHTML = "<b>本次 RUN 渠道状态</b>"
       + (chips || '<span class="ln-empty">尚无渠道产物。跑完 M-A 后，三个渠道会由 artifacts.status 派生为「待审 / 在投 / 退役」。</span>')
-      + '<span class="ln-empty" style="margin-left:auto">' + (STATE.run ? esc(STATE.run.id) + " · " + STATE.artifacts.length + " 件" : "未执行") + "</span>";
+      + '<span class="ln-empty" style="margin-left:auto">' + (STATE.run ? esc(STATE.run.id) + " · " + STATE.artifacts.length + " 件" + (STATE.displaySource === "static" ? " · 静态演示" : "") : "未执行") + "</span>";
     var tabs = id("chTabs", host);
     if (tabs && tabs.parentNode) tabs.parentNode.insertBefore(box, tabs);
     else host.appendChild(box);
@@ -385,7 +416,10 @@ window.OVEM_RT = window.OVEM_RT || {};
     load().then(function () {
       var qs = new URLSearchParams(location.search);
       if (qs.get("selftest") === "1") {
-        selftest().then(showBadge);
+        /* 等 P0 嵌入卡把静态演示 run 接管到成果层后再跑 A4 */
+        waitDisplay(1800).then(function () {
+          selftest().then(showBadge);
+        });
       }
     });
   }
@@ -399,6 +433,7 @@ window.OVEM_RT = window.OVEM_RT || {};
   window.OVEM_LINEAGE = {
     state: STATE,
     refresh: refresh,
+    applyDisplayRun: applyDisplayRun,
     selftest: selftest,
     render: renderAll,
     showBadge: showBadge
