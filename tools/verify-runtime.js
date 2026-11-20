@@ -156,7 +156,7 @@ const payload = {
   git: gitInfo(),
   source: {
     runtime: RUNTIME,
-    browser: path.relative(ROOT, browserPath),
+    browser: path.relative(ROOT, browserPath).split(path.sep).join("/"),
     db: S.DB_NAME,
     version: "v3.0.0-s2"
   },
@@ -186,7 +186,7 @@ const payload = {
 };
 
 if (evidenceOk) payload.artifacts.push({ type: "screenshot", path: evidence, note: "自检台 A2：7/7 通过，含 7 条断言与 JSON 面板" });
-if (browser) payload.artifacts.push({ type: "data", path: path.relative(ROOT, browserPath), note: "自检台导出的原始结果（cases + runs）" });
+if (browser) payload.artifacts.push({ type: "data", path: path.relative(ROOT, browserPath).split(path.sep).join("/"), note: "自检台导出的原始结果（cases + runs）" });
 
 const out = path.join(ROOT, "docs/v3/reports/S2.json");
 fs.mkdirSync(path.dirname(out), { recursive: true });

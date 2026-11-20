@@ -50,7 +50,7 @@
 
   <div class="panel">
     <div class="bar">
-      <span class="suite">suite=A0</span>
+      <span class="suite" id="suiteTag">selftest</span>
       <span class="sub" id="meta">等待执行…</span>
       <span class="verdict" id="verdict">未执行</span>
     </div>
@@ -61,7 +61,7 @@
   </div>
 
   <div class="panel">
-    <div class="bar"><span class="suite">result.json</span><span class="sub">供 S0 报告合并使用</span></div>
+    <div class="bar"><span class="suite">result.json</span><span class="sub">供 S0 / S2 报告合并使用</span></div>
     <pre id="json">{}</pre>
   </div>
 
@@ -159,6 +159,7 @@ function render(suite, cases, summary){
 async function runSuite(name){
   const def = SUITES[name];
   if(!def) return;
+  $("suiteTag").textContent = "suite=" + name;
   let cases, result;
 
   if (Array.isArray(def)) {
