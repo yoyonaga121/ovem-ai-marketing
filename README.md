@@ -34,11 +34,17 @@ OVEM站点_v2.0/
 ├─ OVEM_AI营销系统.html      # 兼容跳转桩（1.1KB，重定向到 index.html 并透传 hash）
 ├─ data/
 │  ├─ ovem-data.js         # 单一数据源（meta + brand/hero/metrics/goals/channels/products/scenes）
-│  └─ ovem-schema.js       # 字段契约（7 个配置分区 / 17 页定义 / 5 条跨字段规则 / 每字段 consumers）
-├─ tools/                  # 一次性迁移与自检脚本（保留作数据来源证据，可重跑）
+│  ├─ ovem-schema.js       # 字段契约（7 个配置分区 / 17 页定义 / 5 条跨字段规则 / 每字段 consumers）
+│  ├─ ovem-agent.js        # v3.0：Agent 配置（3 Agent / 9 工具 / 4 Prompt / 6 护栏 / 17 页血缘）
+│  └─ ovem-agent.schema.js # v3.0：Agent 字段契约 + R1–R7 七条跨字段规则
+├─ docs/v3/                # 阶段报告（reports/）与验收证据（evidence/）+ 三张架构图
+├─ tools/                  # 迁移、自检与验收脚本（保留作证据，可重跑）
 │  ├─ migrate-v1-data.js   # 从 v1 HTML 内联 const 块抽取数据 → data/ovem-data.js
 │  ├─ refactor-v2.js       # 按标记位把 v1 前台改造成 v2 数据层
-│  └─ check-syntax.js      # 两个 HTML 的内联脚本语法自检
+│  ├─ check-syntax.js      # 两个 HTML 的内联脚本语法自检
+│  ├─ verify-baseline.js   # S0：基线冻结核对（A0 套件）
+│  ├─ verify-agent-config.js # S1：Agent 配置核对（A1 套件 + R1–R7 矩阵）
+│  └─ selftest.html        # 浏览器自检台（A0 套件，S2 扩展 A2）
 ├─ assets/                 # 品牌视觉、产品设定图、渠道物料、宣传片
 └─ _backup/ _preview/ _tools/  # 本地工作目录（已 gitignore，不参与部署）
 ```
@@ -47,7 +53,7 @@ OVEM站点_v2.0/
 
 ## 三、配置闭环（五分钟跑通）
 
-1. **打开后台** `OVEM配置后台.html`，左侧 11 个分区：概览 / 品牌与标识 / 封面文案 / 封面指标 / 年度目标 / 产品矩阵 / 渠道矩阵 / 页面与导航 / 版本信息 / 版本与快照 / 变更与发布。
+1. **打开后台** `OVEM配置后台.html`，左侧 12 个分区：概览 / 品牌与标识 / 封面文案 / 封面指标 / 年度目标 / 产品矩阵 / 渠道矩阵 / 页面与导航 / **Agent 管理** / 版本信息 / 版本与快照 / 变更与发布。
 2. **改一个字段**，顶栏立刻出现 `待发布 N 项 · 影响 M 页` 徽标；概览页给出逐字段 diff（旧值 → 新值 + 影响页面）。
 3. **存草稿**（`Ctrl+S`，写入 `localStorage.ovem_data_draft`）→ 前台刷新即可看到「草稿预览」浮条与改动效果，**不动正式数据**。
 4. **发布**：填版本号与变更说明 → 点击发布 → 自动下载 `ovem-data.js`（内含 `meta.version` 与新 `changelog` 条目）。
@@ -92,23 +98,29 @@ OVEM站点_v2.0/
 
 完整路线见仓库根目录 `../04_Agent工作台_方案A执行路线图.md`（六阶段 / 12 工作日 / 37 条验收用例）。
 
-**当前进度：S0 基线冻结与契约设计 已完成（A0 5/5 通过）**
+**当前进度：S0 基线冻结（5/5）、S1 Agent 配置层（6/6 + A1-07）已完成**
 
-| 项 | 值 |
-|---|---|
-| 基线 commit | `c7290f9` |
-| 基线 tag | `v3.0-s0` |
-| 阶段报告 | `docs/v3/reports/S0.json` |
-| 验收证据 | `docs/v3/evidence/S0_A0-05_idb.png` |
+| 阶段 | 内容 | commit / tag | 报告 | 证据 |
+|---|---|---|---|---|
+| S0 | 基线冻结与契约设计 | `c7290f9`（S0 完成点 `5dc38d8`）/ `v3.0-s0` | `docs/v3/reports/S0.json` | `docs/v3/evidence/S0_A0-05_idb.png` |
+| S1 | Agent 配置层（第 12 分区） | `0d31779` / `v3.0-s1` | `docs/v3/reports/S1.json` | `docs/v3/evidence/S1_A1-07_agent.png` |
 
-**自检方式（S0）**
+**Agent 配置（S1 交付）**
+
+- `data/ovem-agent.js`（v3.0.0）：3 个 Agent、9 个工具、4 条 Prompt、6 项护栏、17 页血缘；Prompt 的 `hash` 由正文 SHA-256 实算。
+- `data/ovem-agent.schema.js`：字段契约 + R1–R7 七条跨字段规则，与数据层 5 条规则相互独立。
+- 后台第 12 分区「Agent 管理」：角色卡、工具表、Prompt 表、护栏、血缘表、规则矩阵、逐字段 diff、快照与「发布并导出 ovem-agent.js」。
+
+**自检方式**
 
 ```bash
-# 静态核对：v1 冻结副本哈希、前台脚本可解析、17 页齐全、数据与契约版本
+# S0：静态核对（v1 冻结副本哈希、前台脚本可解析、17 页齐全、数据与契约版本）
 node tools/verify-baseline.js --idb pass --idb-note "stores=6/6 · indexes=18/18"
 
-# 运行态前置确认：file:// 下 IndexedDB 建库（6 store / 18 索引）
-# 浏览器打开：tools/selftest.html?suite=A0
+# S1：Agent 配置核对（A1-01…06 + R1–R7 规则矩阵）
+node tools/verify-agent-config.js --browser pass --browser-note "agents=3 / tools=9 / prompts=4"
+
+# 浏览器：运行态建库自检 tools/selftest.html?suite=A0 ；后台 Agent 管理 = OVEM配置后台.html
 ```
 
 **已冻结的边界**
@@ -117,5 +129,5 @@ node tools/verify-baseline.js --idb pass --idb-note "stores=6/6 · indexes=18/18
 - 业务数据 `data/ovem-data.js` 保持 v2.0.x，不随 Agent 配置升版。
 - 运行态（missions / runs / traces / artifacts / reviews / evals）将落 IndexedDB，不进 git。
 
-**后续阶段**：S1 Agent 配置层 → S2 运行时与工具层 → S3 工作台壳 → S4 成果层联动 → S5 评测与演示编排。
+**后续阶段**：S2 运行时与工具层 → S3 工作台壳 → S4 成果层联动 → S5 评测与演示编排。
 
