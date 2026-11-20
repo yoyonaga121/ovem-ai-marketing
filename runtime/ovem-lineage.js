@@ -143,7 +143,9 @@ window.OVEM_RT = window.OVEM_RT || {};
       try {
         if (!RT.Store) throw new Error("Store 未加载");
         var runs = await RT.Store.list("runs");
-        STATE.runs = sortRuns(runs || []);
+        /* 评测 run 带 kind=eval；成果层只跟随生产 run，避免跑批覆盖 P0/P4/P7 */
+        var production = (runs || []).filter(function (r) { return r.kind !== "eval"; });
+        STATE.runs = sortRuns(production);
         STATE.run = STATE.runs[0] || null;
         STATE.artifacts = STATE.run ? await RT.Store.list("artifacts", { index: "runId", value: STATE.run.id }) : [];
         STATE.error = null;
@@ -329,8 +331,8 @@ window.OVEM_RT = window.OVEM_RT || {};
       run ? ("latest=" + run.id + " · cards=" + p4Cards.length + " · runId 全一致") : "无 run");
     add("A4-03", "P7 渠道状态由 artifacts.status 派生", p7RunOk,
       "artifacts=" + STATE.artifacts.length + " · p7-status-count=" + p7StatusCount + " · runId=" + (run ? run.id : "—"));
-    add("A4-04", "P0 摘要与 store 最新 run 同源", sumOk,
-      run ? ("runs=" + STATE.runs.length + " · latest=" + run.id + " · cost=" + money4((run.stats || {}).costCny)) : "无 run");
+    add("A4-04", "P0 摘要与最新生产 run 同源", sumOk,
+      run ? ("productionRuns=" + STATE.runs.length + " · latest=" + run.id + " · cost=" + money4((run.stats || {}).costCny)) : "无 run");
     add("A4-05", "页面无运行时异常", errors.length === 0,
       "errors=" + errors.length + (errors.length ? " · " + errors.slice(0, 2).join(" / ") : " · clean"));
 

@@ -88,6 +88,12 @@ window.OVEM_RT = window.OVEM_RT || {};
       random: mulberry32(Number(task.seed) || 1),
       mode: opts.mode || "mock"
     });
+    /* 评测 run 打标：成果层血缘只看生产 run，不把跑批结果当成最新业务运行 */
+    if (res.run && RT.Store) {
+      res.run.kind = "eval";
+      res.run.evalTaskId = task.taskId;
+      await RT.Store.put("runs", res.run);
+    }
     var base = RUBRICS[SET.meta.promptBase] || SET.rubrics[0];
     var cand = RUBRICS[SET.meta.promptCandidate] || SET.rubrics[1];
     return {
