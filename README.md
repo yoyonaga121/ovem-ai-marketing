@@ -115,7 +115,7 @@ OVEM站点_v2.0/
 | S0 | 基线冻结与契约设计 | `c7290f9`（S0 完成点 `5dc38d8`）/ `v3.0-s0` | `docs/v3/reports/S0.json` | `docs/v3/evidence/S0_A0-05_idb.png` |
 | S1 | Agent 配置层（第 12 分区） | `0d31779` / `v3.0-s1` | `docs/v3/reports/S1.json` | `docs/v3/evidence/S1_A1-07_agent.png` |
 | S2 | 运行时与工具层（5 模块 + A2 自检） | `d1383d8` / `v3.0-s2` | `docs/v3/reports/S2.json` | `docs/v3/evidence/S2_A2-04_run.png` |
-| S3 | 工作台壳层（6 视图 / 3 预设 / 闸门 / A3 自检） | 见 tag `v3.0-s3` | `docs/v3/reports/S3.json` + `S3.browser.json` | `docs/v3/evidence/S3_*.png`（8 张） |
+| S3 | 工作台壳层（6 视图 / 3 预设 / 闸门 / A3 自检） | `88c6ddb` / `v3.0-s3` | `docs/v3/reports/S3.json` + `S3.browser.json` | `docs/v3/evidence/S3_*.png`（8 张） |
 
 **Agent 配置（S1 交付）**
 
