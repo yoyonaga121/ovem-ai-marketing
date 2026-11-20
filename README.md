@@ -37,6 +37,12 @@ OVEM站点_v2.0/
 │  ├─ ovem-schema.js       # 字段契约（7 个配置分区 / 17 页定义 / 5 条跨字段规则 / 每字段 consumers）
 │  ├─ ovem-agent.js        # v3.0：Agent 配置（3 Agent / 9 工具 / 4 Prompt / 6 护栏 / 17 页血缘）
 │  └─ ovem-agent.schema.js # v3.0：Agent 字段契约 + R1–R7 七条跨字段规则
+├─ runtime/                # v3.0：零 DOM 运行时（供方案 A 壳页与方案 B 复用）
+│  ├─ ovem-trace.js        # 事件总线（11 类事件 / 单调 seq / 成本累加）
+│  ├─ ovem-store.js        # IndexedDB 封装（ovem-os-v3 v1 · 6 store / 18 索引）
+│  ├─ ovem-tools.js        # 9 工具 mock（可注入延迟、单价与失败）
+│  ├─ ovem-executor.js     # 计划 / 执行 / 裁决 / 重试 / 预算闸门
+│  └─ selftest.js          # A2 七条运行时用例
 ├─ docs/v3/                # 阶段报告（reports/）与验收证据（evidence/）+ 三张架构图
 ├─ tools/                  # 迁移、自检与验收脚本（保留作证据，可重跑）
 │  ├─ migrate-v1-data.js   # 从 v1 HTML 内联 const 块抽取数据 → data/ovem-data.js
@@ -44,7 +50,8 @@ OVEM站点_v2.0/
 │  ├─ check-syntax.js      # 两个 HTML 的内联脚本语法自检
 │  ├─ verify-baseline.js   # S0：基线冻结核对（A0 套件）
 │  ├─ verify-agent-config.js # S1：Agent 配置核对（A1 套件 + R1–R7 矩阵）
-│  └─ selftest.html        # 浏览器自检台（A0 套件，S2 扩展 A2）
+│  ├─ verify-runtime.js    # S2：运行时静态核对 + 浏览器 A2 结果合并
+│  └─ selftest.html        # 浏览器自检台（A0 基线 / A2 运行时）
 ├─ assets/                 # 品牌视觉、产品设定图、渠道物料、宣传片
 └─ _backup/ _preview/ _tools/  # 本地工作目录（已 gitignore，不参与部署）
 ```
@@ -98,12 +105,13 @@ OVEM站点_v2.0/
 
 完整路线见仓库根目录 `../04_Agent工作台_方案A执行路线图.md`（六阶段 / 12 工作日 / 37 条验收用例）。
 
-**当前进度：S0 基线冻结（5/5）、S1 Agent 配置层（6/6 + A1-07）已完成**
+**当前进度：S0 基线冻结（5/5）、S1 Agent 配置层（6/6 + A1-07）、S2 运行时与工具层（7/7）已完成**
 
 | 阶段 | 内容 | commit / tag | 报告 | 证据 |
 |---|---|---|---|---|
 | S0 | 基线冻结与契约设计 | `c7290f9`（S0 完成点 `5dc38d8`）/ `v3.0-s0` | `docs/v3/reports/S0.json` | `docs/v3/evidence/S0_A0-05_idb.png` |
 | S1 | Agent 配置层（第 12 分区） | `0d31779` / `v3.0-s1` | `docs/v3/reports/S1.json` | `docs/v3/evidence/S1_A1-07_agent.png` |
+| S2 | 运行时与工具层（5 模块 + A2 自检） | `__S2_COMMIT__` / `v3.0-s2` | `docs/v3/reports/S2.json` | `docs/v3/evidence/S2_A2-04_run.png` |
 
 **Agent 配置（S1 交付）**
 
@@ -120,8 +128,18 @@ node tools/verify-baseline.js --idb pass --idb-note "stores=6/6 · indexes=18/18
 # S1：Agent 配置核对（A1-01…06 + R1–R7 规则矩阵）
 node tools/verify-agent-config.js --browser pass --browser-note "agents=3 / tools=9 / prompts=4"
 
-# 浏览器：运行态建库自检 tools/selftest.html?suite=A0 ；后台 Agent 管理 = OVEM配置后台.html
+# S2：运行时核对（静态 8 项 + 浏览器 A2 7/7 合并）
+node tools/verify-runtime.js
+
+# 浏览器：tools/selftest.html?suite=A0（基线建库）；?suite=A2（9 工具 / 7 步 / 重试 / 闸门 / 对账）
 ```
+
+**运行态口径（S2 落地）**
+
+- 一条 Mission = **7 个计划步骤 / 9 次工具调用**，状态只能由事件迁移（七态白名单）。
+- 成本：`costCny = tokens/1000 × 0.004 + images × 0.03`，mock 单任务约 **¥0.1168**，K5 上限 ¥0.15。
+- 预算闸门按任务 `constraints.budgetCny` 计算；演示用 ¥0.10 才能在 mock 量级触发 `hitl.requested`（¥200 是业务预算口径）。
+- 自检页的 `speed` 是等待缩放系数（>1 加速），只改实际等待，不改契约 `delayMs`。
 
 **已冻结的边界**
 
@@ -129,5 +147,5 @@ node tools/verify-agent-config.js --browser pass --browser-note "agents=3 / tool
 - 业务数据 `data/ovem-data.js` 保持 v2.0.x，不随 Agent 配置升版。
 - 运行态（missions / runs / traces / artifacts / reviews / evals）将落 IndexedDB，不进 git。
 
-**后续阶段**：S2 运行时与工具层 → S3 工作台壳 → S4 成果层联动 → S5 评测与演示编排。
+**后续阶段**：S3 工作台壳 → S4 成果层联动 → S5 评测与演示编排。
 

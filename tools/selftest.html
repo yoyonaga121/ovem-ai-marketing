@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>OVEM 自检台 · A0</title>
+<title>OVEM 自检台 · A0 / A2</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:#F5F7FA;color:#0F172A;font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;
@@ -38,11 +38,12 @@
   <div class="head">
     <div>
       <div class="kicker">OVEM OS · SELFTEST HARNESS</div>
-      <h1>自检台 · A0 基线套件</h1>
-      <div class="sub">验证 <code>file://</code> 环境下 IndexedDB 可建库（6 store / 18 索引），为 S2 运行态落地做前置确认。</div>
+      <h1>自检台 · A0 基线 / A2 运行时</h1>
+      <div class="sub">A0：<code>file://</code> 下 IndexedDB 建库（6 store / 18 索引）。A2：9 工具契约、7 步执行、重试、预算闸门与成本对账。</div>
     </div>
     <div class="tools">
-      <button id="rerun">重跑本套件</button>
+      <button id="rerun">重跑 A0</button>
+      <button id="runA2">跑 A2 套件</button>
       <button id="copy" class="primary">复制 JSON</button>
     </div>
   </div>
@@ -64,8 +65,15 @@
     <pre id="json">{}</pre>
   </div>
 
-  <div class="foot"><span>OVEM Marketing OS · v3.0 / S0 基线</span><span id="stamp"></span></div>
+  <div class="foot"><span>OVEM Marketing OS · v3.0 / S2 运行时</span><span id="stamp"></span></div>
 
+<script src="../data/ovem-data.js"></script>
+<script src="../data/ovem-agent.js"></script>
+<script src="../runtime/ovem-trace.js"></script>
+<script src="../runtime/ovem-store.js"></script>
+<script src="../runtime/ovem-tools.js"></script>
+<script src="../runtime/ovem-executor.js"></script>
+<script src="../runtime/selftest.js"></script>
 <script>
 const DB_NAME = "ovem-os-v3-probe";
 const STORE_DEFS = {
@@ -127,7 +135,8 @@ async function testIDB(){
 }
 
 const SUITES = {
-  A0: [{ id: "A0-05", name: "file:// 下 IndexedDB 建库", run: testIDB }]
+  A0: [{ id: "A0-05", name: "file:// 下 IndexedDB 建库", run: testIDB }],
+  A2: { entry: () => window.OVEM_RT.selftest.run() }
 };
 
 const $ = id => document.getElementById(id);
@@ -148,37 +157,51 @@ function render(suite, cases, summary){
 }
 
 async function runSuite(name){
-  const defs = SUITES[name];
-  if(!defs) return;
-  const cases = defs.map(d => ({ id: d.id, name: d.name, state: "run", detail: "执行中", ms: 0 }));
-  render(name, cases, { total: cases.length, passed: 0, failed: 0 });
-  for (const c of cases){
-    const d = defs.find(x => x.id === c.id);
-    const r = await d.run();
-    c.state = r.ok ? "pass" : "fail";
-    c.detail = r.detail; c.ms = r.ms || 0;
-    render(name, cases, {
-      total: cases.length,
-      passed: cases.filter(x => x.state === "pass").length,
-      failed: cases.filter(x => x.state === "fail").length
-    });
-  }
-  const result = {
-    suite: name,
-    generatedAt: new Date().toISOString(),
-    cases: cases.map(c => ({ id: c.id, ok: c.state === "pass", ms: c.ms, detail: c.detail })),
-    summary: {
-      total: cases.length,
-      passed: cases.filter(x => x.state === "pass").length,
-      failed: cases.filter(x => x.state === "fail").length
+  const def = SUITES[name];
+  if(!def) return;
+  let cases, result;
+
+  if (Array.isArray(def)) {
+    cases = def.map(d => ({ id: d.id, name: d.name, state: "run", detail: "执行中", ms: 0 }));
+    render(name, cases, { total: cases.length, passed: 0, failed: 0 });
+    for (const c of cases){
+      const d = def.find(x => x.id === c.id);
+      const r = await d.run();
+      c.state = r.ok ? "pass" : "fail";
+      c.detail = r.detail; c.ms = r.ms || 0;
+      render(name, cases, {
+        total: cases.length,
+        passed: cases.filter(x => x.state === "pass").length,
+        failed: cases.filter(x => x.state === "fail").length
+      });
     }
-  };
+    result = {
+      suite: name,
+      generatedAt: new Date().toISOString(),
+      cases: cases.map(c => ({ id: c.id, ok: c.state === "pass", ms: c.ms, detail: c.detail })),
+      summary: {
+        total: cases.length,
+        passed: cases.filter(x => x.state === "pass").length,
+        failed: cases.filter(x => x.state === "fail").length
+      }
+    };
+  } else {
+    $("meta").textContent = "suite=" + name + " · 执行中…";
+    $("verdict").className = "verdict"; $("verdict").textContent = "执行中";
+    $("rows").innerHTML = '<tr><td colspan="4" style="color:#94A3B8">运行时套件执行中（3 条 Mission，约 3–5 秒）…</td></tr>';
+    const r = await def.entry();
+    cases = r.cases.map(c => ({ id: c.id, name: c.name, state: c.ok ? "pass" : "fail", detail: c.detail, ms: c.ms }));
+    render(name, cases, r.summary);
+    result = { suite: name, generatedAt: r.generatedAt, cases: r.cases, summary: r.summary, runs: r.runs };
+  }
+
   window.__SELFTEST__ = result;
   $("json").textContent = JSON.stringify(result, null, 2);
   $("stamp").textContent = "finished " + result.generatedAt;
 }
 
 $("rerun").addEventListener("click", () => runSuite("A0"));
+$("runA2").addEventListener("click", () => runSuite("A2"));
 $("copy").addEventListener("click", async () => {
   const txt = $("json").textContent;
   try { await navigator.clipboard.writeText(txt); $("copy").textContent = "已复制"; }
@@ -187,7 +210,8 @@ $("copy").addEventListener("click", async () => {
 });
 
 const qs = new URLSearchParams(location.search);
-if(qs.get("suite") === "A0" || qs.has("selftest")) runSuite("A0");
+const wanted = qs.get("suite") || (qs.has("selftest") ? "A0" : "");
+if (wanted === "A0" || wanted === "A2") runSuite(wanted);
 </script>
 </body>
 </html>

@@ -1,0 +1,229 @@
+{
+  "stage": "S2",
+  "title": "运行时与工具层",
+  "suite": "A2",
+  "at": "2026-11-20T07:19:21.875Z",
+  "git": {
+    "ref": "411bf41",
+    "tag": "v3.0-s1",
+    "dirty": true
+  },
+  "source": {
+    "runtime": [
+      "runtime/ovem-trace.js",
+      "runtime/ovem-store.js",
+      "runtime/ovem-tools.js",
+      "runtime/ovem-executor.js",
+      "runtime/selftest.js"
+    ],
+    "browser": "docs\\v3\\reports\\S2.browser.json",
+    "db": "ovem-os-v3",
+    "version": "v3.0.0-s2"
+  },
+  "metrics": {
+    "db": "ovem-os-v3",
+    "dbVersion": 1,
+    "stores": 6,
+    "indexes": 18,
+    "events": 11,
+    "states": 7,
+    "tools": 9,
+    "planSteps": 7,
+    "planCalls": 9,
+    "price": {
+      "per1kToken": 0.004,
+      "perImage": 0.03
+    },
+    "usagePerMission": {
+      "tokens": 6700,
+      "images": 3
+    }
+  },
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "pending": 0
+  },
+  "cases": [
+    {
+      "id": "A2-01",
+      "title": "6 store / 18 索引 · version=1",
+      "status": "pass",
+      "detail": "mode=idb · version=1 · stores=6/6 · indexes=18/18",
+      "ms": 33
+    },
+    {
+      "id": "A2-02",
+      "title": "9 个工具 happy path 结构符合 io.out",
+      "status": "pass",
+      "detail": "9/9 工具结构符合 · artifact 3 个",
+      "ms": 749
+    },
+    {
+      "id": "A2-03",
+      "title": "mock 延迟 ∈ [800,2400] · 计价按单价累加误差 0",
+      "status": "pass",
+      "detail": "9 次延迟 813–2001ms · 6700 tokens · 3 图 · ¥0.1168（误差 0）",
+      "ms": 628
+    },
+    {
+      "id": "A2-04",
+      "title": "一条 M-A 端到端：7 步 / 9 调用 / 终态 review",
+      "status": "pass",
+      "detail": "7 steps / 9 calls / 9 results · 终态 review · ¥0.1168 · 1975ms",
+      "ms": 1982
+    },
+    {
+      "id": "A2-05",
+      "title": "注入质检不通过 → retry.scheduled → 第二轮通过",
+      "status": "pass",
+      "detail": "retry=1 · image.gen=2 次 · 终态 review · 最后一轮 pass",
+      "ms": 2213
+    },
+    {
+      "id": "A2-06",
+      "title": "预算 ≥80% → hitl.requested，状态 blocked",
+      "status": "pass",
+      "detail": "hitl=1 次 · pct=1.084 · 终态 blocked · 已花费 ¥0.1084",
+      "ms": 1100
+    },
+    {
+      "id": "A2-07",
+      "title": "run.finished 存在，stats.costCny = trace 累加值",
+      "status": "pass",
+      "detail": "run.finished 存在 · stats ¥0.1168 / trace ¥0.1168 · 差值 0",
+      "ms": 0
+    }
+  ],
+  "runs": [
+    {
+      "runId": "R-0001",
+      "state": "review",
+      "stats": {
+        "steps": 7,
+        "toolCalls": 9,
+        "retries": 0,
+        "tokens": 6700,
+        "images": 3,
+        "costCny": 0.1168,
+        "durationMs": 1975
+      },
+      "traceCount": 30,
+      "artifactIds": [
+        "A-0001",
+        "A-0002",
+        "A-0003"
+      ]
+    },
+    {
+      "runId": "R-0002",
+      "state": "review",
+      "stats": {
+        "steps": 7,
+        "toolCalls": 11,
+        "retries": 1,
+        "tokens": 8400,
+        "images": 6,
+        "costCny": 0.2136,
+        "durationMs": 2206
+      },
+      "traceCount": 36,
+      "artifactIds": [
+        "A-0004",
+        "A-0005",
+        "A-0006"
+      ]
+    },
+    {
+      "runId": "R-0003",
+      "state": "blocked",
+      "stats": {
+        "steps": 5,
+        "toolCalls": 6,
+        "retries": 0,
+        "tokens": 4600,
+        "images": 3,
+        "costCny": 0.1084,
+        "durationMs": 1095
+      },
+      "traceCount": 20,
+      "artifactIds": []
+    }
+  ],
+  "staticChecks": [
+    {
+      "id": "S2-01",
+      "title": "5 个运行时模块存在且 node --check 通过",
+      "ok": true,
+      "detail": "5/5 文件存在 · 语法检查 5/5"
+    },
+    {
+      "id": "S2-02",
+      "title": "ovem-os-v3 v1 · 6 store / 18 索引",
+      "ok": true,
+      "detail": "version=1 · stores=6/6 · indexes=18/18"
+    },
+    {
+      "id": "S2-03",
+      "title": "11 类事件白名单 · seq 单调",
+      "ok": true,
+      "detail": "events=11/11 · seq=1…11 单调 · 未知类型抛错"
+    },
+    {
+      "id": "S2-04",
+      "title": "9 工具 io.out 契约 · mock 单价",
+      "ok": true,
+      "detail": "tools=9/9 · 单次合计 6700 tokens / 3 图 · ¥0.004/1k + ¥0.03/图"
+    },
+    {
+      "id": "S2-05",
+      "title": "七态白名单 · running 可续接 step.start",
+      "ok": true,
+      "detail": "states=7/7 · running→step.start=running"
+    },
+    {
+      "id": "S2-06",
+      "title": "Plan = 7 步 / 9 调用",
+      "ok": true,
+      "detail": "steps=7/7 · calls=9/9"
+    },
+    {
+      "id": "S2-07",
+      "title": "浏览器 A2 7/7 · 三条 run 终态符合预期",
+      "ok": true,
+      "detail": "cases=7/7 · runs=R-0001:review、R-0002:review、R-0003:blocked"
+    },
+    {
+      "id": "S2-08",
+      "title": "证据截图已归档",
+      "ok": true,
+      "detail": "docs/v3/evidence/S2_A2-04_run.png"
+    }
+  ],
+  "browser": {
+    "status": "pass",
+    "note": "A2 7/7 · 3 条 Mission · 成本对账差 0",
+    "checklist": [
+      "6 store / 18 索引",
+      "9 工具结构",
+      "延迟与计价",
+      "7 步 9 调用",
+      "质检重试",
+      "预算闸门",
+      "成本对账"
+    ]
+  },
+  "artifacts": [
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S2_A2-04_run.png",
+      "note": "自检台 A2：7/7 通过，含 7 条断言与 JSON 面板"
+    },
+    {
+      "type": "data",
+      "path": "docs\\v3\\reports\\S2.browser.json",
+      "note": "自检台导出的原始结果（cases + runs）"
+    }
+  ]
+}
