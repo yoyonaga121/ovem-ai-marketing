@@ -186,6 +186,7 @@ node tools/verify-evals.js
 - P0 增「最近一次 Agent 运行」摘要：runId、时间、7 步 / 9 调用、成本、产物数、耗时；P4 增本次 run 三张产物卡（`data-run-id` 与最新 run 一致）；P7 增渠道状态条（`review → 待审`、`done → 在投`、`retired → 退役`）。
 - 后台「Agent 管理 · 运行记录」只读 IndexedDB：条数、runId、状态、步骤 / 调用、成本、开始时间，与前台 / store 三方对齐。
 - 验收：A4 **5/5**、静态 **9/9**；最新 run `R-0034`（review / ¥0.1168 / 3 artifacts）；后台 34 条、`console error=0`；截图 5 张见 `docs/v3/evidence/S4_*.png`。
+- 注：`R-0034` / 34 条是 S4 的冻结快照；S5 评测 run 带 `kind=eval`，不计入成果层血缘，live 最新生产 run 以当前 IndexedDB 为准。
 
 **S5 评测与演示（已交付）**
 
