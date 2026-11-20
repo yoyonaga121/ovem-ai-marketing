@@ -645,6 +645,66 @@ html.demo-on::-webkit-scrollbar{display:none}
 .p0-kv .kv-ctrl:hover{background:rgba(11,20,36,.9)}
 .p0-kv img{width:100%;display:block;border-radius:8px;border:1px solid rgba(255,255,255,.14)}
 .p0-kv figcaption{font-size:9.5px;color:#7E93B4;margin-top:8px;line-height:1.6}
+/* P0 · Agent 嵌入卡（默认占据原宣传片位置，品牌片可切换） */
+.p0-media-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.p0-media-tabs{display:flex;gap:3px;padding:2px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(5,9,15,.35)}
+.p0-media-tabs button{border:0;background:transparent;color:#7188A6;font:600 9px/1.4 var(--mono),monospace;letter-spacing:.06em;border-radius:999px;padding:4px 9px;cursor:pointer}
+.p0-media-tabs button:hover{color:#CFE0F8}
+.p0-media-tabs button.is-active{background:rgba(34,211,238,.14);color:#8BE9F7;box-shadow:inset 0 0 0 1px rgba(34,211,238,.24)}
+.p0-media-live{display:flex;align-items:center;gap:5px;font:9px/1.4 var(--mono),monospace;color:#7792B2;letter-spacing:.06em}
+.p0-media-live i{width:5px;height:5px;border-radius:50%;background:#34D399;box-shadow:0 0 0 3px rgba(52,211,153,.1)}
+.p0-agent{position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:276px;border:1px solid rgba(34,211,238,.22);border-radius:9px;background:radial-gradient(circle at 92% 0%,rgba(47,111,237,.22),transparent 46%),linear-gradient(145deg,#08111D,#071522);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 28px rgba(0,0,0,.2);padding:13px 14px 11px}
+.p0-agent::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.45;background-image:linear-gradient(rgba(76,155,200,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(76,155,200,.12) 1px,transparent 1px);background-size:22px 22px;mask-image:linear-gradient(180deg,rgba(0,0,0,.8),transparent 76%)}
+.p0-agent>*{position:relative;z-index:1}
+.pa-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.pa-id{display:flex;align-items:center;gap:8px;min-width:0}
+.pa-pulse{width:8px;height:8px;flex:0 0 auto;border-radius:50%;background:#34D399;box-shadow:0 0 0 4px rgba(52,211,153,.09),0 0 16px rgba(52,211,153,.55)}
+.pa-kicker{display:block;font:8px/1.2 var(--mono),monospace;letter-spacing:.15em;color:#7A93AD}
+.pa-id b{display:block;font-size:12px;line-height:1.3;color:#EAF3FF;margin-top:2px}
+.pa-state{flex:0 0 auto;font:8px/1.4 var(--mono),monospace;letter-spacing:.05em;border:1px solid rgba(148,163,184,.3);border-radius:999px;padding:3px 7px;color:#AFC2D8;background:rgba(148,163,184,.08)}
+.pa-state.is-review{color:#FBBF24;border-color:rgba(251,191,36,.32);background:rgba(251,191,36,.1)}
+.pa-state.is-done{color:#34D399;border-color:rgba(52,211,153,.34);background:rgba(52,211,153,.1)}
+.pa-state.is-failed{color:#FCA5A5;border-color:rgba(248,113,113,.34);background:rgba(248,113,113,.1)}
+.pa-brief{margin-top:14px}
+.pa-label{display:block;font:8px/1.2 var(--mono),monospace;letter-spacing:.15em;color:#69D7E6;margin-bottom:5px}
+.pa-brief b{display:block;font-size:16px;line-height:1.45;letter-spacing:.01em;color:#F4F8FF}
+.pa-brief small{display:block;margin-top:5px;font:9px/1.55 var(--mono),monospace;color:#7891AA;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pa-steps{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}
+.pa-steps span{display:inline-flex;align-items:center;gap:4px;font:9px/1.35 var(--mono),monospace;color:#7891AA;border:1px solid rgba(120,160,200,.16);border-radius:4px;padding:3px 5px;background:rgba(5,12,20,.35)}
+.pa-steps span b{font-weight:600;color:#59748E}
+.pa-steps span.is-ok{color:#9BE7C4;border-color:rgba(52,211,153,.2);background:rgba(52,211,153,.065)}
+.pa-steps span.is-ok b{color:#34D399}
+.pa-steps span.is-run{color:#8BE9F7;border-color:rgba(34,211,238,.3);background:rgba(34,211,238,.08)}
+.pa-steps span.is-run b{color:#22D3EE}
+.pa-steps span.is-fail{color:#FCA5A5;border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.08)}
+.pa-steps span.is-fail b{color:#F87171}
+.pa-steps span.is-blocked{color:#FBBF24;border-color:rgba(251,191,36,.24);background:rgba(251,191,36,.07)}
+.pa-steps span.is-blocked b{color:#FBBF24}
+.pa-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-top:auto;padding-top:12px}
+.pa-metrics>div{padding:0 7px;border-left:1px solid rgba(120,160,200,.12)}
+.pa-metrics>div:first-child{padding-left:0;border-left:0}
+.pa-metrics b{display:block;font:600 16px/1.1 var(--mono),monospace;color:#E8F2FF;font-variant-numeric:tabular-nums}
+.pa-metrics span{display:block;margin-top:3px;font:8px/1.2 var(--mono),monospace;letter-spacing:.05em;color:#7088A2}
+.pa-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;padding-top:9px;border-top:1px solid rgba(120,160,200,.12)}
+.pa-foot span{font:9px/1.4 var(--mono),monospace;color:#7F98B2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pa-foot a{flex:0 0 auto;font:600 9px/1.4 var(--mono),monospace;color:#8BE9F7;text-decoration:none}
+.pa-foot a:hover{text-decoration:underline}
+.p0-video-wrap[hidden],.p0-agent[hidden]{display:none}
+.p0-video-wrap .kv-video{min-height:0}
+.p0-video-wrap{min-height:276px;display:flex;align-items:center}
+.p0-video-wrap figure{margin:0;width:100%}
+.p0-kv figcaption a{color:#8BE9F7;text-decoration:none}
+.p0-kv figcaption a:hover{text-decoration:underline}
+@media (max-width:760px){
+  .p0-agent{padding:12px;min-height:0}
+  .pa-brief b{font-size:15px}
+  .pa-steps span{font-size:8px;padding:2px 4px}
+  .pa-metrics{padding-top:10px}
+  .pa-metrics b{font-size:15px}
+  .pa-metrics span{font-size:7px;letter-spacing:0}
+  .pa-foot span{font-size:8px}
+  .pa-foot a{font-size:8px}
+}
 .p0-metrics{display:grid;grid-template-columns:repeat(2,1fr);margin:26px -30px 0;border-top:1px solid rgba(255,255,255,.12)}
 .p0-metrics>div{padding:13px 18px;border-right:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
 .p0-metrics b{display:block;font-size:23px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;line-height:1.15}
@@ -838,15 +898,60 @@ th.sortable:hover{color:var(--brand)}
             </div>
             <div class="p0-kv">
               <figure>
-                <div class="kv-video">
-                  <video id="heroVideo" src="assets/video/brand-film.mp4" poster="assets/img/brand/brand-kv.jpg"
-                         autoplay muted loop playsinline preload="metadata"></video>
-                  <div class="kv-ctrlbar">
-                    <button class="kv-ctrl" id="kvPlay" type="button" aria-label="暂停宣传片">暂停</button>
-                    <button class="kv-ctrl" id="kvSound" type="button" aria-label="开启宣传片声音">声音</button>
+                <div class="p0-media-head">
+                  <div class="p0-media-tabs" role="tablist" aria-label="P0 媒体视图">
+                    <button type="button" class="is-active" data-p0media="agent" role="tab" aria-selected="true">AGENT 运行</button>
+                    <button type="button" data-p0media="film" role="tab" aria-selected="false">品牌片</button>
+                  </div>
+                  <span class="p0-media-live"><i></i>B3 · LOCAL</span>
+                </div>
+                <div class="p0-agent" id="p0AgentCard" aria-label="Agent runtime 展示运行">
+                  <div class="pa-head">
+                    <div class="pa-id">
+                      <span class="pa-pulse" aria-hidden="true"></span>
+                      <div>
+                        <span class="pa-kicker">AGENT RUNTIME · B3</span>
+                        <b>content-orchestrator</b>
+                      </div>
+                    </div>
+                    <span class="pa-state" id="paStatus">READY</span>
+                  </div>
+                  <div class="pa-brief">
+                    <span class="pa-label">MISSION</span>
+                    <b id="paMission">把 P01 一次 Brief 跑成 3 渠道物料</b>
+                    <small id="paMeta">等待一条 Mission · 7 步 / 9 调用</small>
+                  </div>
+                  <div class="pa-steps" id="paSteps">
+                    <span data-step="1"><b>01</b> 取产品卡</span>
+                    <span data-step="2"><b>02</b> 召回约束</span>
+                    <span data-step="3"><b>03</b> 选版式</span>
+                    <span data-step="4"><b>04</b> 编译 Prompt</span>
+                    <span data-step="5"><b>05</b> 生成图片</span>
+                    <span data-step="6"><b>06</b> 质检裁决</span>
+                    <span data-step="7"><b>07</b> 落库</span>
+                  </div>
+                  <div class="pa-metrics">
+                    <div><b id="paStepCount">—</b><span>STEPS</span></div>
+                    <div><b id="paCalls">—</b><span>CALLS</span></div>
+                    <div><b id="paCost">—</b><span>COST</span></div>
+                    <div><b id="paArtifacts">—</b><span>ARTIFACTS</span></div>
+                  </div>
+                  <div class="pa-foot">
+                    <span id="paRun">尚无运行记录</span>
+                    <a href="workbench.html#/runs">打开工作台 →</a>
                   </div>
                 </div>
-                <figcaption>品牌主视觉 · 企业宣传片 / <span id="kvEdition">2025–2026</span> Edition</figcaption>
+                <div class="p0-video-wrap" data-p0media-panel="film" hidden>
+                  <div class="kv-video">
+                    <video id="heroVideo" src="assets/video/brand-film.mp4" poster="assets/img/brand/brand-kv.jpg"
+                           autoplay muted loop playsinline preload="metadata"></video>
+                    <div class="kv-ctrlbar">
+                      <button class="kv-ctrl" id="kvPlay" type="button" aria-label="暂停宣传片">暂停</button>
+                      <button class="kv-ctrl" id="kvSound" type="button" aria-label="开启宣传片声音">声音</button>
+                    </div>
+                  </div>
+                </div>
+                <figcaption id="p0MediaCaption">Agent runtime · content-orchestrator / B3 本地演示 · <a href="workbench.html#/runs">运行档案 →</a></figcaption>
               </figure>
             </div>
           </div>
@@ -3332,6 +3437,8 @@ document.addEventListener("keydown", e=>{
 <script src="runtime/ovem-trace.js"></script>
 <script src="runtime/ovem-store.js"></script>
 <script src="runtime/ovem-lineage.js"></script>
+<!-- P0 Agent 嵌入卡：同源 API / IndexedDB 双源读取，不阻塞 17 页正文 -->
+<script src="runtime/ovem-agent-embed.js"></script>
 
 </body>
 </html>

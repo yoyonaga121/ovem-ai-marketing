@@ -1,6 +1,6 @@
 {
   "stage": "B3",
-  "at": "2026-11-20T12:08:39.584Z",
+  "at": "2026-11-20T12:56:25.310Z",
   "base": "http://127.0.0.1:4318",
   "summary": {
     "total": 10,
@@ -12,7 +12,7 @@
       "id": "E2E-01",
       "title": "health 服务在线 · live 标记",
       "status": "pass",
-      "detail": "{\"ok\":true,\"service\":\"ovem-b3\",\"version\":\"4.0.0-b3\",\"time\":\"2026-11-20T12:08:39.324Z\",\"auth\":\"sqlite\",\"tenants\":2,\"live\""
+      "detail": "{\"ok\":true,\"service\":\"ovem-b3\",\"version\":\"4.0.0-b3\",\"time\":\"2026-11-20T12:56:25.046Z\",\"auth\":\"sqlite\",\"tenants\":2,\"live\""
     },
     {
       "id": "E2E-02",
@@ -48,7 +48,7 @@
       "id": "E2E-07",
       "title": "runs 列表可读",
       "status": "pass",
-      "detail": "runs=12"
+      "detail": "runs=13"
     },
     {
       "id": "E2E-08",
