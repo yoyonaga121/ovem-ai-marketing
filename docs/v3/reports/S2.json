@@ -2,11 +2,11 @@
   "stage": "S2",
   "title": "运行时与工具层",
   "suite": "A2",
-  "at": "2026-11-20T07:19:21.875Z",
+  "at": "2026-11-20T07:22:37.636Z",
   "git": {
-    "ref": "411bf41",
-    "tag": "v3.0-s1",
-    "dirty": true
+    "ref": "92b0b8b",
+    "tag": "v3.0-s2",
+    "dirty": false
   },
   "source": {
     "runtime": [
@@ -16,7 +16,7 @@
       "runtime/ovem-executor.js",
       "runtime/selftest.js"
     ],
-    "browser": "docs\\v3\\reports\\S2.browser.json",
+    "browser": "docs/v3/reports/S2.browser.json",
     "db": "ovem-os-v3",
     "version": "v3.0.0-s2"
   },
@@ -51,42 +51,42 @@
       "title": "6 store / 18 索引 · version=1",
       "status": "pass",
       "detail": "mode=idb · version=1 · stores=6/6 · indexes=18/18",
-      "ms": 33
+      "ms": 37
     },
     {
       "id": "A2-02",
       "title": "9 个工具 happy path 结构符合 io.out",
       "status": "pass",
       "detail": "9/9 工具结构符合 · artifact 3 个",
-      "ms": 749
+      "ms": 852
     },
     {
       "id": "A2-03",
       "title": "mock 延迟 ∈ [800,2400] · 计价按单价累加误差 0",
       "status": "pass",
-      "detail": "9 次延迟 813–2001ms · 6700 tokens · 3 图 · ¥0.1168（误差 0）",
-      "ms": 628
+      "detail": "9 次延迟 1181–2226ms · 6700 tokens · 3 图 · ¥0.1168（误差 0）",
+      "ms": 781
     },
     {
       "id": "A2-04",
       "title": "一条 M-A 端到端：7 步 / 9 调用 / 终态 review",
       "status": "pass",
-      "detail": "7 steps / 9 calls / 9 results · 终态 review · ¥0.1168 · 1975ms",
-      "ms": 1982
+      "detail": "7 steps / 9 calls / 9 results · 终态 review · ¥0.1168 · 1997ms",
+      "ms": 2004
     },
     {
       "id": "A2-05",
       "title": "注入质检不通过 → retry.scheduled → 第二轮通过",
       "status": "pass",
       "detail": "retry=1 · image.gen=2 次 · 终态 review · 最后一轮 pass",
-      "ms": 2213
+      "ms": 2499
     },
     {
       "id": "A2-06",
       "title": "预算 ≥80% → hitl.requested，状态 blocked",
       "status": "pass",
       "detail": "hitl=1 次 · pct=1.084 · 终态 blocked · 已花费 ¥0.1084",
-      "ms": 1100
+      "ms": 1170
     },
     {
       "id": "A2-07",
@@ -107,7 +107,7 @@
         "tokens": 6700,
         "images": 3,
         "costCny": 0.1168,
-        "durationMs": 1975
+        "durationMs": 1997
       },
       "traceCount": 30,
       "artifactIds": [
@@ -126,7 +126,7 @@
         "tokens": 8400,
         "images": 6,
         "costCny": 0.2136,
-        "durationMs": 2206
+        "durationMs": 2494
       },
       "traceCount": 36,
       "artifactIds": [
@@ -145,7 +145,7 @@
         "tokens": 4600,
         "images": 3,
         "costCny": 0.1084,
-        "durationMs": 1095
+        "durationMs": 1166
       },
       "traceCount": 20,
       "artifactIds": []
@@ -222,7 +222,7 @@
     },
     {
       "type": "data",
-      "path": "docs\\v3\\reports\\S2.browser.json",
+      "path": "docs/v3/reports/S2.browser.json",
       "note": "自检台导出的原始结果（cases + runs）"
     }
   ]
