@@ -13,6 +13,13 @@ node server/server.js
 
 首次启动会自动建库、建表、写入两个演示租户与账号。数据库文件为 `server/ovem.db`，不进入 git。
 
+演示一键启动（会自动复用已占用端口，不修改数据库）：
+
+```powershell
+cd 'D:\证件照\我的作品集\AI营销系统搭建\OVEM站点_v2.0'
+.\tools\demo-start.ps1
+```
+
 ## 三种运行模式
 
 | 模式 | 是否需要网络 | 说明 |
