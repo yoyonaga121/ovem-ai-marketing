@@ -172,6 +172,22 @@ input:disabled{background:#F8FAFC;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);background:#0F172A;color:#fff;font-size:12px;padding:8px 14px;border-radius:7px;opacity:0;pointer-events:none;transition:.2s;z-index:1200}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
+/* Agent 分区（v3.0） */
+.agtable{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.agtable th{text-align:left;font-size:10.5px;color:var(--muted);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.agtable td{padding:5px 8px;border-bottom:1px dashed #EEF2F7;vertical-align:middle;overflow:hidden}
+.agtable input[type=text],.agtable input[type=number],.agtable select{width:100%;min-width:0;padding:4px 6px;border:1px solid var(--line);border-radius:5px;font-size:11.5px;background:#fff}
+.agtable code{font-size:10.5px;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.agtable pre{white-space:pre-wrap;word-break:break-word;max-height:220px;overflow:auto}
+.agtable .sw{transform:scale(.88);transform-origin:left center}
+.arow{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;background:#fff;overflow:hidden}
+.arow-h{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line-2);background:#FBFCFE;flex-wrap:wrap}
+.arow-h b{font-size:12.5px}
+.arow-h code{font-size:10.5px;color:var(--muted)}
+.arow-b{padding:10px 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.arow-b .field.wide{grid-column:1/-1}
+@media (max-width:900px){.arow-b{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 @media (max-width:1100px){
   .app{grid-template-columns:1fr}
   .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
@@ -219,6 +235,8 @@ input:disabled{background:#F8FAFC;color:var(--muted)}
 
 <script src="data/ovem-data.js"></script>
 <script src="data/ovem-schema.js"></script>
+<script src="data/ovem-agent.js"></script>
+<script src="data/ovem-agent.schema.js"></script>
 <script>
 /* ============================================================
    OVEM 配置中台 v2.0
@@ -229,16 +247,22 @@ input:disabled{background:#F8FAFC;color:var(--muted)}
    3. 有校验、有逐字段 diff、有影响面、有快照与回滚、有变更日志
    4. 草稿与发布分离：草稿供前台本地预览，发布导出数据文件
    ============================================================ */
-const LS = { draft:"ovem_data_draft", snap:"ovem_snapshots_v2", exp:"ovem_last_export" };
+const LS = { draft:"ovem_data_draft", snap:"ovem_snapshots_v2", exp:"ovem_last_export",
+             agent:"ovem_agent_draft", agentSnap:"ovem_agent_snapshots_v3", agentExp:"ovem_agent_last_export" };
 const S = window.OVEM_SCHEMA;
+const AS = window.OVEM_AGENT_SCHEMA;
 const FILE_DATA = window.OVEM_DATA;
+const FILE_AGENT = window.OVEM_AGENT;
 
 let BASE = FILE_DATA ? clone(FILE_DATA) : null;   /* 已发布基线 */
 let draft = FILE_DATA ? loadDraft() : null;       /* 工作副本 */
+let AGENT_BASE = FILE_AGENT ? clone(FILE_AGENT) : null;
+let agentDraft = FILE_AGENT ? loadAgentDraft() : null;
 let view = "dashboard";
 let q = "";
 const opened = {};
 let ISSUE_CACHE = null;
+let AGENT_ISSUE_CACHE = null;
 
 /* 启动放到脚本末尾：避免 const（NAV / HEAD）在初始化前被访问 */
 
@@ -246,8 +270,9 @@ function fatal(){
   document.getElementById("content").innerHTML =
     '<div class="empty" style="margin-top:40px">'
     + '<h2 style="font-size:15px;color:#1E3A8A;margin:0 0 8px">数据源未加载</h2>'
-    + '<p style="margin:0">本后台需要 <code>data/ovem-data.js</code> 与 <code>data/ovem-schema.js</code>，<br>'
-    + '请确认两个文件与 <code>OVEM配置后台.html</code> 在同一目录下。</p></div>';
+    + '<p style="margin:0">本后台需要 <code>data/ovem-data.js</code>、<code>data/ovem-schema.js</code>，'
+    + '以及 Agent 分区的 <code>data/ovem-agent.js</code>、<code>data/ovem-agent.schema.js</code>，<br>'
+    + '请确认四个文件与 <code>OVEM配置后台.html</code> 在同一目录下。</p></div>';
 }
 
 /* ---------------- 工具 ---------------- */
@@ -464,10 +489,10 @@ function derived(m){
 /* ---------------- 导航 ---------------- */
 const CONF_ORDER = ["brand","hero","metrics","goals","products","channels","pages"];
 function ico(id){
-  return { dashboard:"◧", brand:"◇", hero:"▤", metrics:"▦", goals:"◎", channels:"⇄", products:"⬡", pages:"▥", meta:"⌗", history:"↺", publish:"⇧" }[id] || "▪";
+  return { dashboard:"◧", brand:"◇", hero:"▤", metrics:"▦", goals:"◎", channels:"⇄", products:"⬡", pages:"▥", agent:"◈", meta:"⌗", history:"↺", publish:"⇧" }[id] || "▪";
 }
 function navName(id){
-  const fixed = { dashboard:"配置概览", history:"版本与快照", publish:"变更与发布", meta:"版本信息", pages:"页面与导航" };
+  const fixed = { dashboard:"配置概览", history:"版本与快照", publish:"变更与发布", meta:"版本信息", pages:"页面与导航", agent:"Agent 管理" };
   if(fixed[id]) return fixed[id];
   const s = section(id);
   return s ? s.title : id;
@@ -475,10 +500,12 @@ function navName(id){
 const NAV = [
   { group:"总览", items:[{ id:"dashboard" }] },
   { group:"配置", items: CONF_ORDER.map(id => ({ id })) },
+  { group:"Agent", items:[{ id:"agent" }] },
   { group:"发布", items:[{ id:"meta" },{ id:"history" },{ id:"publish" }] }
 ];
 const HEAD = {
-  dashboard:{ crumb:"概览", title:"配置概览", desc:"一个后台统管品牌、产品、渠道、目标与页面可见性。字段来自同一份 schema，改完先校验，再决定「本地预览」还是「导出发布」。" },
+  dashboard:{ crumb:"概览", title:"配置概览", desc:"一个后台统管品牌、产品、渠道、目标、页面可见性与 Agent 配置。改完先校验，再决定「本地预览」还是「导出发布」。" },
+  agent:{ crumb:"Agent", title:"Agent 管理", desc:"第 12 分区：3 个角色、9 个工具、4 条 Prompt、6 项护栏、17 页血缘。配置进 git，运行态进 IndexedDB。" },
   pages:{ crumb:"配置", title:"页面与导航", desc:"关掉的页面会同时从导航移除并从 DOM 删除，不只是隐藏入口。" },
   meta:{ crumb:"发布", title:"版本信息", desc:"发布时自动写入版本号与时间；建议按 v2.0.x 递增。" },
   history:{ crumb:"发布", title:"版本与快照", desc:"每次发布前存一份快照，改坏了整份回滚。快照存在浏览器本地，导出发布包后可长期留档。" },
@@ -499,6 +526,11 @@ function navBadge(id){
     return { text: n + "/" + S.pages.length };
   }
   if(id === "meta") return { text: (draft.meta && draft.meta.version) || "" };
+  if(id === "agent"){
+    const a = (agentDraft.agents || []).length, t = (agentDraft.tools || []).length;
+    const e = errorsOnly(agentIssues()).length;
+    return { text: a + "A · " + t + "T", warn: e > 0 };
+  }
   if(id === "publish"){
     const d = computeDiff().length;
     return d ? { text: d + " 改", warn: true } : null;
@@ -540,6 +572,22 @@ function refreshBadges(){
     : '<span class="chip ok">校验通过</span>';
   if(wins.length) html += '<span class="chip warn">' + wins.length + " 条提醒</span>";
 
+  if(agentDraft){
+    const aDiffs = agentDiff();
+    const aErrs = errorsOnly(agentIssues());
+    if(aDiffs.length) html += '<span class="chip dirty">Agent 待发布 ' + aDiffs.length + " 项</span>";
+    if(aErrs.length) html += '<span class="chip err">Agent ' + aErrs.length + " 处错误</span>";
+    if(view === "agent"){
+      const ab = el("agentBadge");
+      if(ab){
+        ab.className = "chip " + (aErrs.length ? "err" : "ok");
+        ab.textContent = aErrs.length ? aErrs.length + " 处校验错误" : "校验通过";
+      }
+      const rl = el("agentRules");
+      if(rl) rl.innerHTML = agentRulesHtml();
+    }
+  }
+
   html += '<button class="btn sm" data-act="check">重新校验</button>';
   html += '<button class="btn sm" data-act="saveDraft">存草稿</button>';
   html += '<button class="btn sm primary" data-act="publish">发布</button>';
@@ -558,6 +606,7 @@ function render(){
 
   let body = "";
   if(view === "dashboard") body = vDashboard();
+  else if(view === "agent") body = vAgent();
   else if(view === "publish") body = vPublish();
   else if(view === "history") body = vHistory();
   else if(view === "pages") body = vPages();
@@ -581,6 +630,10 @@ function vDashboard(){
   const imp = impactOf(diffs);
   const visiblePages = S.pages.filter(p => draft.pages[p.id] !== false).length;
   const reqTotal = countRequired(false), reqFilled = countRequired(true);
+  const agentErrs = agentDraft ? errorsOnly(agentIssues()).length : 1;
+  const ac = agentDraft ? (agentDraft.agents || []).length : 0;
+  const tc = agentDraft ? (agentDraft.tools || []).length : 0;
+  const pc = agentDraft ? (agentDraft.prompts || []).length : 0;
 
   const checks = [
     { ok: reqFilled === reqTotal, t:"必填字段完整", s: reqFilled + " / " + reqTotal + " 个必填字段已填写" },
@@ -589,6 +642,7 @@ function vDashboard(){
     { ok: draft.pages.p0 !== false, t:"P0 系统总览保持可见", s: "它是演示入口，下线后前台没有落地页" },
     { ok: !!(draft.meta && draft.meta.version), t:"版本号已填写", s: (draft.meta && draft.meta.version) || "未填写" },
     { ok: errs.length === 0, t:"校验无错误", s: errs.length ? errs.length + " 处错误待修" : "全部通过" },
+    { ok: agentErrs === 0, t:"Agent 配置校验通过", s: ac + " Agent · " + tc + " 工具 · " + pc + " Prompt · 7 条规则" },
     { ok: true, t:"每个字段都有前台消费方", s: "0 个孤儿字段：schema 里每个字段都标注了它影响哪一页" }
   ];
 
@@ -623,10 +677,11 @@ function vDashboard(){
         : '<div class="empty">没有改动，也就没有影响面。</div>')
     + "</div></div>"
 
-  + '<div class="card"><div class="card-h"><div><h3>快捷入口</h3><p>三类高频操作。</p></div></div><div class="card-b"><div class="quick">'
+  + '<div class="card"><div class="card-h"><div><h3>快捷入口</h3><p>四类高频操作。</p></div></div><div class="card-b"><div class="quick" style="grid-template-columns:repeat(4,minmax(0,1fr))">'
     + '<button data-nav="products"><b>产品矩阵</b><span>' + c.pc + " 款启用 · 13 个字段全可改</span></button>"
     + '<button data-nav="channels"><b>渠道矩阵</b><span>' + c.cc + " 个渠道 · 规范与 KPI</span></button>"
     + '<button data-nav="goals"><b>年度目标</b><span>P1 四张 KPI 卡的口径</span></button>'
+    + '<button data-nav="agent"><b>Agent 管理</b><span>' + ac + " 角色 · " + tc + " 工具 · 护栏 6 项</span></button>"
     + "</div></div></div>";
 }
 function stat(k, v, unit, foot){
@@ -837,6 +892,372 @@ function vPages(){
     + "</tbody></table></div></div>";
 }
 
+/* ---------------- Agent 配置（第 12 分区） ---------------- */
+function agentSnapshots(){
+  try{ return JSON.parse(localStorage.getItem(LS.agentSnap) || "[]"); }catch(e){ return []; }
+}
+function saveAgentSnapshots(list){
+  try{ localStorage.setItem(LS.agentSnap, JSON.stringify(list.slice(0, 20))); }
+  catch(e){ toast("Agent 快照保存失败：浏览器存储已满"); }
+}
+function loadAgentDraft(){
+  try{
+    const raw = localStorage.getItem(LS.agent);
+    if(raw){
+      const pack = JSON.parse(raw);
+      if(pack && pack.data && pack.meta && pack.meta.mode === "draft") return pack.data;
+    }
+  }catch(e){}
+  return clone(FILE_AGENT);
+}
+function saveAgentDraft(silent){
+  const pack = { meta:{ mode:"draft", version:(agentDraft.meta && agentDraft.meta.version) || "draft", updated: nowStr() }, data: agentDraft };
+  try{
+    localStorage.setItem(LS.agent, JSON.stringify(pack));
+    if(!silent) toast("Agent 草稿已保存到本机，刷新后台仍在");
+    refreshBadges();
+  }catch(e){
+    toast("保存失败：浏览器存储已满或被禁用");
+  }
+}
+function agentItemLabel(sec, it, i){
+  if(sec.id === "agents") return (it.name || it.id || ("Agent " + (i+1))) + " · " + (it.id || "—");
+  if(sec.id === "tools") return it.id || ("工具 " + (i+1));
+  if(sec.id === "prompts") return it.id || ("Prompt " + (i+1));
+  return sec.title + " #" + (i+1);
+}
+function agentIssues(){
+  if(AGENT_ISSUE_CACHE) return AGENT_ISSUE_CACHE;
+  const list = [];
+  (AS.sections || []).forEach(sec => {
+    const arr = agentDraft[sec.target] || [];
+    (sec.itemFields || []).forEach(f => {
+      if(!f.unique) return;
+      const seen = {};
+      arr.forEach((it, i) => {
+        const k = String(getPath(it, f.key));
+        if(!k || k === "undefined") return;
+        if(seen[k]) list.push({ level:"error", path:sec.target + "." + i + "." + f.key, msg: agentItemLabel(sec, it, i) + " · " + f.label + "：重复 " + k });
+        seen[k] = true;
+      });
+    });
+    arr.forEach((it, i) => {
+      (sec.itemFields || []).forEach(f => {
+        const msg = checkField(f, getPath(it, f.key));
+        if(msg) list.push({ level:"error", path:sec.target + "." + i + "." + f.key, msg: agentItemLabel(sec, it, i) + " · " + f.label + "：" + msg });
+      });
+    });
+  });
+  (AS.guardrails.fields || []).forEach(f => {
+    const msg = checkField(f, (agentDraft.guardrails || {})[f.key]);
+    if(msg) list.push({ level:"error", path:"guardrails." + f.key, msg:"护栏 · " + f.label + "：" + msg });
+  });
+  (AS.rules || []).forEach(r => {
+    let res;
+    try{ res = r.check(agentDraft, S.pages); }catch(e){ res = { ok:false, detail:"执行异常" }; }
+    if(!res.ok) list.push({ level:"error", path:"rule:" + r.id, msg: r.id + " " + r.code + " · " + r.msg + "（" + (res.detail || "") + "）" });
+  });
+  AGENT_ISSUE_CACHE = list;
+  return list;
+}
+function agentDiff(){
+  const rows = [];
+  (AS.sections || []).forEach(sec => {
+    const A0 = (AGENT_BASE && AGENT_BASE[sec.target]) || [];
+    const B0 = agentDraft[sec.target] || [];
+    const n = Math.max(A0.length, B0.length);
+    for(let i = 0; i < n; i++){
+      const a = A0[i] || {}, b = B0[i] || {};
+      (sec.itemFields || []).forEach(f => {
+        const av = getPath(a, f.key), bv = getPath(b, f.key);
+        if(!eq(av, bv)) rows.push({
+          path: sec.target + "." + i + "." + f.key,
+          label: agentItemLabel(sec, b, i) + " · " + f.label,
+          before: av, after: bv, consumers: f.consumers || []
+        });
+      });
+    }
+  });
+  (AS.guardrails.fields || []).forEach(f => {
+    const a = (AGENT_BASE.guardrails || {})[f.key], b = (agentDraft.guardrails || {})[f.key];
+    if(!eq(a, b)) rows.push({ path:"guardrails." + f.key, label:"护栏 · " + f.label, before:a, after:b, consumers: f.consumers || [] });
+  });
+  const keys = Object.keys(agentDraft.lineage || {});
+  keys.forEach(k => {
+    if(!eq((AGENT_BASE.lineage || {})[k], agentDraft.lineage[k])) {
+      rows.push({ path:"lineage." + k, label:"页面血缘 · " + k, before:(AGENT_BASE.lineage || {})[k], after: agentDraft.lineage[k], consumers:[k] });
+    }
+  });
+  return rows;
+}
+function aCell(f, val, path){
+  const id = "c_" + path.replace(/[^\w]/g, "_");
+  const err = agentIssues().filter(x => x.path === path)[0];
+  let ctl = "";
+  if(f.type === "select"){
+    const opts = f.options || (f.optionsFrom === "providers" ? (agentDraft.providers || []).map(p => ({ v:p.id, label:p.name })) : []);
+    ctl = '<select id="' + id + '" data-apath="' + path + '">'
+      + (f.required ? "" : '<option value="">（未填）</option>')
+      + opts.map(o => '<option value="' + esc(o.v) + '"' + (o.v === val ? " selected" : "") + ">" + esc(o.label) + "</option>").join("")
+      + "</select>";
+  }else if(f.type === "number"){
+    ctl = '<input id="' + id + '" type="number" data-atype="number" data-apath="' + path + '" value="' + (val == null ? "" : esc(val)) + '"'
+      + (f.min !== undefined ? ' min="' + f.min + '"' : "") + (f.max !== undefined ? ' max="' + f.max + '"' : "")
+      + ' step="' + (f.step || 1) + '">';
+  }else if(f.type === "switch"){
+    ctl = '<label class="sw"><input type="checkbox" data-atype="switch" data-apath="' + path + '"' + (val === false ? "" : " checked") + "><i></i></label>";
+  }else if(f.type === "tags"){
+    ctl = '<input id="' + id + '" type="text" data-atype="tags" data-apath="' + path + '" value="' + esc((val || []).join("、")) + '" title="' + esc((val || []).join("、")) + '">';
+  }else{
+    ctl = '<input id="' + id + '" type="text" data-apath="' + path + '" value="' + esc(val == null ? "" : val) + '">';
+  }
+  return ctl + (err ? '<div class="ferr on" style="margin-top:2px">' + esc(err.msg) + "</div>" : "");
+}
+function agentField(f, val, path, wide){
+  const id = "a_" + path.replace(/[^\w]/g, "_");
+  const label = '<label for="' + id + '">' + esc(f.label) + (f.required ? "<b>*</b>" : "") + "</label>";
+  let ctl = "";
+  switch(f.type){
+    case "textarea":
+      ctl = '<textarea id="' + id + '" data-atype="text" data-apath="' + path + '" rows="' + (f.rows || 3) + '"'
+        + (f.readonly ? " readonly" : "") + ">" + esc(val || "") + "</textarea>";
+      break;
+    case "number":
+      ctl = '<input id="' + id + '" type="number" data-atype="number" data-apath="' + path + '" value="' + (val == null ? "" : esc(val)) + '"'
+        + (f.min !== undefined ? ' min="' + f.min + '"' : "") + (f.max !== undefined ? ' max="' + f.max + '"' : "")
+        + ' step="' + (f.step || 1) + '">';
+      break;
+    case "select": {
+      const opts = f.options || (f.optionsFrom === "providers" ? (agentDraft.providers || []).map(p => ({ v:p.id, label:p.name })) : []);
+      ctl = '<select id="' + id + '" data-atype="select" data-apath="' + path + '">'
+        + (f.required ? "" : '<option value="">（未填）</option>')
+        + opts.map(o => '<option value="' + esc(o.v) + '"' + (o.v === val ? " selected" : "") + ">" + esc(o.label) + "</option>").join("")
+        + "</select>";
+      break;
+    }
+    case "switch":
+      ctl = '<label class="sw"><input type="checkbox" data-atype="switch" data-apath="' + path + '"' + (val === false ? "" : " checked") + "><i></i></label>";
+      break;
+    case "tags":
+      ctl = '<input id="' + id + '" type="text" data-atype="tags" data-apath="' + path + '" value="' + esc((val || []).join("、")) + '" placeholder="用顿号分隔">';
+      break;
+    default:
+      ctl = '<input id="' + id + '" type="text" data-atype="text" data-apath="' + path + '" value="' + esc(val == null ? "" : val) + '">';
+  }
+  const hint = f.hint ? '<div class="sub">' + esc(f.hint) + "</div>" : "";
+  const err = agentIssues().filter(x => x.path === path)[0];
+  return '<div class="field' + ((f.type === "textarea" || wide) ? " wide" : "") + '">' + label + ctl + hint
+    + '<div class="ferr' + (err ? " on" : "") + '">' + esc(err ? err.msg : "") + "</div></div>";
+}
+function agentCard(a, i){
+  const sec = AS.sections[0];
+  const fields = sec.itemFields;
+  const pick = keys => keys.map(k => { const f = fields.find(x => x.key === k); return f ? agentField(f, getPath(a, k), "agents." + i + "." + k) : ""; }).join("");
+  const errs = agentIssues().filter(x => x.path.indexOf("agents." + i + ".") === 0).length;
+  return '<div class="arow" data-agent-row data-aid="' + esc(a.id || "") + '">'
+    + '<div class="arow-h"><b>' + esc(a.name || "（未命名）") + "</b><code>" + esc(a.id || "") + "</code>"
+      + '<span class="pill ' + (a.role === "planner" ? "t3" : a.role === "critic" ? "t1" : "t2") + '">' + esc(a.role || "-") + "</span>"
+      + '<span style="margin-left:auto;color:' + (errs ? "#B91C1C" : "#64748B") + ';font-size:11px">' + (errs ? errs + " 处错误" : "校验通过") + "</span>"
+      + '<label class="sw" title="启用 / 停用"><input type="checkbox" data-atype="switch" data-apath="agents.' + i + '.enabled"' + (a.enabled === false ? "" : " checked") + "><i></i></label>"
+    + "</div>"
+    + '<div class="arow-b">'
+      + pick(["name","role","providerId","promptRef.id","promptRef.version","limits.maxSteps","limits.budgetCny","hitl.onBudgetPct","hitl.requireBefore"])
+      + agentField(fields.find(f => f.key === "tools"), a.tools, "agents." + i + ".tools", true)
+      + agentField(fields.find(f => f.key === "note"), a.note, "agents." + i + ".note", true)
+    + "</div></div>";
+}
+function agentRulesHtml(){
+  return (AS.rules || []).map(r => {
+    let res; try{ res = r.check(agentDraft, S.pages); }catch(e){ res = { ok:false, detail:"执行异常" }; }
+    return '<div class="row"><span class="lbl"><b style="color:#0F172A">' + r.id + "</b> · " + esc(r.msg)
+      + "<small>" + esc(r.code) + " · " + esc(res.detail || "") + "</small></span>"
+      + '<span class="vals"><span class="chip ' + (res.ok ? "ok" : "err") + '">' + (res.ok ? "通过" : "阻断") + "</span></span></div>";
+  }).join("");
+}
+function vAgent(){
+  const errs = errorsOnly(agentIssues());
+  const diffs = agentDiff();
+  const as = agentDraft.agents || [], ts = agentDraft.tools || [], ps = agentDraft.prompts || [];
+  const g = agentDraft.guardrails || {};
+  const lineageCount = Object.keys(agentDraft.lineage || {}).length;
+  const snaps = agentSnapshots();
+
+  const rules = agentRulesHtml();
+
+  return '<div class="stats" style="grid-template-columns:repeat(5,minmax(0,1fr))">'
+      + stat("Agent 角色", as.filter(a => a.enabled !== false).length, "/ " + as.length, "planner / critic / writer")
+      + stat("工具", ts.length, "个", "read / write / publish 三级权限")
+      + stat("Prompt", ps.length, "条", "版本化，hash 由正文计算")
+      + stat("护栏阈值", Object.keys(g).length, "项", "预算 ¥" + (g.dailyBudgetCny || "-") + " / 日")
+      + stat("页面血缘", lineageCount, "/ " + S.pages.length, "缺失即阻断发布")
+    + "</div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>Agent 角色</h3>'
+      + "<p>三个角色分工固定：编排只发计划、裁决只读判定、文案只写不落库。工具集必须是工具清单的子集。</p></div>"
+      + '<div class="right"><span class="chip ' + (errs.length ? "err" : "ok") + '" id="agentBadge">' + (errs.length ? errs.length + " 处校验错误" : "校验通过") + "</span></div></div>"
+      + '<div class="card-b">' + as.map((a, i) => agentCard(a, i)).join("") + "</div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>工具清单</h3><p>9 个工具，权限越高约束越紧：publish 类必须过人工闸门。</p></div>'
+      + '<div class="right"><span class="chip">' + ts.length + " 个</span></div></div>"
+      + '<div class="card-b"><table class="agtable"><thead><tr><th style="width:158px">工具</th><th>输入 → 输出</th>'
+      + '<th style="width:94px">权限</th><th style="width:84px">超时 ms</th><th style="width:58px">重试</th><th style="width:54px">Mock</th><th style="width:150px">消费页面</th></tr></thead><tbody>'
+      + ts.map((t, i) => {
+        const f = k => AS.sections[1].itemFields.find(x => x.key === k);
+        return '<tr data-tool-row data-tid="' + esc(t.id) + '"><td><code>' + esc(t.id) + '</code><div class="sub" style="font-size:10px;line-height:1.4">' + esc(t.name || "") + "</div></td>"
+          + "<td><code>" + esc(t.io && t.io.in || "") + " → " + esc(t.io && t.io.out || "") + "</code></td>"
+          + "<td>" + aCell(f("perm"), t.perm, "tools." + i + ".perm") + "</td>"
+          + "<td>" + aCell(f("timeoutMs"), t.timeoutMs, "tools." + i + ".timeoutMs") + "</td>"
+          + "<td>" + aCell(f("retry"), t.retry, "tools." + i + ".retry") + "</td>"
+          + "<td>" + aCell(f("mockable"), t.mockable, "tools." + i + ".mockable") + "</td>"
+          + '<td><div style="font-size:10.5px;line-height:1.55;color:#475569">'
+          + (t.consumers || []).map(c => '<span style="white-space:nowrap">' + esc(c) + "</span>").join(" · ") + "</div></td></tr>";
+      }).join("") + "</tbody></table></div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>Prompt 版本</h3><p>正文只读：改正文必须走编译流程重算 hash，避免「文案改了、哈希没变」的假账。</p></div>'
+      + '<div class="right"><span class="chip">' + ps.length + " 条</span></div></div>"
+      + '<div class="card-b"><table class="agtable"><thead><tr><th style="width:160px">Prompt</th><th style="width:88px">版本</th><th style="width:260px">变量</th>'
+      + '<th style="width:112px">内容哈希</th><th>正文</th></tr></thead><tbody>'
+      + ps.map((p, i) => '<tr data-prompt-row data-pid="' + esc(p.id) + '"><td><code>' + esc(p.id) + "</code></td>"
+          + "<td>" + aCell(AS.sections[2].itemFields.find(x => x.key === "version"), p.version, "prompts." + i + ".version") + "</td>"
+          + "<td>" + aCell(AS.sections[2].itemFields.find(x => x.key === "variables"), p.variables, "prompts." + i + ".variables") + "</td>"
+          + '<td><code title="' + esc(p.hash || "") + '">' + esc(String(p.hash || "").slice(0, 16)) + "…</code></td>"
+          + '<td><details><summary style="cursor:pointer;color:#2563EB;font-size:11.5px">查看正文（' + String(p.body || "").length + " 字）</summary>"
+          + '<pre style="white-space:pre-wrap;font-size:11px;color:#475569;margin:6px 0 0;line-height:1.7">' + esc(p.body || "") + "</pre></details></td></tr>").join("")
+      + "</tbody></table></div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>护栏阈值</h3><p>六项硬边界。Agent 的步数与预算不得超过这里（R6）。</p></div></div>'
+      + '<div class="card-b"><div class="grid3">' + (AS.guardrails.fields || []).map(f => agentField(f, g[f.key], "guardrails." + f.key)).join("") + "</div></div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>页面血缘</h3><p>每页的数据由哪些工具产出：前台画血缘条，发布前算影响面，都读这张表。</p></div>'
+      + '<div class="right"><span class="chip ' + (lineageCount === S.pages.length ? "ok" : "err") + '">' + lineageCount + " / " + S.pages.length + "</span></div></div>"
+      + '<div class="card-b"><table class="agtable"><thead><tr><th style="width:64px">编号</th><th style="width:180px">页面</th><th>产出工具</th><th style="width:70px">计数</th></tr></thead><tbody>'
+      + S.pages.map(p => {
+        const v = agentDraft.lineage[p.id] || [];
+        return '<tr data-lineage-row><td>' + p.no + "</td><td>" + esc(p.name) + "</td>"
+          + "<td>" + aCell({ type:"tags" }, v, "lineage." + p.id) + "</td>"
+          + '<td><span class="chip">' + v.length + "</span></td></tr>";
+      }).join("") + "</tbody></table></div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>发布与快照</h3><p>Agent 配置单独发布、单独留档，不跟业务数据混在一次提交里。</p></div>'
+      + '<div class="right"><span class="chip ' + (diffs.length ? "dirty" : "ok") + '">' + (diffs.length ? "待发布 " + diffs.length + " 项" : "与已发布一致") + "</span></div></div>"
+      + '<div class="card-b">'
+      + (diffs.length ? diffList(diffs.slice(0, 8)) : '<div class="empty">还没有改动。改上方任一字段会出现逐字段 diff。</div>')
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+        + '<button class="btn sm" data-aact="check">重新校验</button>'
+        + '<button class="btn sm" data-aact="save">存 Agent 草稿</button>'
+        + '<button class="btn sm" data-aact="snap">存快照</button>'
+        + '<button class="btn sm primary" data-aact="publish"' + (errs.length ? " disabled" : "") + ">发布并导出 ovem-agent.js</button>"
+        + '<button class="btn sm ghost" data-aact="clear">清除草稿</button>'
+      + "</div>"
+      + '<div class="sub" style="margin-top:10px;line-height:1.9">导出后覆盖 <code>data/ovem-agent.js</code>；本地草稿键 <code>' + LS.agent + "</code>，快照键 <code>" + LS.agentSnap + "</code>（最多 20 份）。</div>"
+      + "</div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>规则矩阵 R1–R7</h3><p>与数据层 5 条规则相互独立：这里只校验 Agent 配置自身的一致性。</p></div></div>'
+      + '<div class="card-b"><div class="rows" id="agentRules">' + rules + "</div></div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>Agent 快照</h3><p>与数据快照分开存，互不覆盖。</p></div>'
+      + '<div class="right"><button class="btn sm" data-aact="snap">存一份</button></div></div>'
+      + '<div class="card-b">' + (snaps.length
+        ? '<div class="rows">' + snaps.map((s, i) =>
+            '<div class="row"><span class="lbl"><b style="color:#0F172A">' + esc(s.version || "未命名") + "</b> · " + esc(s.note || "")
+              + "<small>" + esc(s.at) + " · 存于 " + esc(s.rows || 0) + " 条改动时</small></span>"
+              + '<span class="vals"><button class="btn sm" data-aact="restore" data-i="' + i + '">恢复</button> '
+              + '<button class="btn sm danger" data-aact="delSnap" data-i="' + i + '">删除</button></span></div>').join("") + "</div>"
+        : '<div class="empty">还没有 Agent 快照。建议在每次发布 Agent 配置前存一份。</div>')
+      + "</div></div>";
+}
+function agentFileText(data){
+  const stamp = new Date().toISOString();
+  return "/* ============================================================\n"
+    + "   OVEM Agent 配置 · 由配置中台 v3.0 发布\n"
+    + "   发布时间：" + stamp + "\n"
+    + "   版本：" + ((data.meta && data.meta.version) || "") + "\n"
+    + "   读取方：配置后台第 12 分区 / runtime/* / tools/verify-agent-config.js\n"
+    + "   ============================================================ */\n"
+    + "window.OVEM_AGENT = " + JSON.stringify(data, null, 2) + ";\n";
+}
+function agentPublishFlow(){
+  const errs = errorsOnly(agentIssues());
+  if(errs.length){
+    modal("无法发布 Agent 配置", "<p>还有 <b>" + errs.length + "</b> 处错误：</p><ul style='padding-left:18px;margin:8px 0'>"
+      + errs.slice(0, 6).map(x => "<li>" + esc(x.msg) + "</li>").join("") + "</ul>"
+      + "<p style='color:#64748B;margin:0'>修完再发布。规则矩阵在页面底部。</p>", null, "知道了");
+    return;
+  }
+  const diffs = agentDiff();
+  if(!diffs.length){ toast("Agent 配置没有改动"); return; }
+  modal("发布 Agent 配置",
+    '<div class="field"><label>版本号</label><input type="text" id="pubAgentVer" value="'
+      + esc((agentDraft.meta && agentDraft.meta.version) || "v3.0.1") + '"></div>'
+    + '<div class="field" style="margin-top:10px"><label>变更说明（写入 meta.changelog）</label>'
+    + '<input type="text" id="pubAgentNote" placeholder="例如：image.gen 超时 5000 → 4200ms"></div>'
+    + '<div style="margin-top:14px;padding:10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:7px">'
+    + "<b>" + diffs.length + "</b> 项改动 · 涉及 <b>" + new Set(diffs.map(r => (r.path || "").split(".")[0])).size + "</b> 类对象<br>"
+    + '<span style="color:#64748B;font-size:11px">导出后覆盖 data/ovem-agent.js，刷新后台与前台生效。</span></div>',
+    m => {
+      const ver = m.querySelector("#pubAgentVer").value.trim();
+      const note = m.querySelector("#pubAgentNote").value.trim();
+      if(!ver){ toast("版本号不能为空"); return false; }
+      agentDraft.meta.version = ver;
+      agentDraft.meta.updated = nowStr();
+      agentDraft.meta.mode = "published";
+      agentDraft.meta.changelog = agentDraft.meta.changelog || [];
+      agentDraft.meta.changelog.unshift({ v: ver, at: nowStr(), by:"配置中台", note: note || "发布 Agent 配置" });
+      download("ovem-agent.js", agentFileText(agentDraft));
+      localStorage.setItem(LS.agentExp, nowStr());
+      AGENT_BASE = clone(agentDraft);
+      localStorage.removeItem(LS.agent);
+      AGENT_ISSUE_CACHE = null;
+      toast("已导出 ovem-agent.js，覆盖 data/ 目录后生效");
+      render();
+    }, "发布并导出");
+}
+function agentAction(act, node){
+  if(act === "check"){ AGENT_ISSUE_CACHE = null; toast(errorsOnly(agentIssues()).length ? "Agent 配置有错误，见规则矩阵" : "Agent 配置校验通过"); render(); }
+  if(act === "save"){ saveAgentDraft(); render(); }
+  if(act === "publish"){ agentPublishFlow(); }
+  if(act === "clear"){
+    modal("清除 Agent 草稿", "<p>清除后回到 <code>data/ovem-agent.js</code> 的已发布配置，未导出的改动会丢失。</p>", ()=>{
+      localStorage.removeItem(LS.agent);
+      agentDraft = clone(AGENT_BASE);
+      AGENT_ISSUE_CACHE = null;
+      toast("Agent 草稿已清除");
+      render();
+    }, "确认清除");
+  }
+  if(act === "snap"){
+    modal("存一份 Agent 快照",
+      '<div class="field"><label>说明</label><input type="text" id="aSnapNote" placeholder="例如：S2 接入真实模型前"></div>',
+      m => {
+        const note = m.querySelector("#aSnapNote").value.trim();
+        const list = agentSnapshots();
+        list.unshift({ at: nowStr(), version:(agentDraft.meta && agentDraft.meta.version) || "未命名", note: note || "手动快照", rows: agentDiff().length, data: clone(agentDraft) });
+        saveAgentSnapshots(list);
+        toast("Agent 快照已保存");
+        render();
+      }, "保存");
+  }
+  if(act === "restore"){
+    const i = Number(node.dataset.i), s = agentSnapshots()[i];
+    if(!s) return;
+    modal("恢复 Agent 快照", "<p>将把当前 Agent 工作副本替换为 <b>" + esc(s.version) + "</b>（" + esc(s.at) + "）。<br>恢复前会自动把当前状态再存一份。</p>", ()=>{
+      const list = agentSnapshots();
+      list.unshift({ at: nowStr(), version:(agentDraft.meta && agentDraft.meta.version) || "自动备份", note:"恢复前自动备份", rows: agentDiff().length, data: clone(agentDraft) });
+      saveAgentSnapshots(list);
+      agentDraft = clone(s.data);
+      AGENT_ISSUE_CACHE = null;
+      toast("已恢复：" + s.version);
+      render();
+    }, "恢复");
+  }
+  if(act === "delSnap"){
+    const i = Number(node.dataset.i), list = agentSnapshots();
+    list.splice(i, 1);
+    saveAgentSnapshots(list);
+    render();
+  }
+}
+
 /* ---------------- 版本与快照 ---------------- */
 function snapshots(){
   try{ return JSON.parse(localStorage.getItem(LS.snap) || "[]"); }catch(e){ return []; }
@@ -976,6 +1397,17 @@ document.addEventListener("input", e => {
     if(nq){ nq.focus(); nq.setSelectionRange(pos, pos); }
     return;
   }
+  if(t.dataset && t.dataset.apath){
+    writeAgentField(t);
+    const abox = t.closest(".field") && t.closest(".field").querySelector(".ferr");
+    if(abox){
+      const m = agentIssues().filter(x => x.path === t.dataset.apath)[0];
+      abox.textContent = m ? m.msg : "";
+      abox.classList.toggle("on", !!m);
+    }
+    scheduleBadges();
+    return;
+  }
   if(!t.dataset || !t.dataset.path) return;
   writeField(t);
   const errBox = t.closest(".field") && t.closest(".field").querySelector(".ferr");
@@ -988,8 +1420,20 @@ document.addEventListener("input", e => {
 });
 document.addEventListener("change", e => {
   const t = e.target;
+  if(t.dataset && t.dataset.apath){ writeAgentField(t); refreshBadges(); return; }
   if(t.dataset && t.dataset.path){ writeField(t); refreshBadges(); }
 });
+
+function writeAgentField(t){
+  const path = t.dataset.apath;
+  let v;
+  if(t.type === "checkbox") v = t.checked;
+  else if(t.dataset.atype === "number") v = t.value === "" ? "" : Number(t.value);
+  else if(t.dataset.atype === "tags") v = t.value.split(/[、,，\s]+/).filter(Boolean);
+  else v = t.value;
+  setPath(agentDraft, path, v);
+  AGENT_ISSUE_CACHE = null;
+}
 
 function writeField(t){
   const path = t.dataset.path;
@@ -1013,6 +1457,9 @@ document.addEventListener("click", e => {
     render();
     return;
   }
+
+  const aact = e.target.closest("[data-aact]");
+  if(aact){ agentAction(aact.dataset.aact, aact); return; }
 
   const act = e.target.closest("[data-act]");
   if(act){ doAction(act.dataset.act, act); return; }
@@ -1146,7 +1593,7 @@ function init(){
   render();
 }
 
-if(!S || !FILE_DATA){ fatal(); } else { init(); }
+if(!S || !FILE_DATA || !AS || !FILE_AGENT){ fatal(); } else { init(); }
 </script>
 </body>
 </html>

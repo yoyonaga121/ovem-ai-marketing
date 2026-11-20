@@ -1,0 +1,137 @@
+{
+  "stage": "S1",
+  "title": "Agent 配置层",
+  "suite": "A1",
+  "at": "2026-11-20T07:04:53.977Z",
+  "git": {
+    "ref": "5dc38d8",
+    "tag": "v3.0-s0",
+    "dirty": true
+  },
+  "source": {
+    "config": "data/ovem-agent.js",
+    "schema": "data/ovem-agent.schema.js",
+    "version": "v3.0.0"
+  },
+  "metrics": {
+    "agents": 3,
+    "tools": 9,
+    "prompts": 4,
+    "guardrails": 6,
+    "lineage": 17,
+    "providers": 2
+  },
+  "summary": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "pending": 0
+  },
+  "cases": [
+    {
+      "id": "A1-01",
+      "title": "tools = 9 且 id 唯一",
+      "status": "pass",
+      "detail": "tools=9 · 重复=0"
+    },
+    {
+      "id": "A1-02",
+      "title": "agents = 3，agents[].tools ⊆ tools.id",
+      "status": "pass",
+      "detail": "agents=3 · 差集=空"
+    },
+    {
+      "id": "A1-03",
+      "title": "promptRef 命中 + hash 非空（复算一致）",
+      "status": "pass",
+      "detail": "命中 3/3 · hash 复算 4/4"
+    },
+    {
+      "id": "A1-04",
+      "title": "maxSteps ≤ 12 且 budgetCny ≤ dailyBudgetCny",
+      "status": "pass",
+      "detail": "content-orchestrator steps=12/12 budget=¥0.15/¥300 · content-critic steps=6/12 budget=¥0.06/¥300 · channel-copywriter steps=8/12 budget=¥0.05/¥300"
+    },
+    {
+      "id": "A1-05",
+      "title": "guardrails 6 项齐全且类型正确",
+      "status": "pass",
+      "detail": "字段 6/6 · 类型错=0 · 多余=0"
+    },
+    {
+      "id": "A1-06",
+      "title": "lineage 覆盖 17/17 页",
+      "status": "pass",
+      "detail": "覆盖 17/17 · 缺失=空集 · 多余=0"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "code": "E_TOOL_DUP",
+      "ok": true,
+      "detail": "9 个工具 id 互不重复",
+      "msg": "工具 id 必须唯一"
+    },
+    {
+      "id": "R2",
+      "code": "E_AGENT_DUP",
+      "ok": true,
+      "detail": "3 个 Agent id 互不重复",
+      "msg": "Agent id 必须唯一"
+    },
+    {
+      "id": "R3",
+      "code": "E_TOOL_UNKNOWN",
+      "ok": true,
+      "detail": "全部工具引用命中 tools 清单",
+      "msg": "Agent 引用了不存在的工具"
+    },
+    {
+      "id": "R4",
+      "code": "E_PROMPT_MISS",
+      "ok": true,
+      "detail": "3 条 promptRef 命中同版本 Prompt",
+      "msg": "Prompt 引用未命中"
+    },
+    {
+      "id": "R5",
+      "code": "E_PROMPT_VAR",
+      "ok": true,
+      "detail": "4 条 Prompt 变量双向一致",
+      "msg": "变量清单与正文占位符不一致"
+    },
+    {
+      "id": "R6",
+      "code": "E_LIMIT_OVER",
+      "ok": true,
+      "detail": "3 个 Agent 的步数与预算均在护栏内",
+      "msg": "Agent 单任务上限超过护栏"
+    },
+    {
+      "id": "R7",
+      "code": "E_LINEAGE_GAP",
+      "ok": true,
+      "detail": "17/17 页均有血缘",
+      "msg": "页面血缘未覆盖全部页面"
+    }
+  ],
+  "browser": {
+    "id": "A1-07",
+    "status": "pass",
+    "note": "agents=3 / tools=9 / prompts=4 · 徽标校验通过 · R6 负例已验",
+    "checklist": [
+      "Agent 3 行",
+      "工具 9 行",
+      "Prompt 4 行",
+      "徽标「校验通过」"
+    ]
+  },
+  "artifacts": [
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S1_A1-07_agent.png",
+      "note": "后台第 12 分区：3 Agent / 9 工具 / 4 Prompt / 徽标校验通过"
+    }
+  ]
+}
