@@ -18,6 +18,7 @@ const auth = require("./auth");
 const repo = require("./repo");
 const audit = require("./audit");
 const provider = require("./provider");
+const publish = require("./publish");
 const { JobRunner } = require("./job-runner");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -111,13 +112,18 @@ function publicTenant(ctx) {
 }
 
 function sessionBody(ctx, tenants) {
+  const prov = provider.getRuntime(ctx.tenant.id);
   return {
     ok: true,
     user: publicUser(ctx),
     tenant: publicTenant(ctx),
     role: ctx.role,
     csrf: ctx.csrf,
-    tenants: tenants || auth.listTenantsFor(ctx.user)
+    tenants: tenants || auth.listTenantsFor(ctx.user),
+    provider: {
+      provider: prov.provider, ready: prov.ready, enabled: prov.enabled,
+      textModel: prov.textModel, imageModel: prov.imageModel, visionModel: prov.visionModel
+    }
   };
 }
 
@@ -171,11 +177,13 @@ async function handleApi(req, res, pathname) {
   const method = req.method;
   const ctx = ctxOf(req);
   const ip = clientIp(req);
+  if (ctx) ctx.ip = ip;
 
   if (method === "GET" && pathname === "/api/health") {
     sendJson(res, 200, {
       ok: true, service: "ovem-b3", version: VERSION, time: dbm.nowIso(),
-      auth: "sqlite", tenants: dbm.db ? dbm.db.prepare("SELECT COUNT(*) AS c FROM tenants").get().c : 0
+      auth: "sqlite", tenants: dbm.db ? dbm.db.prepare("SELECT COUNT(*) AS c FROM tenants").get().c : 0,
+      live: !!(jobRunner && typeof jobRunner.liveToolsFactory === "function")
     });
     return;
   }
@@ -300,6 +308,40 @@ async function handleApi(req, res, pathname) {
     const result = jobRunner.decide(decodeURIComponent(decideMatch[1]), ctx.tenant.id, body.decision, body.note, ctx.user.id, ip);
     if (result.error) { sendError(res, result.error === "no_gate" ? 409 : 400, result.error, result.error === "no_gate" ? "当前没有等待审批的闸门" : "decision 必须为 approve / reject"); return; }
     sendJson(res, 200, { ok: true, decision: result.decision });
+    return;
+  }
+
+  if (method === "GET" && pathname === "/api/publications") {
+    if (!requireAuth(res, ctx)) return;
+    const runId = new URL(req.url, "http://localhost").searchParams.get("runId");
+    sendJson(res, 200, { ok: true, publications: publish.list(ctx.tenant.id, runId) });
+    return;
+  }
+
+  if (method === "POST" && pathname === "/api/publications") {
+    if (!requireRole(res, ctx, "editor")) return;
+    if (!requireWrite(req, res, ctx)) return;
+    let body;
+    try { body = await readJson(req); } catch (e) { sendError(res, 400, "bad_request", "JSON 解析失败"); return; }
+    const result = publish.submit(ctx, String(body.runId || ""), body.note || "");
+    if (result.error) { sendError(res, result.status || 400, result.error, result.message); return; }
+    sendJson(res, 201, result);
+    return;
+  }
+
+  const publicationMatch = /^\/api\/publications\/([^/]+)\/(decide|rollback)$/.exec(pathname);
+  if (method === "POST" && publicationMatch) {
+    if (!requireRole(res, ctx, "admin")) return;
+    if (!requireWrite(req, res, ctx)) return;
+    let body;
+    try { body = await readJson(req); } catch (e) { sendError(res, 400, "bad_request", "JSON 解析失败"); return; }
+    const id = decodeURIComponent(publicationMatch[1]);
+    const action = publicationMatch[2];
+    const result = action === "rollback"
+      ? publish.rollback(ctx, id, body.note || "")
+      : (body.decision === "approve" ? publish.approve(ctx, id, body.note || "") : (body.decision === "reject" ? publish.reject(ctx, id, body.note || "") : { error: "bad_decision", status: 400, message: "decision 必须为 approve / reject" }));
+    if (result.error) { sendError(res, result.status || 400, result.error, result.message); return; }
+    sendJson(res, 200, result);
     return;
   }
 

@@ -93,7 +93,7 @@ window.OVEM_RT = window.OVEM_RT || {};
       case "template.pick": return { templates: out.templates.length, ids: out.templates.map(function (t) { return t.id; }) };
       case "prompt.compile": return { prompts: out.prompts.length, hashes: out.prompts.map(function (p) { return String(p.hash).slice(0, 12) + "…"; }) };
       case "image.gen": return { images: out.images.length, ratio: out.images[0] && out.images[0].ratio, bytes: out.images.reduce(function (a, x) { return a + x.bytes; }, 0) };
-      case "qa.check": return { verdict: out.verdict, score: out.score, issues: out.issues };
+      case "qa.check": return { verdict: out.verdict, score: out.score, issues: out.issues, checks: out.checks, mode: out.mode };
       case "copy.write": return { copies: out.copies.length, chars: out.copies.reduce(function (a, x) { return a + x.chars; }, 0) };
       case "artifact.land": return { artifacts: out.artifacts.length, ids: out.artifacts.map(function (a) { return a.id; }) };
       default: return { keys: Object.keys(out) };
@@ -202,7 +202,9 @@ window.OVEM_RT = window.OVEM_RT || {};
       bus.emit("tool.result", {
         step: stepNo, tool: toolId, ok: true,
         delayMs: res.delayMs, waitedMs: res.waitedMs,
-        usage: res.usage, out: summariseOut(toolId, res.out)
+        usage: res.usage, out: summariseOut(toolId, res.out),
+        model: res.model || "", provider: res.provider || "",
+        degraded: !!res.degraded, degradedReason: res.degradedReason || ""
       }, c);
       return res;
     }

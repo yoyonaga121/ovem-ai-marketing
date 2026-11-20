@@ -63,32 +63,43 @@ async function request(cfg, pathName, body, opt) {
   opt = opt || {};
   const base = String(cfg.baseUrl || DEFAULTS.baseUrl).replace(/\/+$/, "");
   const url = base + pathName;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opt.timeoutMs || 60000);
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "authorization": "Bearer " + cfg.apiKey
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-    const text = await res.text();
-    let json = null;
-    try { json = text ? JSON.parse(text) : null; } catch (e) {}
-    if (!res.ok) {
-      const msg = (json && (json.error && (json.error.message || json.error.code))) || text.slice(0, 220) || ("HTTP " + res.status);
-      const err = new Error(msg);
-      err.status = res.status;
-      err.body = json;
-      throw err;
+  const maxAttempts = opt.retry === false ? 1 : 2;
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), opt.timeoutMs || 60000);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "authorization": "Bearer " + cfg.apiKey
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+      const text = await res.text();
+      let json = null;
+      try { json = text ? JSON.parse(text) : null; } catch (e) {}
+      if (!res.ok) {
+        const msg = (json && (json.error && (json.error.message || json.error.code))) || text.slice(0, 220) || ("HTTP " + res.status);
+        const err = new Error(msg);
+        err.status = res.status;
+        err.body = json;
+        err.retryable = res.status === 429 || res.status >= 500;
+        throw err;
+      }
+      return { json: json, status: res.status, attempts: attempt };
+    } catch (e) {
+      lastError = e;
+      const retryable = e && (e.name === "AbortError" || e.retryable || e.code === "ECONNRESET" || e.code === "ENOTFOUND");
+      if (!retryable || attempt >= maxAttempts) throw e;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    } finally {
+      clearTimeout(timer);
     }
-    return { json: json, status: res.status };
-  } finally {
-    clearTimeout(timer);
   }
+  throw lastError || new Error("provider request failed");
 }
 
 async function chat(cfg, messages, opt) {
@@ -117,9 +128,20 @@ async function image(cfg, prompt, size) {
     prompt: prompt,
     size: size || "1024x1024",
     response_format: "url",
+    output_format: "png",
+    watermark: false,
     n: 1
   };
-  const res = await request(cfg, "/images/generations", body, { timeoutMs: 120000 });
+  let res;
+  try {
+    res = await request(cfg, "/images/generations", body, { timeoutMs: 120000 });
+  } catch (e) {
+    const msg = String((e && e.message) || "").toLowerCase();
+    if (e && e.status === 400 && /output_format|watermark|response_format/.test(msg)) {
+      delete body.output_format; delete body.watermark;
+      res = await request(cfg, "/images/generations", body, { timeoutMs: 120000, retry: false });
+    } else throw e;
+  }
   const json = res.json || {};
   const item = (json.data && json.data[0]) || {};
   return {

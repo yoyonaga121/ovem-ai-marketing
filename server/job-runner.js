@@ -76,7 +76,8 @@ class JobRunner {
           if (item.mode === "live" && this.liveToolsFactory) {
             return this.liveToolsFactory({
               tenantId: item.tenantId, jobId: item.jobId, runId: item.runId,
-              mission: item.mission, data: args.data, agent: args.agent, RT: RT, store: store
+              mission: item.mission, data: args.data, agent: args.agent, RT: RT, store: store,
+              originalCreate: originalCreate
             });
           }
           return originalCreate(args);

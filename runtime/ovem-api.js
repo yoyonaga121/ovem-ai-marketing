@@ -9,7 +9,7 @@
 (function () {
   var S = {
     enabled: false, booted: false, user: null, tenant: null, role: null,
-    csrf: "", tenants: [], error: ""
+    csrf: "", tenants: [], provider: null, error: ""
   };
 
   function isHttp() { return /^https?:/.test(location.protocol); }
@@ -70,6 +70,7 @@
     S.role = me.role || null;
     S.csrf = me.csrf || "";
     S.tenants = me.tenants || [];
+    S.provider = me.provider || null;
   }
 
   function roleLabel(r) {
@@ -89,6 +90,10 @@
       role.className = "sc-role is-" + (S.role || "viewer");
     }
     setText("sessionTenants", String(S.tenants.length || 0));
+    setText("versionTag", "v4.0 · B3");
+    setText("agentRuntimeNote", "3 个 Agent / 9 个工具 / 4 条 Prompt，运行态写入 SQLite（多租户）。");
+    var foot = q("railFoot");
+    if (foot) foot.innerHTML = "OVEM OS · v4.0<br>node · SQLite · WAL<br>tenant · RBAC · audit";
   }
 
   async function refresh() {

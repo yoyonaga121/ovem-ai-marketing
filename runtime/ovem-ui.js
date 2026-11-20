@@ -47,7 +47,7 @@ window.OVEM_RT = window.OVEM_RT || {};
   var S = {
     view: "workbench", preset: "A", mode: "mock", speed: 8, running: false,
     plan: null, traces: [], artifacts: [], stats: null, retry: null, lastFail: null,
-    status: "idle", runId: null, firstResult: false, startedAt: 0, gate: null, gateResolve: null,
+    status: "idle", runId: null, jobId: null, firstResult: false, startedAt: 0, gate: null, gateResolve: null,
     autoGate: false, seenStates: {}, sessionRuns: [], focusPage: null, currentBudget: 200
   };
 
@@ -84,6 +84,15 @@ window.OVEM_RT = window.OVEM_RT || {};
     route();
     refreshRail();
     renderAll();
+    /* API boot 异步完成后补一次双源刷新；否则首屏 #/runs 会先渲染成空态 */
+    document.addEventListener("ovem:ready", function () {
+      refreshRail();
+      if (S.view === "runs") refreshHistory();
+    });
+    document.addEventListener("ovem:tenant", function () {
+      refreshRail();
+      if (S.view === "runs") refreshHistory();
+    });
     var qs = new URLSearchParams(location.search);
     if (qs.get("selftest") === "1") {
       runSelftest().then(showBadge);
@@ -107,6 +116,10 @@ window.OVEM_RT = window.OVEM_RT || {};
       });
     });
     window.addEventListener("hashchange", route);
+    document.addEventListener("ovem:ready", syncLiveMode);
+    document.addEventListener("ovem:tenant", syncLiveMode);
+    document.addEventListener("ovem:error", syncLiveMode);
+    syncLiveMode();
     document.addEventListener("keydown", function (e) {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); startRun(S.preset, {}).catch(function () {}); }
     });
@@ -260,8 +273,9 @@ window.OVEM_RT = window.OVEM_RT || {};
 
   function resetRunView() {
     S.plan = null; S.traces = []; S.artifacts = []; S.stats = null; S.retry = null;
-    S.status = "idle"; S.runId = null; S.firstResult = false; S.running = false;
+    S.status = "idle"; S.runId = null; S.jobId = null; S.firstResult = false; S.running = false;
     S.seenStates = {}; S.gate = null; S.gateResolve = null; S.lastFail = null;
+    setNotice("");
     renderAll();
   }
 
@@ -342,6 +356,9 @@ window.OVEM_RT = window.OVEM_RT || {};
     showView("workbench");
     renderAll();
 
+    if (S.mode === "live") return startLiveRun(key, p, mission);
+    S.jobId = null; setNotice("");
+
     var speed = Number(opts.speed) || (S.mode === "replay" ? 20 : S.speed);
     var runOpts = {
       agent: AGENT, data: DATA, speed: speed, mode: S.mode,
@@ -360,6 +377,100 @@ window.OVEM_RT = window.OVEM_RT || {};
       renderAll();
       throw err;
     });
+  }
+
+  async function startLiveRun(key, p, mission) {
+    var api = window.OVEM_API;
+    if (!api || !api.state.enabled) throw new Error("live 需要先登录 HTTP 服务（node server/server.js）");
+    if (!api.state.provider || !api.state.provider.ready) throw new Error("live provider 未就绪：请在 05 配置中台填 key / 文本模型 / 图片模型并启用");
+    S.jobId = null;
+    S.gateResolve = function (approved) {
+      var jobId = S.jobId;
+      if (!jobId) return;
+      api.post("/api/jobs/" + encodeURIComponent(jobId) + "/decide", { decision: approved ? "approve" : "reject", note: "workbench live gate" })
+        .catch(function (e) { setNotice("审批提交失败：" + (e.message || e), "is-error"); });
+    };
+    setNotice("正在提交 live Job 到 SQLite · " + (api.state.provider.textModel || "text-model"), "is-live");
+    try {
+      var created = await api.post("/api/jobs", {
+        mode: "live", budgetCny: p.budget, mission: mission
+      });
+      S.jobId = created.job.id;
+      S.runId = created.job.runId;
+      setNotice("Job " + created.job.id + " · " + created.job.runId + " 已排队；真实 provider 执行中", "is-live");
+      var detail = await pollLiveJob(created.job.id);
+      finalizeServer(detail);
+      return { runId: S.runId, state: S.status, run: { stats: S.stats }, traces: S.traces, artifacts: S.artifacts };
+    } catch (e) {
+      S.running = false; S.status = "failed"; S.gateResolve = null;
+      setNotice("live 失败：" + (e.message || e), "is-error");
+      renderAll();
+      throw e;
+    }
+  }
+
+  async function pollLiveJob(jobId) {
+    var api = window.OVEM_API;
+    var seen = 0, detail = null, ticks = 0;
+    while (ticks++ < 180) {
+      await sleep(900);
+      detail = await api.get("/api/jobs/" + encodeURIComponent(jobId));
+      (detail.traces || []).forEach(function (ev) {
+        if (Number(ev.seq) > seen) { seen = Number(ev.seq); handleEvent(ev); }
+      });
+      if (detail.pendingGate && !S.gate) {
+        S.gate = {
+          budgetCny: detail.pendingGate.budgetCny || S.currentBudget,
+          costCny: detail.pendingGate.costCny || 0,
+          pct: detail.pendingGate.pct || 0,
+          threshold: detail.pendingGate.threshold || 0.8,
+          decision: ""
+        };
+        openGateVisual();
+      }
+      if (detail.artifacts) S.artifacts = detail.artifacts;
+      var st = detail.job && detail.job.status;
+      if (st === "review" || st === "done" || st === "failed") {
+        if (!detail.pendingGate) break;
+      }
+      if (st === "blocked" && !detail.pendingGate) break;
+    }
+    return detail;
+  }
+
+  function finalizeServer(detail) {
+    S.running = false; S.autoGate = false; S.firstResult = true;
+    var job = (detail && detail.job) || {};
+    var run = (detail && detail.run) || {};
+    S.status = job.status || run.status || "failed";
+    S.runId = job.runId || S.runId;
+    S.jobId = job.id || S.jobId;
+    S.stats = run.stats || S.stats || { steps: 0, toolCalls: 0, retries: 0, tokens: 0, images: 0, costCny: Number(job.costCny) || 0, durationMs: 0 };
+    S.traces = (detail && detail.traces) || S.traces;
+    S.artifacts = (detail && detail.artifacts) || S.artifacts;
+    if (!S.retry) S.retry = deriveRetry(S.traces);
+    S.plan.forEach(function (s) {
+      if (S.status === "review" || S.status === "done") s.state = "ok";
+      else if (s.state === "running") s.state = S.status === "blocked" ? "blocked" : "fail";
+      else if (s.state === "pending" && S.status === "failed") s.state = "blocked";
+    });
+    S.sessionRuns.push({ key: S.preset, runId: S.runId, state: S.status, cost: S.stats.costCny, server: true });
+    setNotice("服务端 Job 完成：" + S.runId + " · " + S.status + " · ¥" + Number(S.stats.costCny || 0).toFixed(4), S.status === "failed" ? "is-error" : "is-live");
+    renderTraceAll();
+    renderAll();
+    refreshRail();
+    if (S.view === "runs") refreshHistory();
+    if (window.OVEM_PUBLISH) window.OVEM_PUBLISH.refresh();
+    if (S.gateResolve) { S.gateResolve = null; closeGate(); }
+  }
+
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function setNotice(msg, cls) {
+    var n = id("runNotice");
+    if (!n) return;
+    n.textContent = msg || "";
+    n.className = "run-notice" + (cls ? " " + cls : "");
   }
 
   function handleEvent(ev) {
@@ -543,11 +654,14 @@ window.OVEM_RT = window.OVEM_RT || {};
     wrap.innerHTML = S.artifacts.map(function (a) {
       var ch = channelOf(a.channelId);
       var qa = (a.qa && a.qa.score) || 0;
+      var thumb = a.url
+        ? '<img src="' + esc(a.url) + '" alt="' + esc(ch.name || "物料") + '" loading="lazy">'
+        : esc(ch.name || "物料");
       return '<div class="artifact">' +
-        '<div class="art-thumb">' + esc(ch.name || "物料") + '<span>' + esc(ratioText(a.meta && a.meta.ratio)) + '</span></div>' +
+        '<div class="art-thumb">' + thumb + '<span>' + esc(ratioText(a.meta && a.meta.ratio)) + '</span></div>' +
         '<div class="art-info"><b>' + esc(ch.name) + ' · ' + esc(a.productId) + '</b>' +
         '<small>' + esc(a.id) + ' · ' + esc(a.kind) + '</small>' +
-        '<div class="art-badges"><span class="art-badge">QA ' + qa + '</span><span class="art-badge amber">待审</span></div></div></div>';
+        '<div class="art-badges"><span class="art-badge">QA ' + qa + '</span><span class="art-badge amber">' + (a.status === "done" ? "已发布" : "待审") + '</span></div></div></div>';
     }).join("");
   }
 
@@ -558,7 +672,7 @@ window.OVEM_RT = window.OVEM_RT || {};
     if (ev.type === "plan.compiled") return p.stepCount + " steps · " + p.callCount + " calls · " + (p.agentId || "");
     if (ev.type === "step.start") return "step " + p.step + " · " + (p.label || "");
     if (ev.type === "tool.call") return p.tool + "(" + (Object.keys(p.args || {}).join(",") || "—") + ")";
-    if (ev.type === "tool.result") return p.tool + " · " + p.delayMs + "ms · " + (p.usage && p.usage.tokens) + "tk";
+    if (ev.type === "tool.result") return p.tool + " · " + p.delayMs + "ms · " + (p.usage && p.usage.tokens) + "tk" + (p.model ? " · " + p.model : "") + (p.degraded ? " · DEGRADED" : "");
     if (ev.type === "critic.verdict") return "round " + (p.round || 1) + " · " + p.verdict + " · " + p.score;
     if (ev.type === "retry.scheduled") return "attempt " + p.attempt + " · " + p.tool + " · " + (p.reason || []).join("；");
     if (ev.type === "hitl.requested") return "pct " + pctText(p.pct) + " · " + money(p.costCny) + " / " + money(p.budgetCny);
@@ -622,9 +736,27 @@ window.OVEM_RT = window.OVEM_RT || {};
 
   /* ---------- Provider ---------- */
   function setMode(mode) {
-    S.mode = mode === "replay" ? "replay" : "mock";
+    mode = mode === "replay" ? "replay" : (mode === "live" ? "live" : "mock");
+    if (mode === "live" && !liveReady()) {
+      setNotice("live 未就绪：先在 05 配置中台填 key / 文本模型 / 图片模型，并勾选启用 live。", "is-error");
+      return;
+    }
+    S.mode = mode;
     qa("#modeSeg button").forEach(function (b) { b.classList.toggle("is-active", b.dataset.mode === S.mode); });
+    var sel = id("speedSelect"); if (sel) sel.disabled = S.mode === "live";
     updateProvider();
+  }
+
+  function liveReady() {
+    var api = window.OVEM_API;
+    return !!(api && api.state && api.state.enabled && api.state.provider && api.state.provider.ready);
+  }
+
+  function syncLiveMode() {
+    var b = id("liveModeBtn");
+    if (!b) return;
+    b.classList.toggle("is-unready", !liveReady());
+    b.title = liveReady() ? "火山方舟 / 豆包真实 provider 已就绪" : "先到 05 配置中台配置 Provider";
   }
 
   function setSpeed(v) {
@@ -635,9 +767,14 @@ window.OVEM_RT = window.OVEM_RT || {};
   }
 
   function updateProvider() {
-    var label = S.mode === "replay" ? "replay · 延迟 ×20" : "mock · 延迟 ×" + S.speed;
+    var label;
+    if (S.mode === "live") {
+      var pv = (window.OVEM_API && window.OVEM_API.state.provider) || {};
+      label = "live · " + (pv.textModel || "ark");
+    } else if (S.mode === "replay") label = "replay · 延迟 ×20";
+    else label = "mock · 延迟 ×" + S.speed;
     txt("providerLabel", label);
-    txt("costProvider", S.mode);
+    txt("costProvider", S.mode === "live" ? "live · ark" : S.mode);
   }
 
   /* ---------- 闸门 ---------- */
@@ -697,24 +834,41 @@ window.OVEM_RT = window.OVEM_RT || {};
   }
 
   /* ---------- 运行记录 ---------- */
+  async function serverRuns() {
+    var api = window.OVEM_API;
+    if (!api || !api.state.enabled) return [];
+    try {
+      var res = await api.get("/api/runs");
+      return (res.runs || []).map(function (r) {
+        return Object.assign({}, r, { server: true });
+      });
+    } catch (e) { return []; }
+  }
+
   async function refreshRail() {
     try {
-      var runs = await RT.Store.list("runs");
-      txt("railRuns", String(runs.length));
-      var latest = runs.slice().sort(function (a, b) { return String(b.startedAt).localeCompare(String(a.startedAt)); })[0];
+      var local = await RT.Store.list("runs");
+      var remote = await serverRuns();
+      var all = local.concat(remote.filter(function (r) { return !local.some(function (l) { return l.id === r.id; }); }));
+      txt("railRuns", String(all.length));
+      var latest = all.slice().sort(function (a, b) { return String(b.startedAt).localeCompare(String(a.startedAt)); })[0];
       if (latest && latest.stats) txt("railCost", money(latest.stats.costCny));
-    } catch (e) { /* 无 IDB 时降级 */ }
+    } catch (e) { /* 无 API / IDB 时降级 */ }
   }
 
   async function refreshHistory() {
     var wrap = id("runsWrap");
     try {
-      var runs = (await RT.Store.list("runs")).sort(function (a, b) { return String(b.startedAt).localeCompare(String(a.startedAt)); });
+      var local = (await RT.Store.list("runs"));
+      var remote = await serverRuns();
+      var runs = local.concat(remote.filter(function (r) { return !local.some(function (l) { return l.id === r.id; }); }))
+        .sort(function (a, b) { return String(b.startedAt).localeCompare(String(a.startedAt)); });
       txt("runsCount", runs.length + " RUNS");
       if (!runs.length) { wrap.innerHTML = '<div class="empty-wide">还没有 run。回到工作台跑一条 Mission。</div>'; return; }
       wrap.innerHTML = '<table class="runs-table"><thead><tr><th>RUN</th><th>MISSION</th><th>STATUS</th><th>STEPS</th><th>CALLS</th><th>COST</th><th>STARTED</th><th></th></tr></thead><tbody>' +
         runs.map(function (r) {
-          return '<tr><td>' + esc(r.id) + '</td><td>' + esc(r.missionId) + '</td>' +
+          var tag = r.server ? '<span class="server-mark">SQLITE</span>' : '<span class="server-mark is-local">IDB</span>';
+          return '<tr><td>' + esc(r.id) + ' ' + tag + '</td><td>' + esc(r.missionId) + '</td>' +
             '<td><span class="run-state ' + esc(r.status) + '">' + esc(r.status) + '</span></td>' +
             '<td>' + (r.stats ? r.stats.steps : "—") + '</td><td>' + (r.stats ? r.stats.toolCalls : "—") + '</td>' +
             '<td>' + (r.stats ? money(r.stats.costCny) : "—") + '</td><td>' + esc(String(r.startedAt || "").slice(11, 19)) + '</td>' +
@@ -729,12 +883,21 @@ window.OVEM_RT = window.OVEM_RT || {};
   async function loadRun(runId) {
     try {
       var run = await RT.Store.get("runs", runId);
+      var traces, arts;
+      if (run) {
+        traces = (await RT.Store.list("traces", { index: "runId", value: runId })).sort(function (a, b) { return a.seq - b.seq; });
+        arts = await RT.Store.list("artifacts", { index: "runId", value: runId });
+      } else if (window.OVEM_API && window.OVEM_API.state.enabled) {
+        var detail = await window.OVEM_API.get("/api/runs/" + encodeURIComponent(runId));
+        run = Object.assign({}, detail.run, { server: true });
+        traces = detail.traces || [];
+        arts = detail.artifacts || [];
+      }
       if (!run) return;
-      var traces = (await RT.Store.list("traces", { index: "runId", value: runId })).sort(function (a, b) { return a.seq - b.seq; });
-      var arts = await RT.Store.list("artifacts", { index: "runId", value: runId });
       var lastStep = 0;
       traces.forEach(function (e) { if (e.type === "step.start") lastStep = Math.max(lastStep, e.payload.step || 0); });
-      S.running = false; S.runId = run.id; S.status = run.status; S.stats = run.stats;
+      S.running = false; S.runId = run.id; S.jobId = run.jobId || null; S.status = run.status; S.stats = run.stats;
+      if (run.mode && run.mode !== S.mode) setMode(run.mode);
       S.traces = traces; S.artifacts = arts; S.retry = deriveRetry(traces);
       S.plan = ((run.plan && run.plan.steps) || []).map(function (s) {
         var st = "pending";

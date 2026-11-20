@@ -53,6 +53,7 @@ button{cursor:pointer}
 .seg{display:flex;padding:3px;background:#070F1B;border:1px solid var(--line);border-radius:999px}
 .seg button{border:0;background:transparent;color:var(--ink-3);font-size:11px;padding:5px 11px;border-radius:999px}
 .seg button.is-active{background:rgba(34,211,238,.13);color:var(--cyan-2);box-shadow:inset 0 0 0 1px rgba(34,211,238,.25)}
+.seg button.is-unready{opacity:.45}
 .speed{background:#070F1B;border:1px solid var(--line);color:var(--ink-2);border-radius:8px;height:30px;padding:0 8px;font-size:11px;font-family:var(--mono)}
 .live{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.1em;color:var(--ink-3);font-family:var(--mono)}
 .live i{width:7px;height:7px;border-radius:50%;background:var(--ink-3);box-shadow:0 0 0 3px rgba(108,126,153,.12)}
@@ -110,6 +111,9 @@ button{cursor:pointer}
 .btn-run:hover{background:linear-gradient(180deg,rgba(34,211,238,.32),rgba(34,211,238,.14))}
 .btn-run:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
 .btn-run kbd{font-family:var(--mono);font-size:9px;font-weight:400;border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:1px 4px;margin-left:6px;color:var(--ink-2)}
+.run-notice{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.02em;max-width:220px;line-height:1.5}
+.run-notice.is-error{color:#FCA5A5}
+.run-notice.is-live{color:var(--cyan-2)}
 
 /* 工作台网格 */
 .work-grid{display:grid;grid-template-columns:308px minmax(0,1fr);gap:14px;align-items:start}
@@ -249,6 +253,8 @@ button{cursor:pointer}
 .artifact:nth-child(2) .art-thumb{background:linear-gradient(135deg,#1D4ED8,#1E3A8A 58%,#0B1220)}
 .artifact:nth-child(3) .art-thumb{background:linear-gradient(135deg,#B45309,#78350F 58%,#1C1917)}
 .art-thumb span{position:absolute;right:5px;bottom:4px;font-size:7.5px;color:rgba(255,255,255,.75)}
+.art-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
 .art-info{padding:7px 8px;min-width:0}
 .art-info b{display:block;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .art-info small{display:block;font-family:var(--mono);font-size:8px;color:var(--ink-3);margin-top:3px}
@@ -333,6 +339,20 @@ button{cursor:pointer}
 .runs-table{width:100%;border-collapse:collapse;font-size:11px}
 .runs-table th{text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--ink-3);padding:10px 12px;border-bottom:1px solid var(--line)}
 .runs-table td{padding:10px 12px;border-bottom:1px solid rgba(120,160,220,.08);color:var(--ink-2);font-family:var(--mono);font-size:10px}
+.server-mark{font-size:7.5px;letter-spacing:.08em;padding:2px 4px;border:1px solid rgba(34,211,238,.3);border-radius:3px;color:var(--cyan-2);margin-left:4px}
+.server-mark.is-local{color:var(--ink-3);border-color:rgba(120,160,220,.2)}
+.publish-panel{margin-top:18px}
+.publish-tools{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid rgba(120,160,220,.08);flex-wrap:wrap}
+.publish-tools select{background:#07111D;border:1px solid var(--line);border-radius:8px;color:var(--ink-2);padding:7px 9px;font-family:var(--mono);font-size:10px;min-width:230px}
+.publish-tools input{background:#07111D;border:1px solid var(--line);border-radius:8px;color:var(--ink-2);padding:7px 9px;font-family:var(--mono);font-size:10px;min-width:200px}
+.publish-row{display:grid;grid-template-columns:1.2fr .8fr .8fr 1fr auto;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid rgba(120,160,220,.07);font-family:var(--mono);font-size:10px;color:var(--ink-2)}
+.publish-row b{color:var(--ink-0);font-size:11px}
+.pub-actions{display:flex;gap:6px;justify-content:flex-end}
+.pub-actions button{border:1px solid var(--line);background:transparent;color:var(--ink-2);border-radius:5px;padding:4px 7px;font-size:9px}
+.pub-actions button.ok{border-color:rgba(34,211,238,.4);color:var(--cyan-2)}
+.pub-actions button.no{border-color:rgba(248,113,113,.4);color:#FCA5A5}
+.audit-timeline{padding:12px 14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.audit-timeline .at-row{padding:5px 0;border-bottom:1px dashed rgba(120,160,220,.1)}
 .runs-table tr:hover td{background:rgba(255,255,255,.025)}
 .run-state{font-family:var(--mono);font-size:9px;border-radius:4px;padding:2px 6px;border:1px solid var(--line)}
 .run-state.review{color:var(--green);border-color:rgba(52,211,153,.35)}
@@ -534,7 +554,7 @@ button{cursor:pointer}
 <div class="app">
   <header class="topbar">
     <div class="brand"><span class="mark"></span><div><b>OVEM</b><small>AGENT WORKBENCH</small></div></div>
-    <div class="top-meta"><span>Optics Valley Effect · Marketing OS</span><span class="tag">v3.0 · S5</span></div>
+    <div class="top-meta"><span>Optics Valley Effect · Marketing OS</span><span class="tag" id="versionTag">v3.0 · S5</span></div>
     <div class="top-right">
       <div class="session-chip" id="sessionChip" hidden>
         <span class="sc-user" id="sessionUser">—</span>
@@ -547,6 +567,7 @@ button{cursor:pointer}
       <div class="seg" id="modeSeg">
         <button type="button" data-mode="mock" class="is-active">mock</button>
         <button type="button" data-mode="replay">replay</button>
+        <button type="button" data-mode="live" id="liveModeBtn" title="火山方舟 / 豆包真实 provider">live</button>
       </div>
       <select class="speed" id="speedSelect" aria-label="mock 速度">
         <option value="1">1×</option><option value="2">2×</option><option value="4">4×</option>
@@ -569,10 +590,10 @@ button{cursor:pointer}
     <div class="rail-spacer"></div>
     <div class="rail-card">
       <div class="rc-top">AGENT RUNTIME <span>● ONLINE</span></div>
-      <p>3 个 Agent / 9 个工具 / 4 条 Prompt，运行态写入 IndexedDB。</p>
+      <p id="agentRuntimeNote">3 个 Agent / 9 个工具 / 4 条 Prompt，运行态写入 IndexedDB。</p>
       <div class="rc-stats"><span><b id="railAgents">3</b> agents</span><span><b id="railRuns">0</b> runs</span><span><b id="railCost">¥0.00</b></span></div>
     </div>
-    <div class="rail-foot">OVEM OS · v3.0<br>file:// · classic scripts<br>state = events only</div>
+    <div class="rail-foot" id="railFoot">OVEM OS · v3.0<br>file:// · classic scripts<br>state = events only</div>
   </aside>
 
   <main class="main">
@@ -587,6 +608,8 @@ button{cursor:pointer}
         <div class="head-actions">
           <span class="state-pill" id="runStatePill">未运行</span>
           <button class="btn-run" id="runBtn">运行 Mission <kbd>⌘ ↵</kbd></button>
+          <button class="btn-ghost" id="publishRunBtn" hidden>提交发布 →</button>
+          <small class="run-notice" id="runNotice"></small>
         </div>
       </div>
 
@@ -674,12 +697,23 @@ button{cursor:pointer}
     <!-- ===== 视图：执行 ===== -->
     <section class="view" id="view-runs" hidden>
       <div class="view-head">
-        <div><div class="eyebrow">RUN ARCHIVE / 02</div><h1>执行记录</h1><p>运行态存在 `ovem-os-v3` 里，刷新不丢。点「回放」把历史 run 重新装进工作台。</p></div>
+        <div><div class="eyebrow">RUN ARCHIVE / 02</div><h1>执行记录</h1><p>本地 IndexedDB 与服务端 SQLite 双源可回放；服务端 run 带 <b class="server-mark">SQLITE</b> 标记。发布审批在同一视图完成。</p></div>
         <div class="head-actions"><button class="tiny-btn" id="refreshRuns">刷新列表</button></div>
       </div>
       <section class="panel">
-        <div class="panel-head"><h3>runs · IndexedDB</h3><span class="muted" id="runsCount">—</span></div>
+        <div class="panel-head"><h3>runs · IndexedDB + SQLite</h3><span class="muted" id="runsCount">—</span></div>
         <div id="runsWrap"><div class="empty-wide">正在读取运行记录…</div></div>
+      </section>
+      <section class="panel publish-panel" id="publishPanel" hidden>
+        <div class="panel-head"><h3>发布审批 · B4</h3><span class="muted" id="publishCount">—</span></div>
+        <div class="publish-tools">
+          <select id="publishRunSelect" aria-label="选择待发布 run"></select>
+          <button class="tiny-btn" id="publishSubmit">提交发布</button>
+          <input id="pubNote" placeholder="审批备注 / 驳回原因" aria-label="审批备注">
+          <span class="muted" id="publishStatus"></span>
+        </div>
+        <div id="publishList"></div>
+        <div id="auditTimeline" class="audit-timeline" hidden></div>
       </section>
     </section>
 
@@ -796,7 +830,7 @@ button{cursor:pointer}
     <!-- ===== 视图：配置中台 ===== -->
     <section class="view" id="view-admin" hidden>
       <div class="view-head">
-        <div><div class="eyebrow">CONFIG STUDIO / 05</div><h1>配置中台</h1><p>业务数据与 Agent 配置分版本：数据 v2.0.x，Agent v3.0.0。配置进 git，运行态进 IndexedDB。</p></div>
+        <div><div class="eyebrow">CONFIG STUDIO / 05</div><h1>配置中台</h1><p>业务数据与 Agent 配置分版本：数据 v2.0.x，Agent v3.0.0。配置进 git，运行态进 SQLite；B3 对外暴露租户 / 成员 / 审计 / Provider。</p></div>
       </div>
       <div class="admin-hero">
         <div><h2>12 个分区 · schema 驱动</h2><p>改字段即时 diff、校验、快照与发布；第 12 分区「Agent 管理」覆盖 3 Agent / 9 工具 / 4 Prompt / 6 护栏 / 17 页血缘。</p></div>
@@ -837,13 +871,13 @@ button{cursor:pointer}
         <div>
           <div class="layer"><div class="ly-top"><span>L1</span><b>入口层 · workbench.html</b></div><p>6 组导航、Mission 队列、Plan / Trace / Artifacts / 成本卡；不写业务数据，只读 store、发事件。</p></div>
           <div class="layer"><div class="ly-top"><span>L2</span><b>运行时层 · runtime/*.js</b></div><p>trace / store / tools / executor / selftest，零 DOM 依赖；7 步 9 调用、七态白名单、成本单一入口。</p></div>
-          <div class="layer"><div class="ly-top"><span>L3</span><b>数据层 · data/*.js + IndexedDB</b></div><p>配置进 git（schema + 快照）；运行态进 `ovem-os-v3`，6 store / 18 索引，不进 git。</p></div>
+          <div class="layer"><div class="ly-top"><span>L3</span><b>数据层 · data/*.js + SQLite</b></div><p>配置进 git（schema + 快照）；B3 运行态进 `server/ovem.db`，14 张表 / 租户隔离 / WAL，不进 git。</p></div>
           <div class="layer"><div class="ly-top"><span>FROZEN</span><b>成果层 · index.html</b></div><p>17 页保持 v2.0 版式与文案；S4 只注入血缘条与产物卡，不改正文。</p></div>
         </div>
         <div>
           <div class="adr"><b>ADR-001</b><span>工作台为独立壳页，不改 index.html 的 P0。</span></div>
           <div class="adr"><b>ADR-002</b><span>业务数据与 Agent 配置分版本。</span></div>
-          <div class="adr"><b>ADR-003</b><span>运行态进 IndexedDB，不进 git。</span></div>
+          <div class="adr"><b>ADR-003</b><span>B3 运行态进 SQLite；A2 的 IndexedDB 保留为离线演示路径。</span></div>
           <div class="adr"><b>ADR-004</b><span>file:// 下禁用 ESM，classic script + OVEM_RT。</span></div>
           <div class="adr"><b>ADR-005</b><span>provider 抽象，默认 mock，replay 只压缩等待。</span></div>
           <div class="adr"><b>ADR-007</b><span>7 个计划步骤 ≠ 9 次工具调用。</span></div>
@@ -889,6 +923,7 @@ button{cursor:pointer}
 <script src="runtime/ovem-eval-ui.js"></script>
 <script src="runtime/ovem-api.js"></script>
 <script src="runtime/ovem-platform.js"></script>
+<script src="runtime/ovem-publish.js"></script>
 </body>
 </html>
 
