@@ -46,10 +46,15 @@ function inlineScripts(html) {
 }
 
 function gitInfo() {
+  const { execFileSync } = require("child_process");
+  const run = args => execFileSync("git", args, { cwd: ROOT }).toString().trim();
   try {
-    const ref = execSync("git rev-parse --short HEAD", { cwd: ROOT }).toString().trim();
-    const dirty = execSync("git status --porcelain", { cwd: ROOT }).toString().trim().length > 0;
-    const tag = execSync("git describe --tags --abbrev=0", { cwd: ROOT }).toString().trim();
+    const ref = run(["rev-parse", "--short", "HEAD"]);
+    const tag = run(["describe", "--tags", "--abbrev=0"]);
+    const dirty = run([
+      "status", "--porcelain", "--", ".",
+      ":(exclude)docs/v3/reports", ":(exclude)docs/v3/evidence"
+    ]).length > 0;
     return { ref, dirty, tag };
   } catch (e) {
     return { ref: null, dirty: null, tag: null, error: String(e.message || e) };

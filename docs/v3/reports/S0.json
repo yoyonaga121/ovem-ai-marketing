@@ -1,8 +1,8 @@
 {
   "stage": "S0",
-  "generatedAt": "2026-11-20T06:47:27.742Z",
+  "generatedAt": "2026-11-20T06:49:29.473Z",
   "git": {
-    "ref": "c7290f9",
+    "ref": "7e44ea7",
     "dirty": true,
     "tag": "v3.0-s0"
   },
@@ -17,13 +17,13 @@
       "id": "A0-02",
       "ok": true,
       "detail": "1 段内联脚本全部可编译",
-      "ms": 5
+      "ms": 4
     },
     {
       "id": "A0-03",
       "ok": true,
       "detail": "DOM 17/17 · 契约页序 p0–p16 连续 · 集合一致",
-      "ms": 2
+      "ms": 3
     },
     {
       "id": "A0-04",
