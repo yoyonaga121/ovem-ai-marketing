@@ -2,11 +2,11 @@
   "stage": "S1",
   "title": "Agent 配置层",
   "suite": "A1",
-  "at": "2026-11-20T07:04:53.977Z",
+  "at": "2026-11-20T07:06:51.445Z",
   "git": {
-    "ref": "5dc38d8",
-    "tag": "v3.0-s0",
-    "dirty": true
+    "ref": "41f5f9b",
+    "tag": "v3.0-s1",
+    "dirty": false
   },
   "source": {
     "config": "data/ovem-agent.js",
