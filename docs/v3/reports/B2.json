@@ -1,0 +1,122 @@
+{
+  "stage": "B2",
+  "title": "本地 Node + SQLite 多租户 / RBAC / 审计",
+  "suite": "B2",
+  "at": "2026-11-20T11:25:00.000Z",
+  "git": {
+    "ref": "0a549ce",
+    "tag": "v3.0-a-frozen",
+    "dirty": true
+  },
+  "source": {
+    "db": "server/db.js",
+    "auth": "server/auth.js",
+    "audit": "server/audit.js",
+    "repo": "server/repo.js",
+    "runtime": "server/runtime-loader.js",
+    "runner": "server/job-runner.js",
+    "provider": "server/ark.js + server/provider.js",
+    "http": "server/server.js",
+    "frontend": "runtime/ovem-api.js + runtime/ovem-platform.js",
+    "login": "login.html"
+  },
+  "metrics": {
+    "node": "v22.23.2",
+    "sqlite": "node:sqlite",
+    "tables": 14,
+    "tenants": 2,
+    "users": 6,
+    "roles": 4,
+    "jobs": 2,
+    "runs": 2,
+    "lastJob": "J-0002",
+    "lastRun": "R-0002",
+    "lastStatus": "review",
+    "lastTraces": 30,
+    "lastArtifacts": 3,
+    "lastCostCny": 0.1168,
+    "auditRows": 12
+  },
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "pending": 0
+  },
+  "cases": [
+    {
+      "id": "B2-01",
+      "title": "Node 22 内置 SQLite 可用，建库 14 张表",
+      "status": "pass",
+      "detail": "sqlite-ok=1 · tables=14 · WAL + foreign_keys + busy_timeout"
+    },
+    {
+      "id": "B2-02",
+      "title": "种子两个租户、六个账号、memberships 角色",
+      "status": "pass",
+      "detail": "t-ovem / t-beichen · owner/admin/editor/viewer + 北辰 owner/editor · 密码 scrypt"
+    },
+    {
+      "id": "B2-03",
+      "title": "登录写 HttpOnly Cookie + CSRF，会话可复用",
+      "status": "pass",
+      "detail": "ovem_session · SameSite=Lax · token SHA-256 落库 · csrf 32 字符"
+    },
+    {
+      "id": "B2-04",
+      "title": "平台 owner 默认租户为 t-ovem",
+      "status": "pass",
+      "detail": "默认排序改为 CASE t-ovem 优先；登录后 tenant=t-ovem"
+    },
+    {
+      "id": "B2-05",
+      "title": "owner 可切租户，跨租户 run 不可见",
+      "status": "pass",
+      "detail": "t-ovem runs=2 → 切 t-beichen runs=0 · GET /api/jobs/J-0002 返回 404"
+    },
+    {
+      "id": "B2-06",
+      "title": "viewer 无写权限，editor 才可创建 Job",
+      "status": "pass",
+      "detail": "viewer POST /api/jobs → 403 forbidden · viewer 可读 /api/runs"
+    },
+    {
+      "id": "B2-07",
+      "title": "服务端 Job Runner 跑完 A 的 7 步 / 9 调用",
+      "status": "pass",
+      "detail": "J-0002 · R-0002 · mock · status=review · traces=30 · artifacts=3 · cost=0.1168"
+    },
+    {
+      "id": "B2-08",
+      "title": "写操作落审计日志",
+      "status": "pass",
+      "detail": "auth.login / member.create / member.role / provider.update 等 12 条 · detail 不含 key"
+    },
+    {
+      "id": "B2-09",
+      "title": "Provider 配置加密存储、掩码返回",
+      "status": "pass",
+      "detail": "GET/PUT /api/provider 通过；base URL 已保存；无 key 时 live=false；AES-256-GCM 只在有 key 时触发"
+    },
+    {
+      "id": "B2-10",
+      "title": "浏览器会话徽标 + 平台治理面板",
+      "status": "pass",
+      "detail": "sessionChip 显示 owner / 光谷效应 / owner / 2 · platformPanel 渲染四 tab · 1440×900"
+    },
+    {
+      "id": "B2-11",
+      "title": "成员 / 审计 / Provider / 租户切换 UI 联调",
+      "status": "pass",
+      "detail": "新增 qa-b2 viewer → 停用 · 审计 12 行 · Provider 保存 base · 切 t-beichen 后 runs=0 并切回"
+    }
+  ],
+  "evidence": [
+    "docs/v3/evidence/B2_login.png",
+    "docs/v3/evidence/B2_platform.png"
+  ],
+  "notes": [
+    "live provider 不在 B2 验收内；B3 需要真实 key 与 endpoint id 后补测。",
+    "测试库包含 J-0001 failed 与 J-0002 review，可用 npm run seed 重建。"
+  ]
+}

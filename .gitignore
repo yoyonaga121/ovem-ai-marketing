@@ -2,6 +2,7 @@ _backup/
 _preview/
 _tools/
 *.log
+*.err
 Thumbs.db
 .DS_Store
 
