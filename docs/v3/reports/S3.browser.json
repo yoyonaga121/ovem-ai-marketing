@@ -1,0 +1,86 @@
+{
+  "suite": "A3",
+  "generatedAt": "2026-11-20T07:43:34.056Z",
+  "cases": [
+    {
+      "id": "A3-01",
+      "name": "6 组导航 + 17 页成果入口",
+      "ok": true,
+      "detail": "nav=6/6 · links=17/17 · href 全命中 index.html#pN"
+    },
+    {
+      "id": "A3-07",
+      "name": "空态 → 骨架 → 运行态",
+      "ok": true,
+      "detail": "空态=显示 · 运行中骨架=显示 · 终态 review"
+    },
+    {
+      "id": "A3-04",
+      "name": "Trace 行数 = run 事件数，原始 JSON 可展开",
+      "ok": true,
+      "detail": "rows=30 / events=30"
+    },
+    {
+      "id": "A3-06",
+      "name": "成本卡 = stats.costCny（两位小数）",
+      "ok": true,
+      "detail": "card=¥0.12 / stats=¥0.1168"
+    },
+    {
+      "id": "A3-05",
+      "name": "重试链并排两轮 + promptDelta",
+      "ok": true,
+      "detail": "round1=FAIL · 64 · round2=PASS · 86 · promptDelta · 修正：主色占比 33.4% < 阈值 35%；按品牌色卡重绘，目标主色 ≥35%、安全区 ≥48px"
+    },
+    {
+      "id": "A3-03",
+      "name": "Plan 7 步，四态样式齐全",
+      "ok": true,
+      "detail": "steps=7/7 · seen=running/pending/ok/fail"
+    },
+    {
+      "id": "A3-02",
+      "name": "3 条预设可切换并生成 run",
+      "ok": true,
+      "detail": "presets=ABC · stored=3/3 · states=review/review/review"
+    },
+    {
+      "id": "A3-08",
+      "name": "replay：provider 标签与延迟同步变化",
+      "ok": true,
+      "detail": "label: mock · 延迟 ×1 → replay · 延迟 ×20 · wait: 2089ms → 111ms"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  },
+  "runs": [
+    {
+      "key": "A",
+      "runId": "R-0030",
+      "state": "review",
+      "cost": 0.1168
+    },
+    {
+      "key": "B",
+      "runId": "R-0031",
+      "state": "review",
+      "cost": 0.2136
+    },
+    {
+      "key": "C",
+      "runId": "R-0032",
+      "state": "review",
+      "cost": 0.1168
+    }
+  ],
+  "metrics": {
+    "nav": 6,
+    "pageLinks": 17,
+    "planSteps": 7,
+    "traceRows": 32,
+    "provider": "replay · 延迟 ×20"
+  }
+}

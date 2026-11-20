@@ -135,6 +135,7 @@ window.OVEM_RT = window.OVEM_RT || {};
     }
 
     var bus = T.createBus(runId);
+    if (typeof opts.onEvent === "function") bus.on(opts.onEvent);
     var registry = RT.Tools.create({ data: data, agent: agentCfg, random: opts.random });
     var price = registry.price;
     var speed = opts.speed || 1;
@@ -171,7 +172,22 @@ window.OVEM_RT = window.OVEM_RT || {};
         requestedAt: RT.util.nowIso(), decidedAt: "", pct: pct
       };
       reviews.push(rev);
-      return pct;
+
+      /* 工作台人工闸门：把决策权交给 UI，拿到结果后再迁移状态 */
+      if (typeof opts.onHitl === "function") {
+        var approved = await opts.onHitl({
+          gate: "budget", budgetCny: budget, costCny: stats.costCny, pct: pct, threshold: 0.8
+        });
+        var decision = approved ? "approve" : "reject";
+        bus.emit("hitl.decided", {
+          gate: "budget", decision: decision, by: "human:ui", note: "工作台审批", pct: pct
+        });
+        state = next(state, approved ? "hitl.approve" : "hitl.reject");
+        rev.decision = decision; rev.by = "human:ui"; rev.decidedAt = RT.util.nowIso();
+        rev.note = "工作台审批";
+        return { pct: pct, handled: true, rejected: !approved };
+      }
+      return { pct: pct, handled: false, rejected: false };
     }
 
     async function callTool(toolId, args, stepNo) {
@@ -200,6 +216,17 @@ window.OVEM_RT = window.OVEM_RT || {};
       mission.status = "blocked"; mission.updatedAt = RT.util.nowIso();
       await S.put("missions", mission);
       return { runId: runId, state: "blocked", stopped: true, run: runBlocked, traces: bus.events(), artifacts: [], reviews: reviews };
+    }
+
+    async function stopFailed() {
+      stats.durationMs = Math.round(((typeof performance !== "undefined" ? performance.now() : Date.now()) - t0));
+      var runFailed = buildRun("failed");
+      await S.put("runs", runFailed);
+      await S.putMany("traces", bus.events());
+      if (reviews.length) await S.putMany("reviews", reviews);
+      mission.status = "failed"; mission.updatedAt = RT.util.nowIso();
+      await S.put("missions", mission);
+      return { runId: runId, state: "failed", stopped: true, run: runFailed, traces: bus.events(), artifacts: [], reviews: reviews };
     }
 
     function buildRun(status) {
@@ -245,10 +272,11 @@ window.OVEM_RT = window.OVEM_RT || {};
 
         if (call.tool === "qa.check") {
           ctx.qa = res.out;
-          bus.emit("critic.verdict", { step: step.no, verdict: res.out.verdict, score: res.out.score, issues: res.out.issues });
+          bus.emit("critic.verdict", { step: step.no, round: 1, verdict: res.out.verdict, score: res.out.score, issues: res.out.issues });
           if (res.out.verdict !== "pass" && stats.retries < maxRetry) {
             stats.retries += 1;
-            bus.emit("retry.scheduled", { step: step.no, attempt: stats.retries, tool: "image.gen", reason: res.out.issues });
+            var promptDelta = "修正：" + res.out.issues.join("；") + "；按品牌色卡重绘，目标主色 ≥35%、安全区 ≥48px";
+            bus.emit("retry.scheduled", { step: step.no, attempt: stats.retries, tool: "image.gen", reason: res.out.issues, promptDelta: promptDelta });
             state = next(state, "retry.scheduled");
             var fix = await callTool("image.gen", { prompts: ctx.prompts, fix: true }, step.no);
             ctx.images = fix.out.images;
@@ -264,10 +292,12 @@ window.OVEM_RT = window.OVEM_RT || {};
           state = next(state, "artifact.landed");
         }
 
-        var pct = await checkBudget();
-        if (pct !== null) {
+        var gate = await checkBudget();
+        if (gate) {
+          if (gate.rejected) return await stopFailed();
+          if (gate.handled) continue;
           if (opts.autoApproveBudget === false) return await stopBlocked();
-          bus.emit("hitl.decided", { gate: "budget", decision: "approve", by: "human:auto", note: "自检自动放行", pct: pct });
+          bus.emit("hitl.decided", { gate: "budget", decision: "approve", by: "human:auto", note: "自检自动放行", pct: gate.pct });
           state = next(state, "hitl.approve");
           var r0 = reviews[reviews.length - 1];
           r0.decision = "approve"; r0.by = "human:auto"; r0.decidedAt = RT.util.nowIso();

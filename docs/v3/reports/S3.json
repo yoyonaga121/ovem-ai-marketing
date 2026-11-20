@@ -1,0 +1,221 @@
+{
+  "stage": "S3",
+  "title": "Agent 工作台壳层",
+  "suite": "A3",
+  "at": "2026-11-20T07:44:25.914Z",
+  "git": {
+    "ref": "b2af0da",
+    "tag": "v3.0-s2",
+    "dirty": true
+  },
+  "source": {
+    "shell": "workbench.html",
+    "ui": "runtime/ovem-ui.js",
+    "executor": "runtime/ovem-executor.js",
+    "browser": "docs/v3/reports/S3.browser.json",
+    "version": "v3.0.0-s3"
+  },
+  "metrics": {
+    "views": 6,
+    "nav": 6,
+    "scripts": 8,
+    "presets": 3,
+    "pageGroups": 6,
+    "pageLinks": 17,
+    "planSteps": 7,
+    "provider": "replay · 延迟 ×20"
+  },
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "pending": 0
+  },
+  "cases": [
+    {
+      "id": "A3-01",
+      "title": "6 组导航 + 17 页成果入口",
+      "status": "pass",
+      "detail": "nav=6/6 · links=17/17 · href 全命中 index.html#pN"
+    },
+    {
+      "id": "A3-07",
+      "title": "空态 → 骨架 → 运行态",
+      "status": "pass",
+      "detail": "空态=显示 · 运行中骨架=显示 · 终态 review"
+    },
+    {
+      "id": "A3-04",
+      "title": "Trace 行数 = run 事件数，原始 JSON 可展开",
+      "status": "pass",
+      "detail": "rows=30 / events=30"
+    },
+    {
+      "id": "A3-06",
+      "title": "成本卡 = stats.costCny（两位小数）",
+      "status": "pass",
+      "detail": "card=¥0.12 / stats=¥0.1168"
+    },
+    {
+      "id": "A3-05",
+      "title": "重试链并排两轮 + promptDelta",
+      "status": "pass",
+      "detail": "round1=FAIL · 64 · round2=PASS · 86 · promptDelta · 修正：主色占比 33.4% < 阈值 35%；按品牌色卡重绘，目标主色 ≥35%、安全区 ≥48px"
+    },
+    {
+      "id": "A3-03",
+      "title": "Plan 7 步，四态样式齐全",
+      "status": "pass",
+      "detail": "steps=7/7 · seen=running/pending/ok/fail"
+    },
+    {
+      "id": "A3-02",
+      "title": "3 条预设可切换并生成 run",
+      "status": "pass",
+      "detail": "presets=ABC · stored=3/3 · states=review/review/review"
+    },
+    {
+      "id": "A3-08",
+      "title": "replay：provider 标签与延迟同步变化",
+      "status": "pass",
+      "detail": "label: mock · 延迟 ×1 → replay · 延迟 ×20 · wait: 2089ms → 111ms"
+    }
+  ],
+  "runs": [
+    {
+      "key": "A",
+      "runId": "R-0030",
+      "state": "review",
+      "cost": 0.1168
+    },
+    {
+      "key": "B",
+      "runId": "R-0031",
+      "state": "review",
+      "cost": 0.2136
+    },
+    {
+      "key": "C",
+      "runId": "R-0032",
+      "state": "review",
+      "cost": 0.1168
+    }
+  ],
+  "staticChecks": [
+    {
+      "id": "S3-01",
+      "title": "壳层 + 5 个运行时模块存在且语法通过",
+      "ok": true,
+      "detail": "workbench=47425 chars · modules=5/5 · syntax=5/5"
+    },
+    {
+      "id": "S3-02",
+      "title": "6 个视图 section · 6 组导航一一对应",
+      "ok": true,
+      "detail": "views=6/6 · nav=6/6 · workbench/runs/site/eval/admin/about"
+    },
+    {
+      "id": "S3-03",
+      "title": "8 个 classic script 按依赖顺序加载",
+      "ok": true,
+      "detail": "scripts=8/8 · order=data→trace→store→tools→executor→ui"
+    },
+    {
+      "id": "S3-04",
+      "title": "A/B/C 三条预设 · 预算 200/200/0.10 · B 注入质检失败",
+      "ok": true,
+      "detail": "presets=ABC · budgets=200/200/0.1 · injectFail=B"
+    },
+    {
+      "id": "S3-05",
+      "title": "17 页按 6 组归类 · 无重复无缺失",
+      "ok": true,
+      "detail": "groups=6/6 · pages=17/17 · 成果:5 / 知识:1 / 策略:4 / 执行:4 / 复盘:1 / 文档:2"
+    },
+    {
+      "id": "S3-06",
+      "title": "执行器 onEvent / onHitl / stopFailed / promptDelta",
+      "ok": true,
+      "detail": "onEvent=✓ · onHitl=✓ · stopFailed=✓ · promptDelta=✓"
+    },
+    {
+      "id": "S3-07",
+      "title": "旧入口兼容跳转 → workbench.html（hash 透传）",
+      "ok": true,
+      "detail": "canonical + meta refresh + location.replace 均指向 workbench.html"
+    },
+    {
+      "id": "S3-08",
+      "title": "浏览器 A3 8/8 · 三条 run 终态与成本符合口径",
+      "ok": true,
+      "detail": "cases=8/8 · runs=A:R-0030:review ¥0.1168、B:R-0031:review ¥0.2136、C:R-0032:review ¥0.1168"
+    },
+    {
+      "id": "S3-09",
+      "title": "8 张验收截图归档",
+      "ok": true,
+      "detail": "8/8 张存在"
+    }
+  ],
+  "browser": {
+    "status": "pass",
+    "note": "A3 8/8 · 正常 / 重试 / 闸门三条链路 · 全程事件驱动",
+    "checklist": [
+      "6 组导航 + 17 页入口",
+      "3 条预设",
+      "Plan 7 步四态",
+      "Trace 行数=事件数",
+      "重试链 promptDelta",
+      "成本卡",
+      "空态/骨架屏",
+      "replay 同步"
+    ]
+  },
+  "artifacts": [
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-01_shell.png",
+      "note": "6 组导航 + 17 页成果入口"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-04_trace.png",
+      "note": "A 正常链路：30 events / 3 artifacts / ¥0.12"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-05_retry.png",
+      "note": "B 重试链：FAIL 64 → PASS 86 + promptDelta"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-06_gate.png",
+      "note": "C 人工闸门：108% / 预算 ¥0.10 / 已花 ¥0.1084"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-06_reject.png",
+      "note": "C 驳回分支：step5 FAIL / 后续 blocked / run.failed"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-07_empty.png",
+      "note": "冷启动空态"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-07_skeleton.png",
+      "note": "运行中骨架屏 7 卡"
+    },
+    {
+      "type": "screenshot",
+      "path": "docs/v3/evidence/S3_A3-08_replay.png",
+      "note": "replay 标签与延迟切换 + A3 8/8 徽标"
+    },
+    {
+      "type": "data",
+      "path": "docs/v3/reports/S3.browser.json",
+      "note": "工作台自检导出的原始结果（cases + runs + metrics）"
+    }
+  ]
+}

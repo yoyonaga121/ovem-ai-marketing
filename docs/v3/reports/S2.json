@@ -2,11 +2,11 @@
   "stage": "S2",
   "title": "运行时与工具层",
   "suite": "A2",
-  "at": "2026-11-20T07:24:16.040Z",
+  "at": "2026-11-20T07:30:09.340Z",
   "git": {
-    "ref": "282d14d",
+    "ref": "b2af0da",
     "tag": "v3.0-s2",
-    "dirty": false
+    "dirty": true
   },
   "source": {
     "runtime": [
