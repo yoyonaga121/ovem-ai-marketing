@@ -33,9 +33,8 @@ window.OVEM_RT = window.OVEM_RT || {};
       cases.push({ id: id, name: name, ok: !!r.ok, ms: Math.round(performance.now() - t0), detail: r.detail || "" });
     }
 
-    /* A2-01 建库与索引 */
+    /* A2-01 建库与索引（只验证结构，不 reset：避免自检抹掉工作台历史 run） */
     await step("A2-01", "6 store / 18 索引 · version=1", async function () {
-      await RT.Store.reset();
       var info = await RT.Store.info();
       var ok = info.mode === "idb" && info.version === 1 && info.storeCount === 6 && info.indexCount === 18;
       return { ok: ok, detail: "mode=" + info.mode + " · version=" + info.version + " · stores=" + info.storeCount + "/6 · indexes=" + info.indexCount + "/18" };
