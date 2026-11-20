@@ -791,7 +791,7 @@ th.sortable:hover{color:var(--brand)}
       </div>
     </div>
     <nav class="nav" id="navList" aria-label="系统导航"></nav>
-    <div class="side-foot">2026.11 · 作品样张<br>P0–P16 · 全 17 页</div>
+    <div class="side-foot" id="sideFoot">2026.11 · 作品样张<br>P0–P16 · 全 17 页</div>
   </aside>
 
   <!-- ================= 主区 ================= -->
@@ -807,9 +807,9 @@ th.sortable:hover{color:var(--brand)}
       <div class="top-chips">
         <a class="demo-entry" href="OVEM配置后台.html" target="_blank" rel="noopener" style="text-decoration:none" title="打开 OVEM 配置后台">配置后台</a>
         <button class="demo-entry" id="demoBtn" title="按 D 标准演示 · F 60 秒版 · 空格暂停 · ESC 退出">演示模式</button>
-        <span class="chip chip-muted">样张 v0.2</span>
+        <span class="chip chip-muted" id="chipVersion">样张 v0.2</span>
         <span class="chip chip-warn">示范数据</span>
-        <span class="chip">20 SKU · 8 渠道</span>
+        <span class="chip" id="chipCount">20 SKU · 8 渠道</span>
       </div>
     </header>
 
@@ -845,11 +845,11 @@ th.sortable:hover{color:var(--brand)}
                     <button class="kv-ctrl" id="kvSound" type="button" aria-label="开启宣传片声音">声音</button>
                   </div>
                 </div>
-                <figcaption>品牌主视觉 · 企业宣传片 / 2025–2026 Edition</figcaption>
+                <figcaption>品牌主视觉 · 企业宣传片 / <span id="kvEdition">2025–2026</span> Edition</figcaption>
               </figure>
             </div>
           </div>
-          <div class="p0-metrics">
+          <div class="p0-metrics" id="p0Metrics">
             <div><b class="tnum">20</b><span>已定义 SKU</span></div>
             <div><b class="tnum">8</b><span>内容渠道</span></div>
             <div><b class="tnum">160</b><span>基础物料位</span></div>
@@ -1248,10 +1248,10 @@ th.sortable:hover{color:var(--brand)}
         </div>
 
         <div class="kpi-grid">
-          <div class="kpi"><div class="kpi-num tnum">1,200<span>万</span></div><div class="kpi-label">年度曝光目标</div></div>
-          <div class="kpi"><div class="kpi-num tnum">96<span>万</span></div><div class="kpi-label">内容互动</div></div>
-          <div class="kpi"><div class="kpi-num tnum">2.7<span>万</span></div><div class="kpi-label">首购单量</div></div>
-          <div class="kpi"><div class="kpi-num tnum">¥186</div><div class="kpi-label">获客成本</div></div>
+          <div class="kpi"><div class="kpi-num tnum" id="kpiExposure">1,200<span>万</span></div><div class="kpi-label">年度曝光目标</div></div>
+          <div class="kpi"><div class="kpi-num tnum" id="kpiEngagement">96<span>万</span></div><div class="kpi-label">内容互动</div></div>
+          <div class="kpi"><div class="kpi-num tnum" id="kpiFirstOrder">2.7<span>万</span></div><div class="kpi-label">首购单量</div></div>
+          <div class="kpi"><div class="kpi-num tnum" id="kpiCac">¥186</div><div class="kpi-label">获客成本</div></div>
         </div>
 
         <div class="two-col">
@@ -1260,15 +1260,15 @@ th.sortable:hover{color:var(--brand)}
             <p class="panel-sub">20 款产品分三批进场，先用轻单价验证内容模型，再用主力款打爆，最后用旗舰拉高客单。</p>
             <div class="gantt-row">
               <span class="gantt-label">一期 · W1</span>
-              <div class="gantt-track"><div class="gantt-bar" style="left:0;width:25%">6 款 · 轻场景</div></div>
+              <div class="gantt-track"><div class="gantt-bar" style="left:0;width:25%"><span id="gantW1">6 款</span> · 轻场景</div></div>
             </div>
             <div class="gantt-row">
               <span class="gantt-label">二期 · W2</span>
-              <div class="gantt-track"><div class="gantt-bar w2" style="left:25%;width:50%">8 款 · 家务主力</div></div>
+              <div class="gantt-track"><div class="gantt-bar w2" style="left:25%;width:50%"><span id="gantW2">8 款</span> · 家务主力</div></div>
             </div>
             <div class="gantt-row">
               <span class="gantt-label">三期 · W3</span>
-              <div class="gantt-track"><div class="gantt-bar w3" style="left:75%;width:25%">6 款 · 个护旗舰</div></div>
+              <div class="gantt-track"><div class="gantt-bar w3" style="left:75%;width:25%"><span id="gantW3">6 款</span> · 个护旗舰</div></div>
             </div>
             <div class="gantt-axis">
               <div></div>
@@ -1818,139 +1818,56 @@ th.sortable:hover{color:var(--brand)}
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<!-- V2 配置层：文件配置（由 OVEM配置后台.html 导出，缺失时不影响页面） -->
-<script src="ovem-config.js"></script>
+<!-- 数据层 v2.0：唯一业务数据源，由 OVEM配置后台.html 发布后覆盖 -->
+<script src="data/ovem-data.js"></script>
 
 <script>
 /* ============================================================
-   数据层：20 款产品的结构化模型
-   字段即产品数据表，页面、Brief、白皮书共用同一份来源
+   数据层 v2.0：唯一来源 = data/ovem-data.js
+   ------------------------------------------------------------
+   v1 把产品、钩子、场景池、渠道模板内联在本文件里，配置后台只能改到其中
+   7 个字段，导致「后台改了一半、前台另一半还是旧值」。v2 起前台不再内联
+   任何业务数据，只做读取、派生与兜底。
+   ------------------------------------------------------------
+   优先级：本地草稿（配置后台预览） > data/ovem-data.js（已发布）
    ============================================================ */
-const CHANNELS = ["官网","移动端","私域","电商","直播","社媒","投放","线下"];
+const DRAFT_KEY = "ovem_data_draft";
+let DISABLED_PAGES = {};
 
-const PRODUCTS = [
-  {id:"p01",no:1,name:"精准备料辅助机器人",short:"精准备料",scene:"厨房",tier:"旗舰",wave:"W3",price:"4,999",
-   oneliner:"称量、切配、分份，跟着菜谱走",
-   tags:["菜谱联动","食材识别","低噪运行"],
-   pain:"备菜要称、要切、要分份，是下班后最耗神的四十分钟。",
-   diff:"不是固定功能的切菜机。它能按菜谱自动称量、识别食材硬度并调整切割力度，一次完成多步骤备料。",
-   audience:"双职工家庭；有做饭习惯但时间紧张的人。"},
-  {id:"p02",no:2,name:"厨房台面巡航清洁机器人",short:"台面清洁",scene:"厨房",tier:"主力",wave:"W2",price:"1,999",
-   oneliner:"3cm 机身，钻得进调料架下",
-   tags:["蒸汽擦","自主避障","三模切换"],
-   pain:"做完饭灶台溅油、菜屑散落，擦一遍比做饭还累。",
-   diff:"不是手持清洁机。它自主规划路径覆盖整张台面，按场景切换干吸、蒸汽、抛光三种模组。",
-   audience:"每周至少做四次饭的家庭。"},
-  {id:"p03",no:3,name:"餐具智能归位机器人",short:"餐具归位",scene:"厨房",tier:"主力",wave:"W2",price:"2,499",
-   oneliner:"洗碗机之后，最后一步交给它",
-   tags:["柔性抓取","视觉识别","自定义分区"],
-   pain:"碗洗完了，还得一只只摆回柜子，手是湿的，心是累的。",
-   diff:"洗碗机只洗不收。它补上识别、抓取、路径规划、归位这一段完整动作。",
-   audience:"装了洗碗机、但嫌收纳麻烦的家庭。"},
-  {id:"p04",no:4,name:"冰箱食材管家机器人",short:"食材管家",scene:"厨房",tier:"引流",wave:"W1",price:"899",
-   oneliner:"掌心大小，在冰箱里自己盘点",
-   tags:["库存盘点","临期提醒","菜谱推荐"],
-   pain:"冰箱里的菜，总是放到烂才想起来。",
-   diff:"不是被动冷藏。它是能在封闭空间独立作业的移动机器人，主动管理库存与保鲜。",
-   audience:"独居青年；双职工小家庭。"},
-  {id:"p05",no:5,name:"桌面物品归位巡检机器人",short:"桌面巡检",scene:"客厅",tier:"引流",wave:"W1",price:"599",
-   oneliner:"夜里巡逻，早上桌面自己归位",
-   tags:["夜间静音","物品识别","拍照录入"],
-   pain:"遥控器、耳机、笔，永远在找的路上。",
-   diff:"扫地机只管地面。它专注桌面立体空间的识别、抓取与归位。",
-   audience:"有孩子的家庭；桌面杂物多的办公族。"},
-  {id:"p06",no:6,name:"智能场景布置机器人",short:"场景布置",scene:"客厅",tier:"旗舰",wave:"W3",price:"5,999",
-   oneliner:"不是开关联动，是真的移动物体",
-   tags:["电动云台","多场景","语音触发"],
-   pain:"说一句看电影，幕布、投影、窗帘还得自己动手。",
-   diff:"智能家居只控开关。它能物理移动幕布与音响，主动改造空间。",
-   audience:"影音爱好者；大平层与改善型住房。"},
-  {id:"p07",no:7,name:"全屋空气治理巡航机器人",short:"空气治理",scene:"客厅",tier:"主力",wave:"W2",price:"2,999",
-   oneliner:"先找到污染源，再净化",
-   tags:["多传感","静音 30dB","香氛管理"],
-   pain:"净化器旁边达标，房间另一头照样呛。",
-   diff:"固定净化器守一个点。它移动检测、靶向停留，解决空间不均。",
-   audience:"新房装修；养宠或有吸烟成员的家庭。"},
-  {id:"p08",no:8,name:"睡眠环境自适应机器人",short:"睡眠自适应",scene:"卧室",tier:"主力",wave:"W2",price:"2,699",
-   oneliner:"监测不是目的，调环境才是",
-   tags:["非接触监测","环境联动","起夜引导"],
-   pain:"夜里热醒、干醒，数据有了，却没人帮你调。",
-   diff:"睡眠仪只出报告。它直接联动空调、加湿器、窗帘完成闭环。",
-   audience:"睡眠质量差的人；有老人同住的家庭。"},
-  {id:"p09",no:9,name:"夜间陪护服务机器人",short:"夜间陪护",scene:"卧室",tier:"主力",wave:"W2",price:"1,699",
-   oneliner:"半夜口渴，不用起身",
-   tags:["恒温仓","跌倒报警","语音交互"],
-   pain:"半夜口渴、吃药，起身一趟就再也睡不着。",
-   diff:"音箱只会说话。它能真的把水或药送到床边，并做跌倒检测。",
-   audience:"独居老人；孕期与术后恢复人群。"},
-  {id:"p10",no:10,name:"衣物折叠收纳机器人",short:"衣物折叠",scene:"卧室",tier:"主力",wave:"W2",price:"2,999",
-   oneliner:"丢进去，第二天自己叠好入柜",
-   tags:["自适应折叠","负离子除螨","嵌入衣柜"],
-   pain:"洗完澡，一堆衣服又堆在椅子上。",
-   diff:"折叠板要人动手。它识别衣物类型、调整折法、自主入柜。",
-   audience:"三口之家；对衣物护理有要求的人群。"},
-  {id:"p11",no:11,name:"衣柜抽屉精细化整理机器人",short:"抽屉整理",scene:"收纳",tier:"引流",wave:"W1",price:"799",
-   oneliner:"5cm 机身，进得去抽屉",
-   tags:["抽屉适配","静电抓取","语音查找"],
-   pain:"换季找一件衣服，翻箱倒柜半小时。",
-   diff:"收纳盒是静态容器。它能分类、优化位置，并主动把衣物送到手边。",
-   audience:"小户型住户；衣物数量多的年轻女性。"},
-  {id:"p12",no:12,name:"浴室全域清洁消毒机器人",short:"浴室清洁",scene:"卫浴个护",tier:"主力",wave:"W2",price:"2,399",
-   oneliner:"墙面、玻璃、地面，一趟走完",
-   tags:["IPX8","三步清洁","紫外消毒"],
-   pain:"玻璃水垢、墙角霉斑，擦一次半小时，还擦不干净。",
-   diff:"手持擦玻璃器只管一个面。它能跨墙面与地面移动，清洁后紫外消毒。",
-   audience:"有独立卫浴、对卫生敏感的家庭。"},
-  {id:"p13",no:13,name:"美妆护肤品智能管理机器人",short:"美妆管理",scene:"卫浴个护",tier:"旗舰",wave:"W3",price:"3,999",
-   oneliner:"该冷的冷，该热的热，按顺序递到手",
-   tags:["双温区","保质期识别","护肤流程"],
-   pain:"精华要冷藏、面膜要加热，台面上瓶瓶罐罐堆成山。",
-   diff:"化妆冰箱只能存。它识别临期、按护肤程序调温并递送。",
-   audience:"护肤步骤五步以上的重度用户。"},
-  {id:"p14",no:14,name:"头皮深层护理机器人",short:"头皮护理",scene:"卫浴个护",tier:"旗舰",wave:"W3",price:"4,299",
-   oneliner:"先检测，再决定怎么护理",
-   tags:["显微检测","柔性触头","报告同步"],
-   pain:"头皮出油、头屑反复，去一趟养发馆几百块。",
-   diff:"按摩梳只有固定震动。它扫描头皮、匹配方案、全头覆盖护理。",
-   audience:"有头皮困扰、不愿到店排队的人。"},
-  {id:"p15",no:15,name:"智能美甲定制机器人",short:"美甲定制",scene:"卫浴个护",tier:"旗舰",wave:"W3",price:"4,599",
-   oneliner:"0.1mm 精度，单手十分钟",
-   tags:["图案定制","自动修形","速干烤灯"],
-   pain:"做一次美甲，预约、排队、坐两小时。",
-   diff:"美甲店靠人工。它把修形、上色、封层全流程搬回家。",
-   audience:"高频美甲、追新图案的年轻女性。"},
-  {id:"p16",no:16,name:"衣物晾晒收纳一体化机器人",short:"晾晒收纳",scene:"阳台玄关",tier:"主力",wave:"W2",price:"2,899",
-   oneliner:"取衣、晾晒、收回、叠好，一条线",
-   tags:["轨道安装","柔性夹爪","天气联动"],
-   pain:"洗完忘了晾，下雨忘了收，白洗一遍。",
-   diff:"电动晾衣架只负责升降。它管从洗衣机到衣柜的全流程。",
-   audience:"没有烘干机；南方潮湿地区家庭。"},
-  {id:"p17",no:17,name:"盆栽智能养护巡航机器人",short:"盆栽养护",scene:"阳台玄关",tier:"引流",wave:"W1",price:"699",
-   oneliner:"多盆巡检，还会搬着花盆追光",
-   tags:["多盆管理","追光移动","品种识别"],
-   pain:"出差一周回来，阳台的绿植全蔫了。",
-   diff:"滴灌系统位置固定。它逐盆巡检、按需浇水，并移动花盆调整光照。",
-   audience:"阳台有 5 盆以上植物的住户。"},
-  {id:"p18",no:18,name:"鞋履全能护理机器人",short:"鞋履护理",scene:"阳台玄关",tier:"引流",wave:"W1",price:"899",
-   oneliner:"先认材质，再决定怎么护理",
-   tags:["材质识别","六步护理","自主归位"],
-   pain:"皮鞋要打油、球鞋要除臭，工具摆一排。",
-   diff:"固定擦鞋机只会抛光。它按皮革、网面、麂皮切换工序。",
-   audience:"鞋多的男性；有正装通勤需求的人。"},
-  {id:"p19",no:19,name:"出行物品智能筹备机器人",short:"出行筹备",scene:"出行宠物",tier:"引流",wave:"W1",price:"599",
-   oneliner:"看日程、看天气，提前把包装好",
-   tags:["日程联动","物品核查","人脸确认"],
-   pain:"出门总忘带伞、工牌、充电宝。",
-   diff:"收纳盒不会思考。它按当日日程与天气主动备物，并在门口提醒。",
-   audience:"通勤族；经常短途出差的人。"},
-  {id:"p20",no:20,name:"宠物全托管陪护机器人",short:"宠物陪护",scene:"出行宠物",tier:"旗舰",wave:"W3",price:"3,999",
-   oneliner:"陪玩、喂食、清理，加班晚归也放心",
-   tags:["自主跟随","定时喂食","猫砂清理"],
-   pain:"加班到十点，猫粮空了、猫砂堆了，只能心疼。",
-   diff:"喂食器只会定点投喂。它能移动陪玩、清理排泄物并监测健康。",
-   audience:"单身上班族；双职工养宠家庭。"}
-];
+function resolveData(){
+  const base = window.OVEM_DATA;
+  if(!base) return { data: null, draft: false, version: "" };
+  try{
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if(raw){
+      const pack = JSON.parse(raw);
+      if(pack && pack.data && pack.meta && pack.meta.mode === "draft"){
+        return { data: pack.data, draft: true, version: pack.meta.version || "" };
+      }
+    }
+  }catch(e){ /* 草稿损坏时静默回退到已发布数据 */ }
+  return { data: base, draft: false, version: (base.meta && base.meta.version) || "" };
+}
 
+const RESOLVED   = resolveData();
+const DATA       = RESOLVED.data;
+const DATA_OK    = !!DATA;
+const IS_DRAFT   = RESOLVED.draft;
+
+/* 派生结构：与 v1 同名，保证下游渲染代码零改动 */
+const PRODUCTS     = ((DATA && DATA.products) || []).filter(p => p && p.enabled !== false);
+const CHANNEL_DATA = ((DATA && DATA.channels) || []).filter(c => c && c.enabled !== false);
+const CHANNELS     = CHANNEL_DATA.map(c => c.name);
+const HOOKS        = PRODUCTS.reduce((o, p) => { o[p.id] = p.hook || p.oneliner || ""; return o; }, {});
+const SCENE_POOL   = (DATA && DATA.scenes && DATA.scenes.pool) ? DATA.scenes.pool : {};
+const CHANNEL_TPL  = CHANNEL_DATA.reduce((o, c, i) => {
+  const n = Number(c.tpl);
+  o[c.name] = Number.isInteger(n) ? n : i;
+  return o;
+}, {});
+const GOALS        = (DATA && DATA.goals) ? DATA.goals : {};
+
+/* 页面结构属于「界面契约」，留在前台；可见性由 data.pages 控制 */
 const PAGES = [
   {id:"p0",no:"P0",name:"系统总览",group:"概览",built:true},
   {id:"p1",no:"P1",name:"作战室",group:"概览",built:true},
@@ -1971,7 +1888,10 @@ const PAGES = [
   {id:"p16",no:"P16",name:"AI 方法论",group:"扩展",built:true}
 ];
 
-const SCENES = ["全部","厨房","客厅","卧室","卫浴个护","阳台玄关","出行宠物","收纳"];
+const SCENE_FALLBACK = ["厨房","客厅","卧室","卫浴个护","阳台玄关","出行宠物","收纳"];
+const SCENES = ["全部"].concat(
+  (DATA && DATA.scenes && DATA.scenes.order) ? DATA.scenes.order : SCENE_FALLBACK
+);
 const TIERS  = ["全部","引流","主力","旗舰"];
 const WAVES  = ["全部","W1","W2","W3"];
 const WAVE_LABEL = {W1:"一期 · 轻场景",W2:"二期 · 家务主力",W3:"三期 · 个护旗舰"};
@@ -1979,39 +1899,6 @@ const TIER_CLASS = {"引流":"pill-t1","主力":"pill-t2","旗舰":"pill-t3"};
 
 const state = {scene:"全部",tier:"全部",wave:"全部"};
 
-/* ---------- 面试增强：单品钩子 / 场景池 / 渠道模板映射 ---------- */
-const HOOKS = {
-  p01:"下班回家，菜已经备好了。",
-  p02:"做完饭，台面自己干净了。",
-  p03:"洗碗机之后，最后一步交给它。",
-  p04:"冰箱里的菜，先于你想起保质期。",
-  p05:"睡一觉，桌面自己归位了。",
-  p06:"说一句看电影，客厅自己变身影院。",
-  p07:"先找到污染源，再谈净化。",
-  p08:"夜里热醒之前，空调已经调好了。",
-  p09:"半夜口渴，不用起身。",
-  p10:"丢进去，第二天叠好入柜。",
-  p11:"换季找衣服，一句话的事。",
-  p12:"洗澡之后，浴室自己干净了。",
-  p13:"该冷的冷，该热的热，按顺序递到手。",
-  p14:"先检测头皮，再决定怎么护理。",
-  p15:"单手十分钟，美甲在家做。",
-  p16:"下雨之前，衣服已经收好了。",
-  p17:"出差一周回来，绿植还是精神的。",
-  p18:"先认材质，再决定怎么护理。",
-  p19:"出门之前，该带的都在包里了。",
-  p20:"加班到十点，猫砂已经干净了。"
-};
-const SCENE_POOL = {
-  "厨房":["下班后的四十分钟备菜","周末宴客多道菜并行","健身餐定量分份","老人独自做饭","露营前批量备料"],
-  "客厅":["有孩子的家庭日常","居家办公桌面","影音之夜","换季大扫除","朋友临时来访"],
-  "卧室":["加班晚归的深夜","老人起夜","换季衣物整理","失眠人群环境调节","术后居家静养"],
-  "卫浴个护":["早高峰护肤流程","约会前快速美甲","每周浴室深度清洁","头皮护理周期","出差前形象管理"],
-  "阳台玄关":["梅雨季晾晒","出差一周的绿植","通勤出门前三分钟","球鞋护理日","换季鞋履收纳"],
-  "出行宠物":["早出晚归的通勤日","临时出差两天","猫咪独处焦虑","多猫家庭分餐","术后与孕期静养"],
-  "收纳":["换季翻找衣物","小户型空间腾挪","出门前找证件","儿童玩具归位","囤货库存盘点"]
-};
-const CHANNEL_TPL = {"官网":5,"移动端":2,"私域":3,"电商":2,"直播":4,"社媒":1,"投放":0,"线下":5};
 const TONE_LEAD = {"专业可信":"先看结论，再看证据。","轻松生活":"说个我家真实发生的事。","硬核科技":"直接拆能力，不讲故事。","温度陪伴":"写给同样疲惫的你。"};
 let battleId = "p20";
 const adState = {sort:"roi", dir:-1, st:"全部"};
@@ -2083,7 +1970,8 @@ function route(){
   const page = PAGES.find(p=>p.id===hash);
   if(page && page.built){ setActive(hash); }
   else if(page){ setActive("p0"); toast(page.no + " · " + page.name + "：下一批次交付"); }
-  else { setActive("p0"); }
+  else if(DISABLED_PAGES[hash]){ setActive("p0"); toast("「" + DISABLED_PAGES[hash] + "」已在配置后台下线"); }
+  else { setActive("p0"); toast("「" + hash + "」不是有效页面，已回到系统总览"); }
 }
 
 /* ============================================================
@@ -2852,32 +2740,7 @@ function openPreview(src, title, note){
 /* ============================================================
    P7 渠道数据
    ============================================================ */
-const CHANNEL_DATA = [
-  {name:"官网", img:"ch-doc.jpg", caption:"官方站点视觉 · 通栏与产品卡组件",
-   size:"PC 1920×1080 ／ 移动 750", count:"12 条", kpi:"留资率 6.2%", cycle:"周更",
-   rule:"首屏三秒讲清给谁用、解决什么、多少钱。产品图走上半屏，参数表压到下半屏，不做轮播堆图。"},
-  {name:"移动端", img:"ch-mobile.jpg", caption:"移动端适配 · 断点与手势",
-   size:"750×1334 ／ 适配 375 宽", count:"10 条", kpi:"加购率 9.4%", cycle:"周更",
-   rule:"单屏单信息，一屏只推一款。按钮固定在拇指热区，正文不小于 14px。"},
-  {name:"私域", img:"ch-crm.jpg", caption:"私域运营 · 企微与社群物料",
-   size:"企微 1080×1080 ／ 朋友圈 1:1", count:"18 条", kpi:"首单转化 12.7%", cycle:"日更",
-   rule:"头像、封面、欢迎语三段口吻必须一致。社群图只讲一件事，福利海报必带二维码安全区。"},
-  {name:"电商", img:"ch-shop.jpg", caption:"电商视觉 · 主图与详情页",
-   size:"主图 800×800 ／ 详情 750×1200", count:"24 条", kpi:"转化 3.8%", cycle:"双周",
-   rule:"详情页前两屏定生死：第一屏产品加一句话，第二屏三个功能图标，参数表往后放。"},
-  {name:"直播", img:"ch-live.jpg", caption:"直播视觉 · 背景板与贴片",
-   size:"1080×1920 竖屏 ／ 贴片 800×800", count:"9 条", kpi:"平均停留 68 秒", cycle:"每日",
-   rule:"开场三十秒给场景不给参数。价格贴片固定在右侧三分之一，不遮产品。"},
-  {name:"社媒", img:"ch-social.jpg", caption:"社媒矩阵 · 封面与图文模板",
-   size:"小红书 3:4 ／ 抖音 9:16", count:"32 条", kpi:"互动率 5.1%", cycle:"日更",
-   rule:"首图不放大字，用场景说话。标题十一字以内，口语化，不写参数。"},
-  {name:"投放", img:"ch-ad.jpg", caption:"数字营销与投放 · 素材规格",
-   size:"信息流 1:1 ／ 开屏 9:16", count:"28 条", kpi:"CTR 2.4%", cycle:"三日一换",
-   rule:"一条素材三版起投，只改一个变量。品牌色占比不低于六成，否则不投。"},
-  {name:"线下", img:"ch-offline.jpg", caption:"线下物料 · 活动与户外",
-   size:"展台 2.4×3m ／ 海报 A0", count:"7 条", kpi:"到店留资 210 人/场", cycle:"月更",
-   rule:"三米之外能读懂主标。二维码不小于 8cm，落地页与海报同一句话。"}
-];
+/* 渠道数据 v2.0：来自 data/ovem-data.js 的 channels 字段，已在上方数据层派生，此处不再重复定义 */
 
 /* ============================================================
    P8 投放数据
@@ -2947,7 +2810,7 @@ function paintChannel(i){
       + '<p class="panel-sub">规范与产出状态</p>'
       + '<dl class="ch-spec">'
         + "<dt>尺寸</dt><dd>" + c.size + "</dd>"
-        + "<dt>已入库</dt><dd>" + c.count + "</dd>"
+        + "<dt>已入库</dt><dd>" + c.count + " 条</dd>"
         + "<dt>核心 KPI</dt><dd>" + c.kpi + "</dd>"
         + "<dt>更新节奏</dt><dd>" + c.cycle + "</dd>"
       + "</dl>"
@@ -3068,101 +2931,155 @@ function bindSplit(){  const r = el("splitRange");
 }
 
 /* ============================================================
-   V2 配置层：读取配置后台写入的配置（localStorage 优先，文件配置兜底）
+   v2.0 应用层：把单一数据源渲染到页面
+   ① 品牌 / 封面 / 指标（含自动推导）  ② 年度目标  ③ 页面可见性
+   ④ 草稿态标识  ⑤ 数据缺失保护
    ============================================================ */
-function applyConfig(){
-  let cfg = null;
-  try{ cfg = JSON.parse(localStorage.getItem("ovem_config_v2") || "null"); }catch(e){ cfg = null; }
-  if(!cfg && window.OVEM_CONFIG) cfg = window.OVEM_CONFIG;
-  if(!cfg) return;
-  window.__OVEM_CFG = cfg;
+function fmtNum(n){
+  const v = Number(String(n).replace(/,/g, ""));
+  if(!isFinite(v)) return String(n);
+  return v.toLocaleString("zh-CN");
+}
 
-  /* 品牌标识 */
-  if(cfg.brand){
-    const bn = document.querySelector(".brand-name");
-    const bs = document.querySelector(".brand-sub");
-    if(bn && cfg.brand.name) bn.textContent = cfg.brand.name;
-    if(bs && cfg.brand.sub) bs.innerHTML = cfg.brand.sub + "<br>" + (cfg.brand.sub2 || "");
+function derivedMetric(m){
+  const pc = PRODUCTS.length, cc = CHANNEL_DATA.length;
+  switch(m.derive){
+    case "products": return pc;
+    case "channels": return cc;
+    case "slots":    return pc * cc;
+    case "variants": return pc * cc * 3;
+    default:         return m.v;
+  }
+}
+
+function setKpi(id, v, unit){
+  const node = el(id);
+  if(!node || v === null || v === undefined || v === "") return;
+  const num = fmtNum(v);
+  node.innerHTML = unit === "¥"
+    ? "¥" + num
+    : num + (unit ? "<span>" + unit + "</span>" : "");
+}
+
+function renderDraftBanner(){
+  if(document.getElementById("draftBanner")) return;
+  const b = document.createElement("div");
+  b.id = "draftBanner";
+  b.style.cssText = "position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;"
+    + "display:flex;gap:12px;align-items:center;padding:8px 12px;border-radius:8px;"
+    + "background:#7C2D12;color:#fff;font-size:12px;box-shadow:0 10px 28px rgba(0,0,0,.28);max-width:92vw";
+  b.innerHTML = '<b style="font-weight:600;white-space:nowrap">草稿预览</b>'
+    + '<span style="opacity:.85">数据来自配置后台本地草稿，尚未发布</span>';
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = "清除草稿";
+  btn.style.cssText = "border:0;border-radius:5px;padding:4px 9px;background:#fff;color:#7C2D12;"
+    + "font-size:11px;cursor:pointer;white-space:nowrap";
+  btn.addEventListener("click", ()=>{
+    localStorage.removeItem(DRAFT_KEY);
+    location.reload();
+  });
+  b.appendChild(btn);
+  document.body.appendChild(b);
+}
+
+function showDataError(){
+  const box = document.createElement("div");
+  box.style.cssText = "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;"
+    + "background:#F5F7FA;z-index:99999;padding:24px";
+  box.innerHTML = '<div style="max-width:560px;border:1px solid #E3E8EF;border-radius:10px;background:#fff;'
+    + 'padding:24px;font-size:14px;line-height:1.9;color:#333">'
+    + '<h2 style="margin:0 0 10px;font-size:18px;color:#1E3A8A">数据源未加载</h2>'
+    + '<p style="margin:0 0 10px">前台没有找到 <code>data/ovem-data.js</code>，页面已停止渲染，避免展示过期数据。</p>'
+    + '<p style="margin:0;color:#666">请确认 <code>data/ovem-data.js</code> 与 <code>index.html</code> 在同一目录内；'
+    + '或在 <a href="OVEM配置后台.html" style="color:#1E3A8A">配置后台</a> 导出发布包后覆盖该文件。</p>'
+    + '</div>';
+  document.body.appendChild(box);
+}
+
+function applyData(){
+  if(!DATA) return;
+
+  /* —— 品牌标识 —— */
+  const bn = document.querySelector(".brand-name");
+  const bs = document.querySelector(".brand-sub");
+  const brand = DATA.brand || {};
+  if(bn && brand.name) bn.textContent = brand.name;
+  if(bs && brand.sub) bs.innerHTML = escapeHtml(brand.sub) + "<br>" + escapeHtml(brand.sub2 || "");
+
+  /* —— 封面文案 —— */
+  const hero = DATA.hero || {};
+  const kicker = document.querySelector(".p0-kicker");
+  const h1 = document.querySelector(".p0-h1");
+  const sub = document.querySelector(".p0-sub");
+  const roles = document.querySelector(".p0-roles");
+  if(kicker && hero.kicker) kicker.textContent = hero.kicker;
+  if(h1 && hero.title) h1.innerHTML = String(hero.title).split("\n").map(t=>escapeHtml(t)).join("<br>");
+  if(sub && hero.sub) sub.textContent = hero.sub;
+  if(roles && hero.roles && hero.roles.length){
+    roles.innerHTML = hero.roles.filter(Boolean).map(r=>"<span>" + escapeHtml(r) + "</span>").join("");
+  }
+  const edNode = el("kvEdition");
+  if(edNode && brand.edition) edNode.textContent = brand.edition;
+
+  /* —— 封面五项指标：带推导来源的按当前数量实时算 —— */
+  const metrics = DATA.metrics || [];
+  const box = el("p0Metrics");
+  if(box && metrics.length){
+    box.innerHTML = metrics.map(m =>
+      '<div><b class="tnum">' + escapeHtml(derivedMetric(m))
+      + (m.unit ? "<em>" + escapeHtml(m.unit) + "</em>" : "")
+      + "</b><span>" + escapeHtml(m.label) + "</span></div>"
+    ).join("");
   }
 
-  /* 封面文案 */
-  if(cfg.hero){
-    const kicker = document.querySelector(".p0-kicker");
-    const h1 = document.querySelector(".p0-h1");
-    const sub = document.querySelector(".p0-sub");
-    const roles = document.querySelector(".p0-roles");
-    if(kicker && cfg.hero.kicker) kicker.textContent = cfg.hero.kicker;
-    if(h1 && cfg.hero.title) h1.innerHTML = String(cfg.hero.title).split("\n").map(t=>escapeHtml(t)).join("<br>");
-    if(sub && cfg.hero.sub) sub.textContent = cfg.hero.sub;
-    if(roles && cfg.hero.roles && cfg.hero.roles.length){
-      roles.innerHTML = cfg.hero.roles.filter(Boolean).map(r=>"<span>" + escapeHtml(r) + "</span>").join("");
+  /* —— 年度目标 → P1 四张 KPI 卡 —— */
+  const g = DATA.goals || {};
+  setKpi("kpiExposure",   g.exposure,   "万");
+  setKpi("kpiEngagement", g.engagement, "万");
+  setKpi("kpiFirstOrder", g.firstOrder, "万");
+  setKpi("kpiCac",        g.cac,        "¥");
+
+  /* —— 上市甘特：数量按批次实际统计，改批次不用再手改文案 —— */
+  ["W1","W2","W3"].forEach(w=>{
+    const node = el("gant" + w);
+    if(node){
+      const n = PRODUCTS.filter(p=>p.wave === w).length;
+      node.textContent = n + " 款";
+    }
+  });
+
+  /* —— 页面可见性：导航移除 + DOM 移除（v1 只移导航，内容仍可从源码读到） —— */
+  const pagesCfg = DATA.pages || {};
+  for(let i = PAGES.length - 1; i >= 0; i--){
+    const p = PAGES[i];
+    if(pagesCfg[p.id] === false){
+      DISABLED_PAGES[p.id] = p.name;
+      const sec = document.getElementById("view-" + p.id);
+      if(sec) sec.remove();
+      PAGES.splice(i, 1);
     }
   }
 
-  /* 封面五项指标 */
-  if(cfg.metrics && cfg.metrics.length){
-    const box = document.querySelector(".p0-metrics");
-    if(box){
-      box.innerHTML = cfg.metrics.map(m=>'<div><b class="tnum">' + escapeHtml(m.v)
-        + (m.unit ? "<em>" + escapeHtml(m.unit) + "</em>" : "") + "</b><span>" + escapeHtml(m.label) + "</span></div>").join("");
-    }
+  /* —— 顶栏计数与数据版本 —— */
+  const countChip = el("chipCount");
+  if(countChip) countChip.textContent = PRODUCTS.length + " SKU · " + CHANNEL_DATA.length + " 渠道";
+  const verChip = el("chipVersion");
+  if(verChip && DATA.meta && DATA.meta.version){
+    verChip.textContent = IS_DRAFT ? "草稿 " + DATA.meta.version : "数据 " + DATA.meta.version;
   }
 
-  /* 产品矩阵：字段覆盖 + 停用移除 */
-  if(Array.isArray(cfg.products) && cfg.products.length){
-    const byId = {};
-    cfg.products.forEach(p=>{ byId[p.id] = p; });
-    for(let i = PRODUCTS.length - 1; i >= 0; i--){
-      const p = PRODUCTS[i], c = byId[p.id];
-      if(!c) continue;
-      if(c.enabled === false){ PRODUCTS.splice(i, 1); continue; }
-      ["name","short","scene","tier","wave","price","oneliner"].forEach(k=>{
-        if(c[k] !== undefined && c[k] !== "") p[k] = c[k];
-      });
-    }
-  }
+  /* —— 侧栏页脚：可见页数随配置变化 —— */
+  const sideFoot = el("sideFoot");
+  if(sideFoot) sideFoot.innerHTML = "2026.11 · 作品样张<br>按当前配置显示 " + PAGES.length + " 页";
 
-  /* 页面可见性 */
-  if(cfg.pages){
-    for(let i = PAGES.length - 1; i >= 0; i--){
-      if(cfg.pages[PAGES[i].id] === false) PAGES.splice(i, 1);
-    }
-  }
+  /* —— 草稿态 —— */
+  if(IS_DRAFT) renderDraftBanner();
 
-  /* 渠道矩阵：字段覆盖 + 停用移除 */
-  if(Array.isArray(cfg.channels) && cfg.channels.length){
-    for(let i = CHANNEL_DATA.length - 1; i >= 0; i--){
-      const ch = CHANNEL_DATA[i];
-      const c = cfg.channels.find(x=>x && (x.origName || x.name) === ch.name) || cfg.channels[i];
-      if(!c) continue;
-      if(c.enabled === false){ CHANNEL_DATA.splice(i, 1); continue; }
-      ["count","kpi","cycle"].forEach(k=>{
-        if(c[k] !== undefined && c[k] !== "") ch[k] = k === "count" ? Number(c[k]) : c[k];
-      });
-      if(c.name) ch.name = c.name;
-    }
-    if(Array.isArray(CHANNELS)){
-      CHANNELS.length = 0;
-      CHANNEL_DATA.forEach(c=>CHANNELS.push(c.name));
-    }
-  }
-
-  /* 顶栏计数与配置标记 */
-  const chips = document.querySelector(".top-chips");
-  if(chips){
-    const countChip = chips.querySelector(".chip:not(.chip-muted):not(.chip-warn)");
-    if(countChip) countChip.textContent = PRODUCTS.length + " SKU · " + CHANNEL_DATA.length + " 渠道";
-    if(cfg.meta && cfg.meta.version){
-      const badge = document.createElement("span");
-      badge.className = "chip chip-cfg";
-      badge.textContent = "配置 " + cfg.meta.version;
-      chips.appendChild(badge);
-    }
-  }
-
-  /* 若样板产品被停用，作战页回退到第一款启用产品 */
+  /* —— 样板产品被停用时回退 —— */
   if(!PRODUCTS.find(p=>p.id === battleId) && PRODUCTS.length) battleId = PRODUCTS[0].id;
 }
+
 
 function escapeHtml(s){
   return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -3171,26 +3088,25 @@ function escapeHtml(s){
 /* ============================================================
    初始化
    ============================================================ */
-applyConfig();
-buildNav();
-buildFilters();
-renderProducts();
-renderMap();
-renderSwatches();
-renderGallery();
-buildBattleSelect();
-renderBattle(PRODUCTS.find(p=>p.id === battleId));
-buildFactory();
-updatePrompt();
-initResultSlots();
-renderTemplates();
-highlightTemplate();
-renderChannels();
-buildAdFilters();
-renderAds();
-renderJourney();
-bindSplit();
-renderEntries();
+applyData();
+if(DATA_OK){
+  buildNav();
+  /* 页面可能被配置后台下线：先确认 section 还在，再初始化该页的渲染 */
+  const has = id => !!document.getElementById("view-" + id);
+  if(has("p1")){ bindSplit(); }
+  if(has("p2")){ renderSwatches(); renderGallery(); }
+  if(has("p3")){ buildFilters(); renderProducts(); }
+  if(has("p4")){ buildBattleSelect(); renderBattle(PRODUCTS.find(p=>p.id === battleId)); }
+  if(has("p5")){ buildFactory(); updatePrompt(); initResultSlots(); renderTemplates(); highlightTemplate(); }
+  if(has("p6")){ renderMap(); }
+  if(has("p7")){ renderChannels(); }
+  if(has("p8")){ buildAdFilters(); renderAds(); }
+  if(has("p9")){ renderJourney(); }
+  if(has("p13")){ renderEntries(); }
+} else {
+  showDataError();
+}
+
 function bindHeroVideo(){
   const v = el("heroVideo"), snd = el("kvSound"), playBtn = el("kvPlay");
   if(!v || !snd || !playBtn) return;

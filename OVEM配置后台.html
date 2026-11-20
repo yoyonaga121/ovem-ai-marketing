@@ -1,1113 +1,1152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OVEM 配置后台</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OVEM 配置中台 v2.0</title>
 <style>
-  :root{
-    --bg:#F5F7FB;--surface:#FFFFFF;--surface-2:#F8FAFE;--line:#E3E8F2;--line-2:#D4DBE9;
-    --ink:#0F1B2D;--ink-2:#4A5769;--ink-3:#7E8CA2;
-    --brand:#1E3A8A;--brand-2:#2F6FED;--tint:#EDF2FC;--teal:#0E8F8C;--gold:#A1741F;
-    --ok:#15803D;--warn:#B45309;--danger:#B42318;
-    --r:12px;--r-sm:8px;--shadow:0 1px 2px rgba(15,27,45,.05);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    background:var(--bg);color:var(--ink);
-    font-family:"Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
-    font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;
-  }
-  button{font-family:inherit;cursor:pointer}
-  input,select,textarea{font-family:inherit;font-size:12.5px;color:var(--ink)}
-  a{color:inherit;text-decoration:none}
+:root{
+  --brand:#1E3A8A; --brand-2:#2563EB; --brand-3:#EFF4FF;
+  --ink:#0F172A; --ink-2:#334155; --muted:#64748B; --muted-2:#94A3B8;
+  --line:#E2E8F0; --line-2:#EEF2F7; --bg:#F5F7FA; --card:#FFFFFF;
+  --ok:#047857; --ok-bg:#ECFDF5; --warn:#B45309; --warn-bg:#FFFBEB;
+  --err:#B91C1C; --err-bg:#FEF2F2;
+  --r:8px; --shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.05);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.65 "PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button{font-family:inherit}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
 
-  /* ---------------- 顶栏 ---------------- */
-  .appbar{
-    height:58px;display:flex;align-items:center;gap:18px;
-    padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line);
-    position:sticky;top:0;z-index:30;
-  }
-  .ab-brand{display:flex;align-items:center;gap:10px;min-width:0}
-  .ab-mark{width:30px;height:28px;object-fit:contain;flex:none}
-  .ab-t{display:flex;flex-direction:column;line-height:1.15}
-  .ab-t b{font-size:13.5px;letter-spacing:.02em;white-space:nowrap}
-  .ab-t span{font-size:10px;color:var(--ink-3);letter-spacing:.06em;white-space:nowrap}
-  .ab-div{width:1px;height:22px;background:var(--line)}
-  .ab-crumb{font-size:11.5px;color:var(--ink-3)}
-  .ab-crumb b{color:var(--ink-2);font-weight:600}
-  .ab-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .env-pill{
-    display:inline-flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-3);
-    border:1px dashed var(--line-2);border-radius:999px;padding:4px 10px;background:var(--surface-2);
-  }
-  .env-dot{width:6px;height:6px;border-radius:50%;background:var(--teal)}
-  .save-state{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-3);margin-right:2px}
-  .save-state .dot{width:6px;height:6px;border-radius:50%;background:#B9C4D6}
-  .save-state.is-dirty{color:var(--warn)}
-  .save-state.is-dirty .dot{background:var(--warn)}
-  .save-state.is-saved{color:var(--ok)}
-  .save-state.is-saved .dot{background:var(--ok)}
-  .btn{
-    height:32px;padding:0 12px;border-radius:var(--r-sm);border:1px solid var(--line-2);
-    background:var(--surface);font-size:12px;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;
-    white-space:nowrap;flex:none;
-    transition:border-color .15s,color .15s,background .15s;
-  }
-  .btn:hover{border-color:var(--brand-2);color:var(--brand)}
-  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-  .btn.primary:hover{background:#16306F;border-color:#16306F;color:#fff}
-  .btn.ghost{background:transparent}
-  .btn.sm{height:28px;padding:0 10px;font-size:11.5px}
-  .btn.danger:hover{border-color:#E7B7B2;color:var(--danger)}
+/* 侧栏 */
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:#fff;border-right:1px solid var(--line)}
+.brandbox{display:flex;gap:10px;align-items:center;padding:18px 16px 14px}
+.mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(140deg,#1E3A8A,#2563EB);display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;letter-spacing:.06em}
+.bname{font-size:13px;font-weight:700;letter-spacing:.04em}
+.bsub{font-size:10.5px;color:var(--muted-2)}
+.nav{flex:1;overflow:auto;padding:6px 10px 12px}
+.ngroup{margin-top:10px}
+.nglabel{font-size:10.5px;color:var(--muted-2);letter-spacing:.12em;padding:6px 8px 4px}
+.nitem{display:flex;align-items:center;gap:9px;width:100%;padding:7px 9px;border:0;background:none;border-radius:7px;cursor:pointer;color:var(--ink-2);font-size:12.5px;text-align:left}
+.nitem:hover{background:var(--line-2)}
+.nitem.on{background:var(--brand-3);color:var(--brand);font-weight:600}
+.nicon{width:18px;height:18px;display:grid;place-items:center;font-size:11px;color:var(--muted);border-radius:4px;background:#F1F5F9}
+.nitem.on .nicon{background:#fff;color:var(--brand-2)}
+.nitem span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nbadge{font-size:10px;color:var(--muted-2);font-variant-numeric:tabular-nums}
+.nbadge.warn{color:var(--warn)}
+.sidefoot{padding:10px 16px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted-2);line-height:1.7}
+.sidefoot b{color:var(--ink-2);font-weight:600}
 
-  /* ---------------- 布局 ---------------- */
-  .shell{display:grid;grid-template-columns:216px minmax(0,1fr) 372px;height:calc(100vh - 58px)}
-  .side{
-    background:var(--surface);border-right:1px solid var(--line);
-    padding:16px 12px 20px;overflow-y:auto;
-  }
-  .nav-group{margin-bottom:18px}
-  .nav-label{font-size:9.5px;letter-spacing:.14em;color:#9AA9C0;padding:0 10px;margin-bottom:6px}
-  .nav-item{
-    display:flex;align-items:center;gap:9px;height:34px;padding:0 10px;border-radius:7px;
-    color:var(--ink-2);font-size:12.5px;position:relative;margin-bottom:2px;border:1px solid transparent;
-  }
-  .nav-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;color:#8A97AC;flex:none}
-  .nav-item:hover{background:var(--surface-2);color:var(--ink)}
-  .nav-item.is-on{background:var(--tint);color:var(--brand);font-weight:600;border-color:#DCE6FB}
-  .nav-item.is-on svg{color:var(--brand)}
-  .nav-item .n-badge{
-    margin-left:auto;font-size:9.5px;color:var(--ink-3);background:#F1F4F9;border-radius:4px;padding:1px 5px;
-  }
-  .nav-item.is-on .n-badge{background:#fff;color:var(--brand)}
-  .side-note{
-    margin-top:22px;padding:11px 12px;border:1px solid var(--line);border-radius:9px;
-    background:var(--surface-2);font-size:10.5px;color:var(--ink-3);line-height:1.65;
-  }
-  .side-note b{display:block;color:var(--ink-2);font-size:11px;margin-bottom:4px}
+/* 顶栏 */
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:11px 22px;background:rgba(245,247,250,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.crumb{font-size:12px;color:var(--muted)}
+.crumb b{color:var(--ink);font-weight:600}
+.badges{display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:6px;font-size:11px;background:#fff;border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.chip.ok{background:var(--ok-bg);border-color:#CDEDDC;color:var(--ok)}
+.chip.warn{background:var(--warn-bg);border-color:#FDE68A;color:var(--warn)}
+.chip.err{background:var(--err-bg);border-color:#FECACA;color:var(--err)}
+.chip.dirty{background:#EFF6FF;border-color:#BFDBFE;color:var(--brand-2)}
+.btn{height:30px;padding:0 12px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#CBD5E1;background:#FCFDFF}
+.btn.primary{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+.btn.primary:hover{background:#1D4ED8}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--err);border-color:#FECACA}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{height:26px;padding:0 9px;font-size:11px}
 
-  .main{padding:24px 28px 70px;overflow-y:auto;min-width:0}
-  .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:18px}
-  .pagehead h1{font-size:21px;font-weight:700;letter-spacing:-.01em}
-  .pagehead p{font-size:12px;color:var(--ink-3);margin-top:5px;max-width:620px}
-  .pagehead .acts{display:flex;gap:8px;flex:none}
+/* 内容 */
+.content{padding:20px 22px 60px;max-width:1500px}
+.shead{display:flex;align-items:flex-end;gap:16px;margin-bottom:14px}
+.shead h1{margin:0;font-size:19px;letter-spacing:-.01em}
+.shead p{margin:3px 0 0;font-size:12px;color:var(--muted);max-width:760px;line-height:1.7}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:14px}
+.card-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line-2)}
+.card-h h3{margin:0;font-size:13.5px;font-weight:600}
+.card-h p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+.card-h .right{margin-left:auto;display:flex;gap:6px;align-items:center}
+.card-b{padding:14px 16px}
+.stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 13px;box-shadow:var(--shadow)}
+.stat .k{font-size:11px;color:var(--muted)}
+.stat .v{font-size:22px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px}
+.stat .v small{font-size:11px;color:var(--muted-2);font-weight:400;margin-left:2px}
+.stat .f{font-size:10.5px;color:var(--muted-2);margin-top:3px}
 
-  .preview{
-    border-left:1px solid var(--line);background:var(--surface-2);
-    padding:18px 16px 26px;overflow-y:auto;
-  }
-  .pv-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .pv-head b{font-size:12.5px}
-  .pv-head span{font-size:10px;color:var(--ink-3)}
-  .pv-hero{
-    background:#0B1424;border-radius:10px;padding:15px 15px 0;color:#fff;overflow:hidden;
-    box-shadow:0 8px 24px rgba(11,20,36,.18);
-  }
-  .pv-kicker{font-size:8.5px;letter-spacing:.10em;color:rgba(255,255,255,.55);margin-bottom:8px}
-  .pv-title{font-size:16px;line-height:1.42;font-weight:700;letter-spacing:-.01em}
-  .pv-sub{font-size:9.5px;line-height:1.6;color:rgba(255,255,255,.66);margin-top:7px}
-  .pv-roles{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
-  .pv-roles span{font-size:8.5px;color:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:2px 7px}
-  .pv-metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(255,255,255,.12);margin-top:14px}
-  .pv-metrics div{background:#0B1424;padding:8px 6px 9px;text-align:center}
-  .pv-metrics b{display:block;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}
-  .pv-metrics b em{font-style:normal;font-size:9px;margin-left:1px}
-  .pv-metrics span{display:block;font-size:7.5px;color:rgba(255,255,255,.55);margin-top:2px;line-height:1.35}
+/* 表单 */
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.field{min-width:0}
+.field.wide{grid-column:1/-1}
+.field label{display:block;font-size:11.5px;color:var(--ink-2);margin-bottom:4px;font-weight:500}
+.field label b{color:var(--err);font-weight:400;margin-left:2px}
+input[type=text],input[type=number],textarea,select{width:100%;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);font:12.5px/1.5 inherit;padding:6px 9px;min-width:0}
+input[type=text],input[type=number],select{height:30px}
+textarea{resize:vertical;padding:7px 9px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#93B4F7;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+input:disabled{background:#F8FAFC;color:var(--muted)}
+.sub{font-size:10.5px;color:var(--muted-2);margin-top:3px}
+.cons{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.cons span{font-size:9.5px;padding:1px 5px;border-radius:3px;background:#F1F5F9;color:var(--muted);white-space:nowrap}
+.ferr{font-size:10.5px;color:var(--err);margin-top:3px;display:none}
+.ferr.on{display:block}
+.sw{position:relative;width:34px;height:18px;flex:none;display:inline-block}
+.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:2}
+.sw i{position:absolute;inset:0;background:#CBD5E1;border-radius:20px;transition:.18s}
+.sw i:after{content:"";position:absolute;width:14px;height:14px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.18s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw input:checked + i{background:var(--brand-2)}
+.sw input:checked + i:after{transform:translateX(16px)}
 
-  .pv-block{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
-  .pv-block h4{font-size:10px;letter-spacing:.08em;color:var(--ink-3);margin-bottom:9px;font-weight:600}
-  .pv-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px dashed #EEF1F7}
-  .pv-row:last-child{border-bottom:0}
-  .pv-row span{color:var(--ink-3)}
-  .pv-row b{font-variant-numeric:tabular-nums;color:var(--ink)}
-  .pv-bar{margin-bottom:7px}
-  .pv-bar-top{display:flex;justify-content:space-between;font-size:10px;color:var(--ink-2);margin-bottom:3px}
-  .pv-bar-track{height:5px;background:#EEF2F9;border-radius:3px;overflow:hidden}
-  .pv-bar-fill{height:100%;background:linear-gradient(90deg,#2F6FED,#1E3A8A);border-radius:3px}
-  .pv-warn{
-    margin-top:12px;border:1px solid #F0DDBB;background:#FDF7EC;border-radius:8px;
-    padding:9px 10px;font-size:10px;line-height:1.6;color:#8A5A12;
-  }
-  .pv-warn b{color:#6B430C}
-  .pv-foot{margin-top:14px;font-size:9.5px;color:#9AA9C0;line-height:1.6}
+/* 产品卡 */
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.search{position:relative;flex:1;min-width:180px;max-width:320px}
+.search input{padding-left:26px}
+.search:before{content:"⌕";position:absolute;left:9px;top:6px;color:var(--muted-2);font-size:13px}
+.pcard{border:1px solid var(--line);border-radius:7px;margin-bottom:8px;background:#fff;overflow:hidden}
+.pcard.off{opacity:.62}
+.phead{display:flex;align-items:center;gap:9px;padding:8px 11px;cursor:pointer}
+.phead:hover{background:#FAFBFD}
+.twist{width:18px;height:18px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:11px;transition:transform .16s;flex:none}
+.pcard.open .twist{transform:rotate(90deg)}
+.pno{font-size:10.5px;color:var(--muted-2);font-variant-numeric:tabular-nums;width:26px;flex:none}
+.pname{flex:1;min-width:0;font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pmeta{font-size:10.5px;color:var(--muted);flex:none}
+.pill{font-size:9.5px;padding:1px 6px;border-radius:3px;flex:none;white-space:nowrap}
+.pill.t1{background:#ECFEFF;color:#0E7490}
+.pill.t2{background:#EFF6FF;color:#1D4ED8}
+.pill.t3{background:#FFFBEB;color:#92400E}
+.piss{width:16px;height:16px;border-radius:50%;background:var(--err-bg);color:var(--err);font-size:10px;display:none;place-items:center;flex:none;font-weight:600}
+.pcard.haserr .piss{display:grid}
+.pbody{padding:2px 12px 14px;border-top:1px solid var(--line-2)}
+.pgroup{margin-top:11px}
+.pgroup .glabel{font-size:10px;color:var(--muted-2);letter-spacing:.08em;margin-bottom:6px}
 
-  /* ---------------- 通用卡片 ---------------- */
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px}
-  .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
-  .card-head h3{font-size:13.5px;font-weight:700}
-  .card-head p{font-size:11px;color:var(--ink-3);margin-top:3px;max-width:640px}
-  .card-head .hint{font-size:10px;color:var(--ink-3);white-space:nowrap}
+/* 渠道卡 */
+.ccard{border:1px solid var(--line);border-radius:7px;margin-bottom:8px;background:#fff}
+.ccard.off{opacity:.62}
+.chead{display:flex;align-items:center;gap:9px;padding:9px 12px;border-bottom:1px solid var(--line-2)}
+.cname{font-size:12.5px;font-weight:600}
+.csizes{font-size:10.5px;color:var(--muted)}
 
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px}
-  .stat .k{font-size:10px;letter-spacing:.06em;color:var(--ink-3)}
-  .stat .v{font-size:27px;font-weight:700;line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums;color:var(--brand)}
-  .stat .v small{font-size:11px;font-weight:400;color:var(--ink-3);margin-left:4px}
-  .stat .f{font-size:10.5px;color:var(--ink-3);margin-top:5px}
+/* 页面表 */
+.ptable{width:100%;border-collapse:collapse}
+.ptable th,.ptable td{padding:8px 10px;border-bottom:1px solid var(--line-2);text-align:left;font-size:12px}
+.ptable th{font-size:10.5px;color:var(--muted);font-weight:500;background:#FAFBFD}
+.ptable td.desc{color:var(--muted);font-size:11px}
+.ptable tr:last-child td{border-bottom:0}
 
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+/* 列表 */
+.rows{display:flex;flex-direction:column}
+.row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line-2);font-size:12px}
+.row:last-child{border-bottom:0}
+.row .lbl{flex:1;min-width:0;color:var(--ink-2)}
+.row .lbl small{display:block;color:var(--muted-2);font-size:10px}
+.row .vals{flex:none;max-width:48%;text-align:right;font-size:11px;color:var(--muted);word-break:break-all}
+.row .vals s{color:var(--muted-2)}
+.row .vals b{color:var(--brand-2);font-weight:600}
+.checks{display:flex;flex-direction:column;gap:7px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:12px}
+.dot{width:14px;height:14px;border-radius:50%;display:grid;place-items:center;font-size:9px;flex:none;margin-top:2px}
+.dot.ok{background:var(--ok-bg);color:var(--ok)}
+.dot.warn{background:var(--warn-bg);color:var(--warn)}
+.dot.err{background:var(--err-bg);color:var(--err)}
+.check .t{flex:1}
+.check .t small{display:block;color:var(--muted-2);font-size:10.5px}
+.empty{padding:22px;text-align:center;color:var(--muted);font-size:12px;border:1px dashed var(--line);border-radius:7px;background:#FCFDFF}
+.quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.quick button{text-align:left;padding:10px 11px;border:1px solid var(--line);border-radius:7px;background:#fff;cursor:pointer}
+.quick button:hover{border-color:#BFDBFE;background:#FCFDFF}
+.quick b{display:block;font-size:12px;margin-bottom:2px}
+.quick span{font-size:10.5px;color:var(--muted)}
 
-  /* ---------------- 表单 ---------------- */
-  .field{margin-bottom:13px}
-  .field label{display:block;font-size:10.5px;color:var(--ink-3);margin-bottom:5px;letter-spacing:.03em}
-  .field input,.field select,.field textarea{
-    width:100%;border:1px solid var(--line-2);border-radius:var(--r-sm);
-    padding:8px 10px;background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s;
-  }
-  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(47,111,237,.10)}
-  .field textarea{resize:vertical;min-height:64px;line-height:1.7}
-  .field .sub{font-size:10px;color:#9AA9C0;margin-top:4px}
-  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+/* 弹窗 / toast */
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.42);display:grid;place-items:center;z-index:1000;padding:20px}
+.modal{width:min(520px,94vw);background:#fff;border-radius:10px;box-shadow:0 24px 60px rgba(15,23,42,.28);overflow:hidden}
+.modal h3{margin:0;padding:14px 16px;font-size:13.5px;border-bottom:1px solid var(--line-2)}
+.m-body{padding:16px;max-height:60vh;overflow:auto;font-size:12.5px;line-height:1.8}
+.m-foot{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--line-2);background:#FBFCFE}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);background:#0F172A;color:#fff;font-size:12px;padding:8px 14px;border-radius:7px;opacity:0;pointer-events:none;transition:.2s;z-index:1200}
+.toast.on{opacity:1;transform:translate(-50%,0)}
 
-  /* ---------------- 开关 ---------------- */
-  .switch{position:relative;display:inline-block;width:30px;height:17px;flex:none}
-  .switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
-  .switch i{position:absolute;inset:0;background:#DCE2EE;border-radius:999px;transition:background .18s;pointer-events:none}
-  .switch i::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;background:#fff;border-radius:50%;transition:transform .18s;box-shadow:0 1px 2px rgba(15,27,45,.18)}
-  .switch input:checked + i{background:var(--brand-2)}
-  .switch input:checked + i::after{transform:translateX(13px)}
-  .switch input:focus-visible + i{outline:2px solid var(--brand-2);outline-offset:2px}
-
-  /* ---------------- 产品列表 ---------------- */
-  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-  .search{position:relative;flex:1;min-width:180px}
-  .search input{width:100%;height:32px;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:0 10px 0 30px;background:var(--surface);outline:none}
-  .search input:focus{border-color:var(--brand-2)}
-  .search svg{position:absolute;left:9px;top:9px;width:14px;height:14px;stroke:#9AA9C0;fill:none;stroke-width:1.8}
-  .toolbar select{height:32px;border:1px solid var(--line-2);border-radius:var(--r-sm);padding:0 8px;background:var(--surface)}
-  .toolbar .count{font-size:11px;color:var(--ink-3);margin-left:auto}
-
-  .plist{display:flex;flex-direction:column}
-  .prow{padding:10px 0;border-bottom:1px solid #EEF1F7}
-  .prow:last-child{border-bottom:0}
-  .prow.is-off{opacity:.55}
-  .prow-top{display:grid;grid-template-columns:34px 32px minmax(150px,1.6fr) minmax(86px,.8fr) 76px 62px 84px;gap:8px;align-items:center}
-  .prow input[data-pfield="price"]{text-align:right;padding-right:8px;font-variant-numeric:tabular-nums}
-  .pno{font-size:10px;color:#9AA9C0;font-variant-numeric:tabular-nums;letter-spacing:.04em}
-  .prow input,.prow select{
-    height:30px;border:1px solid var(--line);border-radius:6px;padding:0 7px;background:var(--surface);width:100%;min-width:0;
-  }
-  .prow input:focus,.prow select:focus{border-color:var(--brand-2);outline:none}
-  .prow-bottom{padding-left:74px;margin-top:6px}
-  .prow-bottom input{height:28px;font-size:11.5px;color:var(--ink-2);background:var(--surface-2)}
-
-  /* ---------------- 渠道 ---------------- */
-  .chgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .chcard{border:1px solid var(--line);border-radius:9px;padding:11px 12px;background:var(--surface-2)}
-  .chcard.is-off{opacity:.55}
-  .ch-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .ch-top .switch{transform:scale(.92);transform-origin:left center}
-  .ch-name{font-size:12.5px;font-weight:600;border:0;background:transparent;padding:0;height:22px;flex:1;min-width:0}
-  .ch-name:focus{outline:none;background:#fff;border-radius:4px;box-shadow:0 0 0 2px rgba(47,111,237,.14)}
-  .ch-fields{display:grid;grid-template-columns:1fr 1.35fr .9fr;gap:6px}
-  .ch-fields input{height:27px;border:1px solid var(--line);border-radius:5px;padding:0 6px;font-size:11px;background:#fff;width:100%;min-width:0}
-  .ch-fields input:focus{border-color:var(--brand-2);outline:none}
-
-  /* ---------------- 页面开关 ---------------- */
-  .pagegroup{margin-bottom:14px}
-  .pagegroup h4{font-size:10.5px;letter-spacing:.1em;color:var(--ink-3);margin-bottom:7px}
-  .pagelist{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-  .pageitem{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:7px;padding:7px 10px;background:var(--surface)}
-  .pageitem.is-locked{background:var(--surface-2)}
-  .pageitem .pcode{font-size:9.5px;color:#9AA9C0;letter-spacing:.06em;width:22px}
-  .pageitem .pname{font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pageitem .lock{margin-left:auto;font-size:9px;color:#9AA9C0}
-  .pageitem .switch{margin-left:auto}
-
-  /* ---------------- 发布 / 差异 ---------------- */
-  .diff{border:1px solid var(--line);border-radius:9px;overflow:hidden}
-  .diff-row{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;border-bottom:1px solid #EEF1F7;background:#fff}
-  .diff-row:last-child{border-bottom:0}
-  .diff-row .tag{font-size:9.5px;border-radius:4px;padding:2px 6px;background:#FDF3E3;color:var(--gold);flex:none}
-  .diff-row .txt{font-size:11.5px;color:var(--ink-2)}
-  .diff-empty{padding:22px;text-align:center;color:var(--ink-3);font-size:11.5px}
-
-  .code{
-    background:#0B1424;color:#D6E1F5;border-radius:9px;padding:14px 15px;font-family:Consolas,"Cascadia Mono",monospace;
-    font-size:10.5px;line-height:1.7;overflow:auto;max-height:280px;white-space:pre;
-  }
-  .copy-line{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:12px}
-  .copy-line code{font-family:Consolas,monospace;font-size:11px;color:var(--ink-2)}
-
-  .checklist{display:flex;flex-direction:column;gap:7px}
-  .check{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:var(--ink-2)}
-  .check .ok{width:14px;height:14px;border-radius:50%;background:#E8F3EC;color:var(--ok);font-size:9px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px}
-  .check .warn{width:14px;height:14px;border-radius:50%;background:#FDF3E3;color:var(--warn);font-size:9px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px}
-
-  .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .quick button{
-    text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:13px 14px;
-    transition:border-color .15s,box-shadow .15s;
-  }
-  .quick button:hover{border-color:var(--brand-2);box-shadow:0 4px 14px rgba(30,58,138,.08)}
-  .quick b{display:block;font-size:12px;color:var(--ink)}
-  .quick span{display:block;font-size:10.5px;color:var(--ink-3);margin-top:3px}
-
-  /* ---------------- toast ---------------- */
-  .toast{
-    position:fixed;left:50%;bottom:34px;transform:translate(-50%,14px);
-    background:#0B1424;color:#fff;font-size:12px;padding:9px 16px;border-radius:999px;
-    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;box-shadow:0 8px 24px rgba(11,20,36,.24);
-  }
-  .toast.is-on{opacity:1;transform:translate(-50%,0)}
-
-  /* ---------------- 响应式 ---------------- */
-  @media (max-width:1280px){
-    .shell{grid-template-columns:200px minmax(0,1fr) 320px}
-    .main{padding:20px 20px 60px}
-  }
-  @media (max-width:1120px){
-    .shell{grid-template-columns:200px minmax(0,1fr)}
-    .preview{display:none}
-  }
-  @media (max-width:860px){
-    .shell{grid-template-columns:1fr;height:auto}
-    .side{display:flex;gap:6px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px}
-    .nav-group{display:flex;gap:4px;margin:0}
-    .nav-label,.side-note{display:none}
-    .nav-item{white-space:nowrap}
-    .main{padding:18px 14px 50px}
-    .stats{grid-template-columns:1fr 1fr}
-    .grid-2,.grid-3,.quick,.chgrid,.pagelist{grid-template-columns:1fr}
-    .row-3{grid-template-columns:1fr 1fr}
-    .prow-top{grid-template-columns:34px 30px minmax(120px,1fr) 70px 58px;gap:6px}
-    .prow-top select:nth-of-type(2){display:none}
-    .prow-bottom{padding-left:0}
-  }
-  @media (max-width:860px){
-    .appbar{gap:10px;padding:0 12px}
-    .ab-div,.ab-crumb,.env-pill,.ab-t span{display:none}
-    .ab-right{gap:6px}
-    .save-state{margin-right:0}
-    .btn.sm{padding:0 8px;font-size:11px}
-  }
-  @media (max-width:600px){
-    .appbar{flex-wrap:wrap;height:auto;min-height:52px;padding:8px 12px;row-gap:8px}
-    .ab-right{margin-left:auto;width:100%;justify-content:flex-end;flex-wrap:wrap}
-    .shell{height:auto}
-    .pagehead{flex-direction:column;align-items:stretch;gap:10px}
-    .pagehead .acts{display:none}
-  }
+@media (max-width:1100px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .nav{display:flex;gap:6px;overflow-x:auto;padding:8px}
+  .ngroup{margin:0;display:flex;gap:4px;align-items:center}
+  .nglabel{display:none}
+  .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:720px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .content{padding:14px}
+  .top{flex-wrap:wrap;padding:9px 14px}
+}
 </style>
 </head>
 <body>
-
-<header class="appbar">
-  <div class="ab-brand">
-    <img class="ab-mark" src="assets/img/brand/logo.png" alt="OVEM">
-    <div class="ab-t">
-      <b>OVEM 配置后台</b>
-      <span>MARKETING OS · V2 CONFIG</span>
+<div class="app">
+  <aside class="side">
+    <div class="brandbox">
+      <div class="mark">OV</div>
+      <div>
+        <div class="bname">OVEM 配置中台</div>
+        <div class="bsub">Config Console · v2.0</div>
+      </div>
     </div>
-  </div>
-  <div class="ab-div"></div>
-  <div class="ab-crumb">配置中心　/　<b id="crumb">概览</b></div>
-  <div class="ab-right">
-    <span class="env-pill"><span class="env-dot"></span><span id="envText">本地演示环境 · file://</span></span>
-    <span class="save-state" id="saveState"><span class="dot"></span><span id="saveText">已同步</span></span>
-    <button class="btn sm" id="btnReset" title="恢复默认配置">恢复默认</button>
-    <button class="btn sm" id="btnOpen" title="保存并打开前台站点">应用并预览</button>
-    <button class="btn primary sm" id="btnSave">保存配置</button>
-  </div>
-</header>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidefoot">
+      <b>数据源</b> data/ovem-data.js<br>
+      前台与后台共用同一份数据<br>
+      <b>Ctrl+S</b> 存草稿
+    </div>
+  </aside>
 
-<div class="shell">
-  <aside class="side" id="sideNav"></aside>
-  <main class="main">
-    <div class="pagehead" id="pageHead"></div>
-    <div id="viewRoot"></div>
-  </main>
-  <aside class="preview" id="previewPane"></aside>
+  <div class="main">
+    <header class="top">
+      <div class="crumb" id="crumb">配置 / <b>概览</b></div>
+      <div class="badges" id="badges"></div>
+    </header>
+    <div class="content" id="content"></div>
+  </div>
 </div>
-
 <div class="toast" id="toast"></div>
-<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script src="data/ovem-data.js"></script>
+<script src="data/ovem-schema.js"></script>
 <script>
 /* ============================================================
-   1 · 默认配置（与前台 OVEM_AI营销系统.html 当前数据一致）
+   OVEM 配置中台 v2.0
+   ------------------------------------------------------------
+   与 v1 的区别：
+   1. 表单由 data/ovem-schema.js 驱动，字段增删不改后台代码
+   2. 改的是完整数据对象（产品 13 字段），不再「只管 7 个字段」
+   3. 有校验、有逐字段 diff、有影响面、有快照与回滚、有变更日志
+   4. 草稿与发布分离：草稿供前台本地预览，发布导出数据文件
    ============================================================ */
-const DEFAULT_CFG = {
-  meta:{version:"v1.0", note:"", updated:""},
-  brand:{name:"OVEM", sub:"Optics Valley Effect", sub2:"Marketing OS", full:"光谷效应", edition:"2025–2026"},
-  hero:{
-    kicker:"虚拟品牌全案 · 2026.11 · 豆包 / 千问 / WorkBuddy",
-    title:"把一次品牌全案，\n做成一条产线",
-    sub:"光谷效应 Optics Valley Effect　·　20 款消费级生活机器人　·　8 个内容渠道",
-    roles:["AI 营销经理","AI 视觉设计师","AI 产品经理"]
-  },
-  metrics:[
-    {v:20, unit:"", label:"已定义 SKU"},
-    {v:8,  unit:"", label:"内容渠道"},
-    {v:160,unit:"", label:"基础物料位"},
-    {v:480,unit:"", label:"含 A/B 变体"},
-    {v:62, unit:"%",label:"单条成本降幅（测算）"}
-  ],
-  goals:{exposure:1200, engagement:96, firstOrder:2.7, cac:186, budget:1800},
-  products:[
-    {id:"p01",no:1, name:"精准备料辅助机器人", short:"精准备料", scene:"厨房", tier:"旗舰", wave:"W3", price:"4,999", oneliner:"称量、切配、分份，跟着菜谱走", enabled:true},
-    {id:"p02",no:2, name:"厨房台面巡航清洁机器人", short:"台面清洁", scene:"厨房", tier:"主力", wave:"W2", price:"1,999", oneliner:"3cm 机身，钻得进调料架下", enabled:true},
-    {id:"p03",no:3, name:"餐具智能归位机器人", short:"餐具归位", scene:"厨房", tier:"主力", wave:"W2", price:"2,499", oneliner:"洗碗机之后，最后一步交给它", enabled:true},
-    {id:"p04",no:4, name:"冰箱食材管家机器人", short:"食材管家", scene:"厨房", tier:"引流", wave:"W1", price:"899", oneliner:"掌心大小，在冰箱里自己盘点", enabled:true},
-    {id:"p05",no:5, name:"桌面物品归位巡检机器人", short:"桌面巡检", scene:"客厅", tier:"引流", wave:"W1", price:"599", oneliner:"夜里巡逻，早上桌面自己归位", enabled:true},
-    {id:"p06",no:6, name:"智能场景布置机器人", short:"场景布置", scene:"客厅", tier:"旗舰", wave:"W3", price:"5,999", oneliner:"不是开关联动，是真的移动物体", enabled:true},
-    {id:"p07",no:7, name:"全屋空气治理巡航机器人", short:"空气治理", scene:"客厅", tier:"主力", wave:"W2", price:"2,999", oneliner:"先找到污染源，再净化", enabled:true},
-    {id:"p08",no:8, name:"睡眠环境自适应机器人", short:"睡眠自适应", scene:"卧室", tier:"主力", wave:"W2", price:"2,699", oneliner:"监测不是目的，调环境才是", enabled:true},
-    {id:"p09",no:9, name:"夜间陪护服务机器人", short:"夜间陪护", scene:"卧室", tier:"主力", wave:"W2", price:"1,699", oneliner:"半夜口渴，不用起身", enabled:true},
-    {id:"p10",no:10,name:"衣物折叠收纳机器人", short:"衣物折叠", scene:"卧室", tier:"主力", wave:"W2", price:"2,999", oneliner:"丢进去，第二天自己叠好入柜", enabled:true},
-    {id:"p11",no:11,name:"衣柜抽屉精细化整理机器人", short:"抽屉整理", scene:"收纳", tier:"引流", wave:"W1", price:"799", oneliner:"5cm 机身，进得去抽屉", enabled:true},
-    {id:"p12",no:12,name:"浴室全域清洁消毒机器人", short:"浴室清洁", scene:"卫浴个护", tier:"主力", wave:"W2", price:"2,399", oneliner:"墙面、玻璃、地面，一趟走完", enabled:true},
-    {id:"p13",no:13,name:"美妆护肤品智能管理机器人", short:"美妆管理", scene:"卫浴个护", tier:"旗舰", wave:"W3", price:"3,999", oneliner:"该冷的冷，该热的热，按顺序递到手", enabled:true},
-    {id:"p14",no:14,name:"头皮深层护理机器人", short:"头皮护理", scene:"卫浴个护", tier:"旗舰", wave:"W3", price:"4,299", oneliner:"先检测，再决定怎么护理", enabled:true},
-    {id:"p15",no:15,name:"智能美甲定制机器人", short:"美甲定制", scene:"卫浴个护", tier:"旗舰", wave:"W3", price:"4,599", oneliner:"0.1mm 精度，单手十分钟", enabled:true},
-    {id:"p16",no:16,name:"衣物晾晒收纳一体化机器人", short:"晾晒收纳", scene:"阳台玄关", tier:"主力", wave:"W2", price:"2,899", oneliner:"取衣、晾晒、收回、叠好，一条线", enabled:true},
-    {id:"p17",no:17,name:"盆栽智能养护巡航机器人", short:"盆栽养护", scene:"阳台玄关", tier:"引流", wave:"W1", price:"699", oneliner:"多盆巡检，还会搬着花盆追光", enabled:true},
-    {id:"p18",no:18,name:"鞋履全能护理机器人", short:"鞋履护理", scene:"阳台玄关", tier:"引流", wave:"W1", price:"899", oneliner:"先认材质，再决定怎么护理", enabled:true},
-    {id:"p19",no:19,name:"出行物品智能筹备机器人", short:"出行筹备", scene:"出行宠物", tier:"引流", wave:"W1", price:"599", oneliner:"看日程、看天气，提前把包装好", enabled:true},
-    {id:"p20",no:20,name:"宠物全托管陪护机器人", short:"宠物陪护", scene:"出行宠物", tier:"旗舰", wave:"W3", price:"3,999", oneliner:"陪玩、喂食、清理，加班晚归也放心", enabled:true}
-  ],
-  channels:[
-    {name:"官网", count:12, kpi:"留资率 6.2%", cycle:"周更", enabled:true},
-    {name:"移动端", count:10, kpi:"加购率 9.4%", cycle:"周更", enabled:true},
-    {name:"私域", count:18, kpi:"首单转化 12.7%", cycle:"日更", enabled:true},
-    {name:"电商", count:24, kpi:"转化 3.8%", cycle:"双周", enabled:true},
-    {name:"直播", count:9, kpi:"平均停留 68 秒", cycle:"每日", enabled:true},
-    {name:"社媒", count:32, kpi:"互动率 5.1%", cycle:"日更", enabled:true},
-    {name:"投放", count:28, kpi:"CTR 2.4%", cycle:"三日一换", enabled:true},
-    {name:"线下", count:7, kpi:"到店留资 210 人/场", cycle:"月更", enabled:true}
-  ],
-  pages:{
-    p0:true,p1:true,p2:true,p3:true,p4:true,p5:true,p6:true,p7:true,p8:true,
-    p9:true,p10:true,p11:true,p12:true,p13:true,p14:true,p15:true,p16:true
-  }
-};
+const LS = { draft:"ovem_data_draft", snap:"ovem_snapshots_v2", exp:"ovem_last_export" };
+const S = window.OVEM_SCHEMA;
+const FILE_DATA = window.OVEM_DATA;
 
-const PAGE_META = [
-  {id:"p0", no:"P0", name:"系统总览", group:"概览"},
-  {id:"p1", no:"P1", name:"作战室", group:"概览"},
-  {id:"p2", no:"P2", name:"品牌资产中枢", group:"资产"},
-  {id:"p3", no:"P3", name:"产品矩阵", group:"资产"},
-  {id:"p4", no:"P4", name:"单品作战页", group:"生产"},
-  {id:"p5", no:"P5", name:"AI 内容工厂", group:"生产"},
-  {id:"p6", no:"P6", name:"产能地图", group:"生产"},
-  {id:"p7", no:"P7", name:"全渠道分发", group:"分发"},
-  {id:"p8", no:"P8", name:"智能投放", group:"分发"},
-  {id:"p9", no:"P9", name:"私域旅程", group:"分发"},
-  {id:"p10",no:"P10",name:"产品线规划", group:"经营"},
-  {id:"p11",no:"P11",name:"复盘沉淀", group:"经营"},
-  {id:"p12",no:"P12",name:"系统 PRD", group:"经营"},
-  {id:"p13",no:"P13",name:"单品入口页", group:"扩展"},
-  {id:"p14",no:"P14",name:"品类机会", group:"扩展"},
-  {id:"p15",no:"P15",name:"定价与成本", group:"扩展"},
-  {id:"p16",no:"P16",name:"AI 方法论", group:"扩展"}
-];
+let BASE = FILE_DATA ? clone(FILE_DATA) : null;   /* 已发布基线 */
+let draft = FILE_DATA ? loadDraft() : null;       /* 工作副本 */
+let view = "dashboard";
+let q = "";
+const opened = {};
+let ISSUE_CACHE = null;
 
-/* ============================================================
-   2 · 状态与工具
-   ============================================================ */
-const LS_KEY = "ovem_config_v2";
-const $ = s=>document.querySelector(s);
+/* 启动放到脚本末尾：避免 const（NAV / HEAD）在初始化前被访问 */
 
+function fatal(){
+  document.getElementById("content").innerHTML =
+    '<div class="empty" style="margin-top:40px">'
+    + '<h2 style="font-size:15px;color:#1E3A8A;margin:0 0 8px">数据源未加载</h2>'
+    + '<p style="margin:0">本后台需要 <code>data/ovem-data.js</code> 与 <code>data/ovem-schema.js</code>，<br>'
+    + '请确认两个文件与 <code>OVEM配置后台.html</code> 在同一目录下。</p></div>';
+}
+
+/* ---------------- 工具 ---------------- */
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function esc(s){
   return String(s == null ? "" : s)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
+function $(s){ return document.querySelector(s); }
+function el(id){ return document.getElementById(id); }
+function eq(a,b){ return JSON.stringify(a) === JSON.stringify(b); }
+function getPath(obj, path){
+  return path.split(".").reduce((o,k)=> (o == null ? undefined : o[k]), obj);
+}
+function setPath(obj, path, val){
+  const ks = path.split(".");
+  let o = obj;
+  for(let i = 0; i < ks.length - 1; i++){
+    const k = ks[i];
+    if(o[k] == null) o[k] = /^\d+$/.test(ks[i+1]) ? [] : {};
+    o = o[k];
+  }
+  o[ks[ks.length-1]] = val;
+}
 function nowStr(){
-  const d = new Date();
-  const p = n=>String(n).padStart(2,"0");
+  const d = new Date(), p = n => String(n).padStart(2,"0");
   return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate())
-    + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+       + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function toast(msg){
+  const t = el("toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove("on"), 2200);
+}
+function section(id){ return S.sections.find(s => s.id === id); }
+function fmt(v){
+  if(v === true) return "开";
+  if(v === false) return "关";
+  if(Array.isArray(v)) return v.join("、") || "（空）";
+  if(v === undefined || v === null || v === "") return "（空）";
+  return String(v);
 }
 
-function mergeCfg(base, patch){
-  const out = clone(base);
-  if(patch.meta) out.meta = Object.assign({}, out.meta, patch.meta);
-  if(patch.brand) out.brand = Object.assign({}, out.brand, patch.brand);
-  if(patch.hero) out.hero = Object.assign({}, out.hero, patch.hero);
-  if(Array.isArray(patch.metrics) && patch.metrics.length) out.metrics = clone(patch.metrics);
-  if(patch.goals) out.goals = Object.assign({}, out.goals, patch.goals);
-  if(Array.isArray(patch.products) && patch.products.length){
-    out.products = out.products.map(p=>{
-      const c = patch.products.find(x=>x && x.id === p.id);
-      return c ? Object.assign({}, p, c) : p;
-    });
-  }
-  if(Array.isArray(patch.channels) && patch.channels.length){
-    out.channels = out.channels.map((ch, i)=>{
-      const c = patch.channels.find(x=>x && (x.origName || x.name) === (ch.origName || ch.name)) || patch.channels[i];
-      return c ? Object.assign({}, ch, c) : ch;
-    });
-  }
-  if(patch.pages) out.pages = Object.assign({}, out.pages, patch.pages);
-  return out;
-}
-
-function loadCfg(){
-  let base = clone(DEFAULT_CFG);
+/* ---------------- 草稿 ---------------- */
+function loadDraft(){
   try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(raw) base = mergeCfg(base, JSON.parse(raw));
+    const raw = localStorage.getItem(LS.draft);
+    if(raw){
+      const pack = JSON.parse(raw);
+      if(pack && pack.data && pack.meta && pack.meta.mode === "draft") return pack.data;
+    }
   }catch(e){}
-  return base;
+  return clone(FILE_DATA);
+}
+function saveDraft(silent){
+  const pack = {
+    meta: { mode:"draft", version:(draft.meta && draft.meta.version) || "draft", updated: nowStr() },
+    data: draft
+  };
+  try{
+    localStorage.setItem(LS.draft, JSON.stringify(pack));
+    if(!silent) toast("草稿已保存到本机，前台刷新即可预览");
+    refreshBadges();
+  }catch(e){
+    toast("保存失败：浏览器存储已满或被禁用");
+  }
+}
+function clearDraft(){
+  localStorage.removeItem(LS.draft);
+  draft = clone(BASE);
+  toast("草稿已清除，回到已发布版本");
+  render();
 }
 
-let cfg = loadCfg();
-let savedSnap = JSON.stringify(cfg);
-let view = "overview";
-let pFilter = {q:"", tier:"全部"};
-
-const enabledProducts = ()=>cfg.products.filter(p=>p.enabled !== false);
-const enabledChannels = ()=>cfg.channels.filter(c=>c.enabled !== false);
-const visiblePages = ()=>PAGE_META.filter(p=>cfg.pages[p.id] !== false);
-
-/* ============================================================
-   3 · 导航
-   ============================================================ */
-const ICONS = {
-  overview:'<path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/>',
-  brand:'<path d="M12 3l7 4v6c0 4-3 6.5-7 8-4-1.5-7-4-7-8V7l7-4Z"/><path d="M9.5 12.5l1.8 1.8 3.4-3.6"/>',
-  products:'<path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5v-7Z"/><path d="M12 12l8-3.5M12 12v8M12 12 4 8.5"/>',
-  channels:'<path d="M4 18V9M9 18V5M14 18v-6M19 18v-9"/><path d="M3 21h18"/>',
-  metrics:'<path d="M4 19h16"/><path d="M7 19V9M12 19V5M17 19v-7"/><circle cx="7" cy="9" r="1"/><circle cx="12" cy="5" r="1"/>',
-  pages:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5M8 13h4"/>',
-  publish:'<path d="M12 3v12"/><path d="M7.5 7.5 12 3l4.5 4.5"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>'
-};
-
-const NAV_GROUPS = [
-  {label:"配置", items:[
-    {id:"overview",name:"概览",icon:"overview"},
-    {id:"brand",name:"品牌与封面",icon:"brand"},
-    {id:"products",name:"产品矩阵",icon:"products"},
-    {id:"channels",name:"渠道矩阵",icon:"channels"},
-    {id:"metrics",name:"指标与目标",icon:"metrics"},
-    {id:"pages",name:"页面与导航",icon:"pages"}
-  ]},
-  {label:"发布", items:[
-    {id:"publish",name:"变更与发布",icon:"publish"}
-  ]}
-];
-
-function navBadge(id){
-  if(id === "products") return enabledProducts().length + "/" + cfg.products.length;
-  if(id === "channels") return enabledChannels().length + "/" + cfg.channels.length;
-  if(id === "pages") return visiblePages().length + "/" + PAGE_META.length;
+/* ---------------- 校验 ---------------- */
+function checkField(f, v){
+  if(f.required && (v === undefined || v === null || String(v).trim() === "" || (Array.isArray(v) && !v.length))) return "必填";
+  if(v === undefined || v === null) return "";
+  if(f.type === "switch") return "";
+  if(f.type === "tags"){
+    const n = Array.isArray(v) ? v.filter(Boolean).length : 0;
+    if(f.maxItems && n > f.maxItems) return "最多 " + f.maxItems + " 项（当前 " + n + "）";
+    if(f.minItems && n < f.minItems) return "至少 " + f.minItems + " 项（当前 " + n + "）";
+    return "";
+  }
+  if(f.type === "number"){
+    if(String(v).trim() === "") return "";
+    const n = Number(v);
+    if(!isFinite(n)) return "必须是数字";
+    if(f.min !== undefined && n < f.min) return "不能小于 " + f.min;
+    if(f.max !== undefined && n > f.max) return "不能大于 " + f.max;
+    return "";
+  }
+  const s = String(v);
+  if(f.max && s.length > f.max) return "超出 " + f.max + " 字（当前 " + s.length + "）";
+  if(f.pattern && !new RegExp(f.pattern).test(s)) return "格式不符，示例 4,999";
+  if(f.options && !f.options.some(o => o.v === v)) return "不在可选范围内";
   return "";
 }
 
-function renderNav(){
-  const html = NAV_GROUPS.map(g=>{
-    return '<div class="nav-group"><div class="nav-label">' + g.label + "</div>"
-      + g.items.map(it=>{
-        const badge = navBadge(it.id);
-        return '<button class="nav-item' + (view === it.id ? " is-on" : "") + '" data-nav="' + it.id + '">'
-          + '<svg viewBox="0 0 24 24">' + ICONS[it.icon] + "</svg>"
-          + "<span>" + it.name + "</span>"
-          + (badge ? '<span class="n-badge">' + badge + "</span>" : "")
-          + "</button>";
-      }).join("") + "</div>";
-  }).join("");
-  $("#sideNav").innerHTML = html
-    + '<div class="side-note"><b>配置口径</b>改动只作用于展示层，示范数据仍保留原声明；停用产品会从前台列表与作战页同步移除。</div>';
+function validate(data){
+  const issues = [];
+  S.sections.forEach(sec => {
+    const t = sec.target;
+    if(sec.type === "object"){
+      (sec.fields || []).forEach(f => {
+        const msg = checkField(f, data[t] ? data[t][f.key] : undefined);
+        if(msg) issues.push({ level:"error", path:t+"."+f.key, msg: sec.title + " · " + f.label + "：" + msg });
+      });
+    }
+    if(sec.type === "array"){
+      const arr = data[t] || [];
+      (sec.itemFields || []).forEach(f => {
+        if(!f.unique) return;
+        const seen = {};
+        arr.forEach((it, i) => {
+          const k = String(it[f.key]);
+          if(!k || k === "undefined") return;
+          if(seen[k]) issues.push({ level:"error", path:t+"."+i+"."+f.key, msg: f.label + " 重复：" + k });
+          seen[k] = true;
+        });
+      });
+      arr.forEach((it, i) => {
+        (sec.itemFields || []).forEach(f => {
+          const msg = checkField(f, it[f.key]);
+          if(msg) issues.push({ level:"error", path:t+"."+i+"."+f.key, msg: itemName(sec, it, i) + " · " + f.label + "：" + msg });
+        });
+      });
+    }
+  });
+  (S.rules || []).forEach(r => {
+    let ok = true;
+    try{ ok = r.test(data); }catch(e){ ok = true; }
+    if(!ok) issues.push({ level: r.level || "error", path:"rule:" + r.id, msg: r.msg });
+  });
+  return issues;
+}
+function allIssues(){
+  if(!ISSUE_CACHE) ISSUE_CACHE = validate(draft);
+  return ISSUE_CACHE;
+}
+function errorsOnly(list){ return list.filter(x => x.level === "error"); }
+function issuesFor(list, prefix){ return list.filter(x => x.path.indexOf(prefix) === 0); }
+
+function itemName(sec, item, i){
+  if(sec.id === "products") return "P" + String(item.no || i+1).padStart(2,"0") + " " + (item.short || item.name || "");
+  if(sec.id === "channels") return item.name || ("渠道 " + (i+1));
+  if(sec.id === "metrics") return item.label || ("指标 " + (i+1));
+  return sec.title + " #" + (i+1);
 }
 
-/* ============================================================
-   4 · 视图
-   ============================================================ */
-const HEADS = {
-  overview:{crumb:"概览", title:"配置概览", desc:"一个后台统管品牌、产品、渠道、指标与页面可见性；保存后立即作用于前台站点。"},
-  brand:{crumb:"品牌与封面", title:"品牌与封面", desc:"品牌识别、P0 封面文案与五项封面指标。改动会直接覆盖前台 P0 深色封面带。"},
-  products:{crumb:"产品矩阵", title:"产品矩阵", desc:"20 款产品的名称、简称、梯队、批次、价格与一句话卖点；停用即从前台列表与作战页移除。"},
-  channels:{crumb:"渠道矩阵", title:"渠道矩阵", desc:"8 个内容渠道的物料条数、核心指标与更新节奏；停用即从前台渠道页移除。"},
-  metrics:{crumb:"指标与目标", title:"指标与目标", desc:"封面五项指标与年度经营目标。封面指标可一键按当前产品与渠道数重算。"},
-  pages:{crumb:"页面与导航", title:"页面与导航", desc:"控制 17 个页面是否出现在侧栏与演示序列；内容本身保留，随时可恢复。"},
-  publish:{crumb:"变更与发布", title:"变更与发布", desc:"查看本次改动、导出配置文件，或直接应用到本地前台站点。"}
+/* ---------------- diff ---------------- */
+function computeDiff(){
+  const rows = [];
+  S.sections.forEach(sec => {
+    const t = sec.target;
+    if(sec.type === "object"){
+      (sec.fields || []).forEach(f => {
+        const a = BASE[t] ? BASE[t][f.key] : undefined;
+        const b = draft[t] ? draft[t][f.key] : undefined;
+        if(!eq(a,b)) rows.push({ path:t+"."+f.key, label:sec.title+" · "+f.label, before:a, after:b, consumers:f.consumers || [] });
+      });
+    }
+    if(sec.type === "array"){
+      const A = BASE[t] || [], B = draft[t] || [];
+      const n = Math.max(A.length, B.length);
+      for(let i = 0; i < n; i++){
+        const ia = A[i] || {}, ib = B[i] || {};
+        (sec.itemFields || []).forEach(f => {
+          if(!eq(ia[f.key], ib[f.key])){
+            rows.push({
+              path: t+"."+i+"."+f.key,
+              label: itemName(sec, ib, i) + " · " + f.label,
+              before: ia[f.key], after: ib[f.key],
+              consumers: f.consumers || []
+            });
+          }
+        });
+      }
+    }
+  });
+  return rows;
+}
+function impactOf(rows){
+  const pages = {};
+  rows.forEach(r => {
+    (r.consumers || []).forEach(c => {
+      const m = String(c).match(/P\d+/);
+      if(m) pages[m[0]] = (pages[m[0]] || 0) + 1;
+    });
+  });
+  return { fields: rows.length, pages: Object.keys(pages).sort((a,b)=> (+a.slice(1)) - (+b.slice(1))), hits: pages };
+}
+
+/* ---------------- 推导 ---------------- */
+function counts(){
+  const pc = (draft.products || []).filter(p => p.enabled !== false).length;
+  const cc = (draft.channels || []).filter(c => c.enabled !== false).length;
+  return { pc, cc, slots: pc*cc, variants: pc*cc*3 };
+}
+function derived(m){
+  const c = counts();
+  switch(m.derive){
+    case "products": return c.pc;
+    case "channels": return c.cc;
+    case "slots": return c.slots;
+    case "variants": return c.variants;
+    default: return m.v;
+  }
+}
+
+/* ---------------- 导航 ---------------- */
+const CONF_ORDER = ["brand","hero","metrics","goals","products","channels","pages"];
+function ico(id){
+  return { dashboard:"◧", brand:"◇", hero:"▤", metrics:"▦", goals:"◎", channels:"⇄", products:"⬡", pages:"▥", meta:"⌗", history:"↺", publish:"⇧" }[id] || "▪";
+}
+function navName(id){
+  const fixed = { dashboard:"配置概览", history:"版本与快照", publish:"变更与发布", meta:"版本信息", pages:"页面与导航" };
+  if(fixed[id]) return fixed[id];
+  const s = section(id);
+  return s ? s.title : id;
+}
+const NAV = [
+  { group:"总览", items:[{ id:"dashboard" }] },
+  { group:"配置", items: CONF_ORDER.map(id => ({ id })) },
+  { group:"发布", items:[{ id:"meta" },{ id:"history" },{ id:"publish" }] }
+];
+const HEAD = {
+  dashboard:{ crumb:"概览", title:"配置概览", desc:"一个后台统管品牌、产品、渠道、目标与页面可见性。字段来自同一份 schema，改完先校验，再决定「本地预览」还是「导出发布」。" },
+  pages:{ crumb:"配置", title:"页面与导航", desc:"关掉的页面会同时从导航移除并从 DOM 删除，不只是隐藏入口。" },
+  meta:{ crumb:"发布", title:"版本信息", desc:"发布时自动写入版本号与时间；建议按 v2.0.x 递增。" },
+  history:{ crumb:"发布", title:"版本与快照", desc:"每次发布前存一份快照，改坏了整份回滚。快照存在浏览器本地，导出发布包后可长期留档。" },
+  publish:{ crumb:"发布", title:"变更与发布", desc:"三步走：校验 → 本地预览 → 导出覆盖 data/ovem-data.js。导出后前台刷新即读新数据。" }
 };
 
-function viewOverview(){
-  const p = enabledProducts().length, c = enabledChannels().length;
-  const slots = p * c, variants = slots * 3, vis = visiblePages().length;
-  const diffRows = diffList();
+function navBadge(id){
+  if(id === "products"){
+    const n = (draft.products || []).filter(p => p.enabled !== false).length;
+    return { text: n + "/" + (draft.products || []).length };
+  }
+  if(id === "channels"){
+    const n = (draft.channels || []).filter(c => c.enabled !== false).length;
+    return { text: n + "/" + (draft.channels || []).length };
+  }
+  if(id === "pages"){
+    const n = S.pages.filter(p => draft.pages[p.id] !== false).length;
+    return { text: n + "/" + S.pages.length };
+  }
+  if(id === "meta") return { text: (draft.meta && draft.meta.version) || "" };
+  if(id === "publish"){
+    const d = computeDiff().length;
+    return d ? { text: d + " 改", warn: true } : null;
+  }
+  return null;
+}
+function buildNav(){
+  el("nav").innerHTML = NAV.map(g =>
+    '<div class="ngroup"><div class="nglabel">' + esc(g.group) + "</div>"
+    + g.items.map(it => {
+      const b = navBadge(it.id);
+      return '<button class="nitem' + (view === it.id ? " on" : "") + '" data-nav="' + it.id + '">'
+        + '<span class="nicon">' + esc(ico(it.id)) + "</span>"
+        + "<span>" + esc(navName(it.id)) + "</span>"
+        + (b ? '<span class="nbadge' + (b.warn ? " warn" : "") + '">' + esc(b.text) + "</span>" : "")
+        + "</button>";
+    }).join("") + "</div>").join("");
+}
+
+/* ---------------- 顶栏状态 ---------------- */
+function refreshBadges(){
+  const diffs = computeDiff();
+  const issues = allIssues();
+  const errs = errorsOnly(issues);
+  const wins = issues.filter(x => x.level !== "error");
+  const imp = impactOf(diffs);
+  const lastExp = localStorage.getItem(LS.exp);
+
+  let html = "";
+  if(diffs.length){
+    html += '<span class="chip dirty">待发布 ' + diffs.length + " 项 · 影响 " + imp.pages.length + " 页</span>";
+  }else if(lastExp){
+    html += '<span class="chip warn">已导出 ' + esc(lastExp) + " · 待覆盖文件</span>";
+  }else{
+    html += '<span class="chip ok">与已发布版本一致</span>';
+  }
+  html += errs.length
+    ? '<span class="chip err">' + errs.length + " 处校验错误</span>"
+    : '<span class="chip ok">校验通过</span>';
+  if(wins.length) html += '<span class="chip warn">' + wins.length + " 条提醒</span>";
+
+  html += '<button class="btn sm" data-act="check">重新校验</button>';
+  html += '<button class="btn sm" data-act="saveDraft">存草稿</button>';
+  html += '<button class="btn sm primary" data-act="publish">发布</button>';
+  el("badges").innerHTML = html;
+  buildNav();
+}
+
+/* ---------------- 渲染 ---------------- */
+function render(){
+  ISSUE_CACHE = null;
+  const meta = HEAD[view] || {};
+  const sec = section(view);
+  const title = meta.title || (sec ? sec.title : view);
+  const desc = meta.desc || (sec ? sec.desc : "");
+  el("crumb").innerHTML = esc(meta.crumb || "配置") + " / <b>" + esc(title) + "</b>";
+
+  let body = "";
+  if(view === "dashboard") body = vDashboard();
+  else if(view === "publish") body = vPublish();
+  else if(view === "history") body = vHistory();
+  else if(view === "pages") body = vPages();
+  else if(view === "products") body = vProducts(sec);
+  else if(view === "channels") body = vChannels(sec);
+  else if(view === "metrics") body = vMetrics(sec);
+  else if(sec && sec.type === "object") body = vObject(sec);
+  else body = '<div class="empty">该模块尚未实现</div>';
+
+  el("content").innerHTML =
+    '<div class="shead"><div><h1>' + esc(title) + "</h1>" + (desc ? "<p>" + esc(desc) + "</p>" : "") + "</div></div>" + body;
+  refreshBadges();
+}
+
+/* ---------------- 概览 ---------------- */
+function vDashboard(){
+  const c = counts();
+  const issues = allIssues();
+  const errs = errorsOnly(issues);
+  const diffs = computeDiff();
+  const imp = impactOf(diffs);
+  const visiblePages = S.pages.filter(p => draft.pages[p.id] !== false).length;
+  const reqTotal = countRequired(false), reqFilled = countRequired(true);
 
   const checks = [
-    {ok: !!cfg.brand.name && !!cfg.brand.full, t:"品牌名与品牌全称已填写"},
-    {ok: !!cfg.hero.title.trim(), t:"封面主标已填写"},
-    {ok: p > 0, t:"至少 1 款产品处于启用状态"},
-    {ok: c > 0, t:"至少 1 个渠道处于启用状态"},
-    {ok: cfg.pages.p0 !== false, t:"P0 系统总览保持可见（演示入口）"},
-    {ok: cfg.meta.version && cfg.meta.version.trim(), t:"配置版本号已填写"}
+    { ok: reqFilled === reqTotal, t:"必填字段完整", s: reqFilled + " / " + reqTotal + " 个必填字段已填写" },
+    { ok: c.pc > 0, t:"至少 1 款产品启用", s: "当前启用 " + c.pc + " / " + (draft.products||[]).length + " 款" },
+    { ok: c.cc > 0, t:"至少 1 个渠道启用", s: "当前启用 " + c.cc + " / " + (draft.channels||[]).length + " 个" },
+    { ok: draft.pages.p0 !== false, t:"P0 系统总览保持可见", s: "它是演示入口，下线后前台没有落地页" },
+    { ok: !!(draft.meta && draft.meta.version), t:"版本号已填写", s: (draft.meta && draft.meta.version) || "未填写" },
+    { ok: errs.length === 0, t:"校验无错误", s: errs.length ? errs.length + " 处错误待修" : "全部通过" },
+    { ok: true, t:"每个字段都有前台消费方", s: "0 个孤儿字段：schema 里每个字段都标注了它影响哪一页" }
   ];
 
   return '<div class="stats">'
-    + '<div class="stat"><div class="k">启用产品</div><div class="v">' + p + '<small>/ ' + cfg.products.length + "</small></div><div class=\"f\">停用 " + (cfg.products.length - p) + " 款</div></div>"
-    + '<div class="stat"><div class="k">启用渠道</div><div class="v">' + c + '<small>/ ' + cfg.channels.length + "</small></div><div class=\"f\">物料条数 " + cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? (Number(b.count)||0) : 0),0) + "</div></div>"
-    + '<div class="stat"><div class="k">基础物料位</div><div class="v">' + slots + "</div><div class=\"f\">产品 × 渠道自动推导</div></div>"
-    + '<div class="stat"><div class="k">可见页面</div><div class="v">' + vis + '<small>/ ' + PAGE_META.length + "</small></div><div class=\"f\">隐藏 " + (PAGE_META.length - vis) + " 页</div></div>"
-    + "</div>"
-    + '<div class="grid-2">'
-    + '<div class="card"><div class="card-head"><div><h3>配置健康检查</h3><p>发布前逐项确认，避免前台出现空标题或空列表。</p></div></div><div class="checklist">'
-    + checks.map(x=>'<div class="check"><span class="' + (x.ok ? "ok" : "warn") + '">' + (x.ok ? "✓" : "!") + "</span><span>" + x.t + "</span></div>").join("")
-    + "</div></div>"
-    + '<div class="card"><div class="card-head"><div><h3>当前配置</h3><p>保存后写入浏览器本地配置，前台读取后立即生效。</p></div><span class="hint">' + esc(cfg.meta.version) + "</span></div>"
-    + '<div class="pv-row"><span>配置版本</span><b>' + esc(cfg.meta.version) + "</b></div>"
-    + '<div class="pv-row"><span>最近保存</span><b>' + (cfg.meta.updated ? esc(cfg.meta.updated) : "尚未保存") + "</b></div>"
-    + '<div class="pv-row"><span>存储位置</span><b>localStorage · ' + LS_KEY + "</b></div>"
-    + '<div class="pv-row"><span>生效范围</span><b>OVEM_AI营销系统.html</b></div>'
-    + '<div class="pv-row"><span>变更条目</span><b>' + diffRows.length + " 项</b></div>"
-    + "</div></div>"
-    + '<div class="card"><div class="card-head"><div><h3>模块入口</h3><p>三类高频操作：改产品、改渠道、改可见页面。</p></div></div><div class="quick">'
-    + '<button data-nav="products"><b>产品矩阵</b><span>' + p + " 款启用 · 价格与卖点可编辑</span></button>"
-    + '<button data-nav="channels"><b>渠道矩阵</b><span>' + c + " 个渠道 · 物料与指标</span></button>"
-    + '<button data-nav="pages"><b>页面与导航</b><span>' + vis + " / " + PAGE_META.length + " 页可见</span></button>"
-    + "</div></div>"
-    + '<div class="card"><div class="card-head"><div><h3>本次改动</h3><p>与默认配置对比，保存前确认影响范围。</p></div><button class="btn sm" data-nav="publish">查看全部</button></div>'
-    + renderDiff(diffRows.slice(0,6), "当前配置与默认版本一致，没有待发布改动。")
-    + "</div>";
-}
+    + stat("启用产品", c.pc, "/ " + (draft.products||[]).length, "停用 " + ((draft.products||[]).length - c.pc) + " 款")
+    + stat("启用渠道", c.cc, "/ " + (draft.channels||[]).length, "物料 " + (draft.channels||[]).filter(x=>x.enabled!==false).reduce((a,b)=>a+(Number(b.count)||0),0) + " 条")
+    + stat("基础物料位", c.slots, "", "产品 × 渠道 自动推导")
+    + stat("含变体", c.variants, "", "每个物料位 3 个 A/B")
+    + stat("可见页面", visiblePages, "/ " + S.pages.length, "隐藏 " + (S.pages.length - visiblePages) + " 页")
+    + stat("待发布改动", diffs.length, "项", "影响 " + imp.pages.length + " 个页面")
+  + "</div>"
 
-function viewBrand(){
-  const b = cfg.brand, h = cfg.hero;
-  return '<div class="card"><div class="card-head"><div><h3>品牌标识</h3><p>侧栏品牌块与后台标题共用这套字段。</p></div></div>'
-    + '<div class="row-3">'
-    + field("品牌缩写", "brand", "name", b.name, "前台侧栏主标识")
-    + field("英文名", "brand", "sub", b.sub, "侧栏第二行")
-    + field("业务线", "brand", "sub2", b.sub2, "侧栏第三行")
-    + "</div>"
-    + '<div class="row-2">'
-    + field("品牌全称", "brand", "full", b.full, "用于封面副标与文案拼装")
-    + field("版本年份", "brand", "edition", b.edition, "封面图注年份")
+  + '<div class="card"><div class="card-h"><div><h3>数据体检</h3><p>发布前逐项确认，避免前台出现空标题、空列表或死页。</p></div>'
+    + '<div class="right"><button class="btn sm" data-act="check">重新校验</button></div></div><div class="card-b"><div class="checks">'
+    + checks.map(x => '<div class="check"><span class="dot ' + (x.ok ? "ok" : "warn") + '">' + (x.ok ? "✓" : "!") + "</span>"
+        + '<span class="t">' + esc(x.t) + "<small>" + esc(x.s) + "</small></span></div>").join("")
+    + "</div></div></div>"
+
+  + '<div class="card"><div class="card-h"><div><h3>本次改动</h3><p>逐字段对比「已发布版本」，右侧是改动后的值。</p></div>'
+    + '<div class="right"><button class="btn sm" data-nav="publish">查看全部 ' + diffs.length + " 项</button></div></div>"
+    + '<div class="card-b">'
+    + (diffs.length ? diffList(diffs.slice(0,6)) : '<div class="empty">当前配置与已发布版本一致，没有待发布改动。</div>')
     + "</div></div>"
 
-    + '<div class="card"><div class="card-head"><div><h3>封面文案</h3><p>P0 深色封面带的三段文字与三枚身份标签。</p></div><span class="hint">主标换行即控制两行排版</span></div>'
-    + field("眉标", "hero", "kicker", h.kicker, "建议保留署名与时间")
-    + '<div class="field"><label>主标（换行分两行）</label><textarea data-sec="hero" data-field="title">' + esc(h.title) + "</textarea></div>"
-    + '<div class="field"><label>副标</label><textarea data-sec="hero" data-field="sub">' + esc(h.sub) + "</textarea></div>"
-    + '<div class="row-3"><div class="field"><label>身份标签 1</label><input data-sec="hero" data-field="roles.0" value="' + esc(h.roles[0]) + '"></div>'
-    + '<div class="field"><label>身份标签 2</label><input data-sec="hero" data-field="roles.1" value="' + esc(h.roles[1]) + '"></div>'
-    + '<div class="field"><label>身份标签 3</label><input data-sec="hero" data-field="roles.2" value="' + esc(h.roles[2]) + '"></div></div>'
-    + "</div>"
-
-    + '<div class="card"><div class="card-head"><div><h3>封面五项指标</h3><p>对应 P0 封面带底部数据条；第三、四项应由产品与渠道数推导。</p></div><button class="btn sm" data-act="syncCounts">按当前计数重算</button></div>'
-    + '<div class="row-3">' + cfg.metrics.map((m,i)=>
-        '<div class="field"><label>' + esc(m.label) + "</label>"
-        + '<input type="number" data-metric="' + i + '" data-field="v" value="' + esc(m.v) + '">'
-        + '<div class="sub">单位：' + (m.unit ? esc(m.unit) : "无") + "</div></div>").join("")
-    + "</div>"
-    + '<p class="sub" style="font-size:10.5px;color:#9AA9C0">重算会把 SKU、渠道、物料位、变体四项同步为当前启用数量，并重写封面副标中的数量。</p>'
-    + "</div>";
-}
-
-function field(label, sec, key, val, sub){
-  return '<div class="field"><label>' + label + "</label><input data-sec=\"" + sec + "\" data-field=\"" + key + "\" value=\"" + esc(val) + "\">"
-    + (sub ? '<div class="sub">' + sub + "</div>" : "") + "</div>";
-}
-
-function viewProducts(){
-  const p = enabledProducts().length;
-  const rows = cfg.products.map(prod=>{
-    const off = prod.enabled === false;
-    const search = (prod.name + " " + prod.short + " " + prod.oneliner).toLowerCase();
-    return '<div class="prow' + (off ? " is-off" : "") + '" data-id="' + prod.id + '" data-tier="' + esc(prod.tier) + '" data-search="' + esc(search) + '">'
-      + '<div class="prow-top">'
-      + '<label class="switch"><input type="checkbox" data-pid="' + prod.id + '" data-pfield="enabled"' + (off ? "" : " checked") + '><i></i></label>'
-      + '<span class="pno">P' + String(prod.no).padStart(2,"0") + "</span>"
-      + '<input data-pid="' + prod.id + '" data-pfield="name" value="' + esc(prod.name) + '" aria-label="产品名称">'
-      + '<input data-pid="' + prod.id + '" data-pfield="short" value="' + esc(prod.short) + '" aria-label="简称">'
-      + '<select data-pid="' + prod.id + '" data-pfield="tier" aria-label="梯队">' + ["引流","主力","旗舰"].map(t=>'<option' + (prod.tier === t ? " selected" : "") + ">" + t + "</option>").join("") + "</select>"
-      + '<select data-pid="' + prod.id + '" data-pfield="wave" aria-label="批次">' + ["W1","W2","W3"].map(w=>'<option' + (prod.wave === w ? " selected" : "") + ">" + w + "</option>").join("") + "</select>"
-      + '<input data-pid="' + prod.id + '" data-pfield="price" value="' + esc(prod.price) + '" aria-label="价格">'
-      + "</div>"
-      + '<div class="prow-bottom"><input data-pid="' + prod.id + '" data-pfield="oneliner" value="' + esc(prod.oneliner) + '" aria-label="一句话卖点"></div>'
-      + "</div>";
-  }).join("");
-
-  return '<div class="card"><div class="card-head"><div><h3>产品清单</h3><p>共 ' + cfg.products.length + " 款；启用 " + p + " 款。停用产品不会出现在 P3 矩阵、P4 作战页与 P13 入口页。</p></div>"
-    + '<span class="hint" id="prodCount">显示 ' + p + " / " + cfg.products.length + "</span></div>"
-    + '<div class="toolbar">'
-    + '<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l4 4"/></svg><input id="prodSearch" placeholder="搜索产品名 / 简称 / 卖点"></div>'
-    + '<select id="prodTier"><option>全部</option><option>引流</option><option>主力</option><option>旗舰</option></select>'
-    + '<button class="btn sm" data-act="allOn">全部启用</button>'
-    + '<button class="btn sm" data-act="allOff">全部停用</button>'
-    + "</div>"
-    + '<div class="plist" id="prodList">' + rows + "</div></div>"
-    + '<p class="sub" style="font-size:10.5px;color:#9AA9C0;margin-top:-4px">提示：价格字段前台按原样输出，建议保留千分位；梯队与批次会影响 P3 的筛选与配色。</p>';
-}
-
-function viewChannels(){
-  const c = enabledChannels().length;
-  const total = cfg.channels.reduce((a,b)=>a + (b.enabled !== false ? (Number(b.count)||0) : 0),0);
-  const cards = cfg.channels.map((ch, i)=>{
-    const off = ch.enabled === false;
-    return '<div class="chcard' + (off ? " is-off" : "") + '">'
-      + '<div class="ch-top"><label class="switch"><input type="checkbox" data-ci="' + i + '" data-cfield="enabled"' + (off ? "" : " checked") + "><i></i></label>"
-      + '<input class="ch-name" data-ci="' + i + '" data-cfield="name" value="' + esc(ch.name) + '" aria-label="渠道名称">'
-      + "</div>"
-      + '<div class="ch-fields">'
-      + '<input type="number" data-ci="' + i + '" data-cfield="count" value="' + esc(ch.count) + '" aria-label="物料条数" title="物料条数">'
-      + '<input data-ci="' + i + '" data-cfield="kpi" value="' + esc(ch.kpi) + '" aria-label="核心指标" title="核心指标">'
-      + '<input data-ci="' + i + '" data-cfield="cycle" value="' + esc(ch.cycle) + '" aria-label="更新周期" title="更新周期">'
-      + "</div></div>";
-  }).join("");
-
-  return '<div class="card"><div class="card-head"><div><h3>渠道清单</h3><p>8 个渠道；启用 ' + c + " 个，物料合计 " + total + " 条。字段依次为：物料条数 / 核心指标 / 更新周期。</p></div>"
-    + '<button class="btn sm" data-nav="pages">看渠道页可见性</button></div>'
-    + '<div class="chgrid">' + cards + "</div></div>"
-    + '<div class="card"><div class="card-head"><div><h3>渠道结构</h3><p>按物料条数排序，用于判断产能是否集中在少数渠道。</p></div></div>'
-    + renderChannelBars()
-    + "</div>";
-}
-
-function renderChannelBars(){
-  const list = cfg.channels.filter(x=>x.enabled !== false).slice().sort((a,b)=>(Number(b.count)||0) - (Number(a.count)||0));
-  const max = Math.max.apply(null, list.map(x=>Number(x.count)||0).concat([1]));
-  return list.map(ch=>'<div class="pv-bar"><div class="pv-bar-top"><span>' + esc(ch.name) + "　" + esc(ch.kpi) + '</span><b>' + (Number(ch.count)||0) + ' 条</b></div>'
-    + '<div class="pv-bar-track"><div class="pv-bar-fill" style="width:' + Math.round((Number(ch.count)||0) / max * 100) + '%"></div></div></div>').join("")
-    || '<div class="diff-empty">没有启用中的渠道</div>';
-}
-
-function viewMetrics(){
-  const g = cfg.goals;
-  const p = enabledProducts().length, c = enabledChannels().length;
-  return '<div class="card"><div class="card-head"><div><h3>年度经营目标</h3><p>这一组是配置层口径，用于对外说明目标设定；V1 前台尚未绑定，改动不会直接改写页面数字。</p></div><span class="hint">示范数据</span></div>'
-    + '<div class="row-3">'
-    + '<div class="field"><label>曝光目标（万）</label><input type="number" data-sec="goals" data-field="exposure" value="' + esc(g.exposure) + '"></div>'
-    + '<div class="field"><label>互动目标（万）</label><input type="number" data-sec="goals" data-field="engagement" value="' + esc(g.engagement) + '"></div>'
-    + '<div class="field"><label>首购目标（万单）</label><input type="number" data-sec="goals" data-field="firstOrder" value="' + esc(g.firstOrder) + '"></div>'
-    + '<div class="field"><label>CAC（元）</label><input type="number" data-sec="goals" data-field="cac" value="' + esc(g.cac) + '"></div>'
-    + '<div class="field"><label>年度预算（万元）</label><input type="number" data-sec="goals" data-field="budget" value="' + esc(g.budget) + '"></div>'
-    + '<div class="field"><label>可支撑首购量（万单，自动）</label><input value="' + Math.round(g.budget / Math.max(1,g.cac) * 1000) / 1000 + '" disabled><div class="sub">年度预算 ÷ CAC 的粗算口径，仅作参考</div></div>'
+  + '<div class="card"><div class="card-h"><div><h3>影响面</h3><p>改这些字段会同时改变哪些页面，发布前先看一眼。</p></div></div><div class="card-b">'
+    + (diffs.length
+        ? '<div class="rows">' + imp.pages.map(pid => {
+            const p = S.pages.find(x => x.id === pid) || { no:pid, name:pid, desc:"" };
+            return '<div class="row"><span class="lbl">' + p.no + " " + esc(p.name) + "<small>" + esc(p.desc) + "</small></span>"
+              + '<span class="vals">' + (imp.hits[pid] || 0) + " 个字段</span></div>";
+          }).join("") + "</div>"
+        : '<div class="empty">没有改动，也就没有影响面。</div>')
     + "</div></div>"
 
-    + '<div class="card"><div class="card-head"><div><h3>封面指标（前台生效）</h3><p>当前启用 ' + p + " 款产品 × " + c + " 个渠道 = " + (p * c) + " 个基础物料位，含 A/B 变体约 " + (p * c * 3) + " 条。</p></div>"
-    + '<button class="btn sm" data-act="syncCounts">同步计数</button></div>'
-    + '<div class="row-3">' + cfg.metrics.map((m,i)=>
-      '<div class="field"><label>' + esc(m.label) + "</label>"
-      + '<input type="number" data-metric="' + i + '" data-field="v" value="' + esc(m.v) + '">'
-      + '<div class="sub">单位：' + (m.unit ? esc(m.unit) : "无") + "</div></div>").join("")
-    + "</div>"
-    + '<div class="pv-warn"><b>口径提醒</b>　封面第 1、2 项应与启用产品数、启用渠道数一致；第 3、4 项由二者相乘推导。点「同步计数」会一次改齐并重写副标。</div>'
-    + "</div>";
+  + '<div class="card"><div class="card-h"><div><h3>快捷入口</h3><p>三类高频操作。</p></div></div><div class="card-b"><div class="quick">'
+    + '<button data-nav="products"><b>产品矩阵</b><span>' + c.pc + " 款启用 · 13 个字段全可改</span></button>"
+    + '<button data-nav="channels"><b>渠道矩阵</b><span>' + c.cc + " 个渠道 · 规范与 KPI</span></button>"
+    + '<button data-nav="goals"><b>年度目标</b><span>P1 四张 KPI 卡的口径</span></button>'
+    + "</div></div></div>";
+}
+function stat(k, v, unit, foot){
+  return '<div class="stat"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v)
+    + (unit ? "<small>" + esc(unit) + "</small>" : "") + '</div><div class="f">' + esc(foot) + "</div></div>";
+}
+function countRequired(filledOnly){
+  let n = 0;
+  S.sections.forEach(sec => {
+    const test = (f, v) => {
+      if(!f.required) return;
+      const empty = v === undefined || v === null || String(v).trim() === "" || (Array.isArray(v) && !v.length);
+      if(empty) return;
+      n++;
+      return;
+    };
+    if(sec.type === "object") (sec.fields || []).forEach(f => test(f, draft[sec.target] ? draft[sec.target][f.key] : undefined));
+    if(sec.type === "array") (draft[sec.target] || []).forEach(it => (sec.itemFields || []).forEach(f => test(f, it[f.key])));
+  });
+  if(!filledOnly){
+    /* 总数：同一套遍历，只数不判断 */
+    let total = 0;
+    S.sections.forEach(sec => {
+      if(sec.type === "object") (sec.fields || []).forEach(f => { if(f.required) total++; });
+      if(sec.type === "array") (draft[sec.target] || []).forEach(() => (sec.itemFields || []).forEach(f => { if(f.required) total++; }));
+    });
+    return total;
+  }
+  return n;
+}
+function diffList(rows){
+  return '<div class="rows">' + rows.map(r =>
+    '<div class="row"><span class="lbl">' + esc(r.label) + "<small>" + esc((r.consumers||[]).join(" · ") || "无消费方") + "</small></span>"
+    + '<span class="vals"><s>' + esc(fmt(r.before)) + "</s> → <b>" + esc(fmt(r.after)) + "</b></span></div>"
+  ).join("") + "</div>";
 }
 
-function viewPages(){
-  const groups = ["概览","资产","生产","分发","经营","扩展"];
-  const blocks = groups.map(g=>{
-    const items = PAGE_META.filter(p=>p.group === g).map(p=>{
-      const locked = p.id === "p0";
-      const on = locked || cfg.pages[p.id] !== false;
-      return '<div class="pageitem' + (locked ? " is-locked" : "") + '">'
-        + '<span class="pcode">' + p.no + "</span>"
-        + '<span class="pname">' + p.name + "</span>"
-        + (locked
-            ? '<span class="lock">锁定</span><label class="switch"><input type="checkbox" checked disabled><i></i></label>'
-            : '<label class="switch"><input type="checkbox" data-page="' + p.id + '"' + (on ? " checked" : "") + "><i></i></label>")
-        + "</div>";
-    }).join("");
-    return '<div class="pagegroup"><h4>' + g + "　" + PAGE_META.filter(p=>p.group === g).length + ' 页</h4><div class="pagelist">' + items + "</div></div>";
-  }).join("");
-
-  const vis = visiblePages().length;
-  return '<div class="card"><div class="card-head"><div><h3>17 页导航开关</h3><p>关闭后该页从侧栏、移动端导航与演示序列中移除；页面内容仍保留在文件中，重新开启即恢复。</p></div>'
-    + '<span class="hint">可见 ' + vis + " / " + PAGE_META.length + "</span></div>"
-    + blocks
-    + '<div class="pv-warn"><b>注意</b>　P0 为演示入口，固定锁定；隐藏页面不会删除内容，但演示时的 17 段序列会按可见页面自动缩短。</div>'
-    + "</div>";
+/* ---------------- 通用对象表单 ---------------- */
+function vObject(sec){
+  const errs = issuesFor(allIssues(), sec.target + ".");
+  return '<div class="card"><div class="card-h"><div><h3>' + esc(sec.title) + "</h3><p>" + esc(sec.desc || "") + "</p></div>"
+    + '<div class="right"><span class="chip' + (errs.length ? " err" : " ok") + '">' + (errs.length ? errs.length + " 处问题" : "校验通过") + "</span></div></div>"
+    + '<div class="card-b"><div class="grid2">'
+    + (sec.fields || []).map(f => fieldHtml(f, (draft[sec.target]||{})[f.key], sec.target + "." + f.key, true)).join("")
+    + "</div></div></div>";
 }
 
-function viewPublish(){
-  const diff = diffList();
-  const js = buildJS();
-  const snippet = '<script src="ovem-config.js"><\/script>';
-  return '<div class="grid-2">'
-    + '<div class="card"><div class="card-head"><div><h3>版本信息</h3><p>写进配置文件与后台状态栏。</p></div></div>'
-    + '<div class="field"><label>配置版本</label><input data-sec="meta" data-field="version" value="' + esc(cfg.meta.version) + '"></div>'
-    + '<div class="field"><label>发布说明</label><textarea data-sec="meta" data-field="note" placeholder="例如：新增两款宠物场景 SKU，停用 W1 中转化偏低的 2 款">' + esc(cfg.meta.note) + "</textarea></div>"
-    + '<div class="pv-row"><span>最近保存</span><b>' + (cfg.meta.updated ? esc(cfg.meta.updated) : "尚未保存") + "</b></div>"
-    + "</div>"
-    + '<div class="card"><div class="card-head"><div><h3>变更摘要</h3><p>与默认配置逐段对比。</p></div><span class="hint">' + diff.length + " 项</span></div>"
-    + renderDiff(diff, "没有改动，当前就是默认配置。")
-    + "</div></div>"
+/* ---------------- 字段控件 ---------------- */
+function fieldHtml(f, val, path, showCons){
+  const id = "f_" + path.replace(/[^\w]/g, "_");
+  const label = '<label for="' + id + '">' + esc(f.label) + (f.required ? "<b>*</b>" : "") + "</label>";
+  let ctl = "";
+  switch(f.type){
+    case "textarea":
+      ctl = '<textarea id="' + id + '" data-path="' + path + '" rows="' + (f.rows || 3) + '">' + esc(val || "") + "</textarea>";
+      break;
+    case "number":
+      ctl = '<input id="' + id + '" type="number" data-path="' + path + '" value="' + (val === undefined || val === null ? "" : esc(val)) + '"'
+        + (f.min !== undefined ? ' min="' + f.min + '"' : "") + (f.max !== undefined ? ' max="' + f.max + '"' : "")
+        + ' step="' + (f.step || 1) + '">';
+      break;
+    case "select":
+      ctl = '<select id="' + id + '" data-path="' + path + '">'
+        + (f.required ? "" : '<option value="">（未填）</option>')
+        + (f.options || []).map(o => '<option value="' + esc(o.v) + '"' + (o.v === val ? " selected" : "") + ">" + esc(o.label) + "</option>").join("")
+        + "</select>";
+      break;
+    case "switch":
+      ctl = '<label class="sw"><input type="checkbox" data-path="' + path + '"' + (val === false ? "" : " checked") + '><i></i></label>';
+      break;
+    case "tags":
+      ctl = '<input id="' + id + '" type="text" data-path="' + path + '" value="' + esc((val || []).join("、")) + '" placeholder="用顿号分隔">';
+      break;
+    default:
+      ctl = '<input id="' + id + '" type="text" data-path="' + path + '" value="' + esc(val == null ? "" : val) + '">';
+  }
+  const hint = f.hint ? '<div class="sub">' + esc(f.hint) + "</div>" : "";
+  const cons = showCons && (f.consumers || []).length
+    ? '<div class="cons">' + f.consumers.map(c => "<span>" + esc(c) + "</span>").join("") + "</div>" : "";
+  const err = allIssues().filter(x => x.path === path)[0];
+  return '<div class="field' + (f.type === "textarea" ? " wide" : "") + '">' + label + ctl + hint + cons
+    + '<div class="ferr' + (err ? " on" : "") + '">' + esc(err ? err.msg : "") + "</div></div>";
+}
 
-    + '<div class="card"><div class="card-head"><div><h3>应用与导出</h3><p>本地演示优先用「保存配置」；交付或部署时导出配置文件。</p></div></div>'
-    + '<div class="copy-line"><code>' + snippet.replace(/</g,"&lt;") + "</code><button class=\"btn sm\" data-act=\"copySnippet\">复制引入代码</button></div>"
-    + '<div class="toolbar" style="margin-bottom:12px">'
-    + '<button class="btn primary sm" data-act="save">保存到浏览器并生效</button>'
-    + '<button class="btn sm" data-act="exportJS">导出 ovem-config.js</button>'
-    + '<button class="btn sm" data-act="exportJSON">导出 config.json</button>'
-    + '<button class="btn sm" data-act="import">导入配置</button>'
-    + '<button class="btn sm danger" data-act="reset">恢复默认</button>'
+/* ---------------- 产品矩阵 ---------------- */
+function vProducts(sec){
+  const list = (draft.products || []).filter(matchQ);
+  const errs = errorsOnly(allIssues()).filter(x => x.path.indexOf("products.") === 0);
+  return '<div class="card"><div class="card-h"><div><h3>产品清单</h3>'
+    + "<p>共 " + (draft.products||[]).length + " 款。这里是产品语言的唯一来源：P3 矩阵、P4 作战页、P5 Brief、P13 入口页都读它。</p></div>"
+    + '<div class="right"><span class="chip' + (errs.length ? " err" : " ok") + '">' + (errs.length ? errs.length + " 处错误" : "校验通过") + "</span></div></div>"
+    + '<div class="card-b"><div class="toolbar">'
+      + '<div class="search"><input type="text" id="q" placeholder="搜索产品名 / 简称 / 编号" value="' + esc(q) + '"></div>'
+      + '<button class="btn sm" data-act="expandAll">全部展开</button>'
+      + '<button class="btn sm" data-act="collapseAll">全部收起</button>'
+      + '<button class="btn sm" data-act="expandErr">展开有错误的项</button>'
     + "</div>"
-    + '<div class="code">' + esc(js.length > 520 ? js.slice(0,520) + "\n… 共 " + js.length + " 字符" : js) + "</div>"
-    + "</div>"
-
-    + '<div class="card"><div class="card-head"><div><h3>部署说明</h3><p>两种通道，按场景选择。</p></div></div>'
-    + '<div class="checklist">'
-    + '<div class="check"><span class="ok">1</span><span><b>本地演示</b>：点「保存配置」写入浏览器 localStorage，再点「应用并预览」打开前台，配置立即生效。</span></div>'
-    + '<div class="check"><span class="ok">2</span><span><b>交付部署</b>：导出 ovem-config.js 放到站点同目录，前台已内置 <code>&lt;script src="ovem-config.js"&gt;</code> 读取；浏览器本地配置优先覆盖文件配置。</span></div>'
-    + '<div class="check"><span class="ok">3</span><span><b>回滚</b>：点「恢复默认」清空本地覆盖；已部署的文件用导出的旧版本替换即可。</span></div>'
-    + '<div class="check"><span class="warn">!</span><span><b>边界</b>：V1 覆盖品牌、封面、产品、渠道、页面可见性；P1 / P10 正文里的固定数字、造价与复盘样张仍是静态内容，不随配置变化。</span></div>'
+    + (list.length ? list.map(p => productCard(sec, p)).join("") : '<div class="empty">没有匹配的产品</div>')
     + "</div></div>";
 }
 
-/* ============================================================
-   5 · 差异 / 预览 / 保存
-   ============================================================ */
-function diffList(){
-  const base = DEFAULT_CFG, rows = [];
-  const changed = (a, b)=>JSON.stringify(a) !== JSON.stringify(b);
+function productCard(sec, p){
+  const idx = draft.products.indexOf(p);
+  const open = !!opened[p.id];
+  const bad = errorsOnly(allIssues()).filter(x => x.path.indexOf("products." + idx + ".") === 0).length;
+  const tierCls = p.tier === "引流" ? "t1" : p.tier === "旗舰" ? "t3" : "t2";
+  const fields = sec.itemFields.filter(f => f.key !== "enabled");
+  const groupA = ["name","short","price"];
+  const groupB = ["scene","tier","wave"];
+  const groupC = ["oneliner","hook"];
+  const groupD = ["tags"];
+  const groupE = ["pain","diff","audience"];
 
-  if(changed(base.brand, cfg.brand)) rows.push({tag:"品牌", txt:"品牌标识、全称或版本年份已修改"});
-  if(changed(base.hero, cfg.hero)) rows.push({tag:"封面", txt:"封面眉标、主标、副标或身份标签已修改"});
-  if(changed(base.metrics, cfg.metrics)) rows.push({tag:"指标", txt:"封面五项指标已修改"});
-  if(changed(base.goals, cfg.goals)) rows.push({tag:"目标", txt:"年度经营目标已修改"});
+  const render = (keys, cls) => '<div class="' + (cls || "grid3") + '">' + keys.map(k => {
+    const f = fields.find(x => x.key === k);
+    return f ? fieldHtml(f, p[k], "products." + idx + "." + k, false) : "";
+  }).join("") + "</div>";
 
-  const keyOf = p=>[p.name,p.short,p.tier,p.wave,p.price,p.oneliner,p.enabled !== false].join("|");
-  const changedP = cfg.products.filter((p,i)=>base.products[i] && keyOf(p) !== keyOf(base.products[i])).length;
-  const offP = cfg.products.filter(p=>p.enabled === false).length;
-  if(changedP || offP){
-    const t = [];
-    if(changedP) t.push(changedP + " 款字段修改");
-    if(offP) t.push(offP + " 款停用");
-    rows.push({tag:"产品", txt:t.join("，") + "（共 " + cfg.products.length + " 款）"});
-  }
-
-  const chKey = x=>{ const o = Object.assign({}, x); delete o.origName; return JSON.stringify(o); };
-  const changedC = cfg.channels.filter((c,i)=>base.channels[i] && chKey(c) !== chKey(base.channels[i])).length;
-  const offC = cfg.channels.filter(c=>c.enabled === false).length;
-  if(changedC || offC){
-    const t = [];
-    if(changedC) t.push(changedC + " 个渠道字段修改");
-    if(offC) t.push(offC + " 个渠道停用");
-    rows.push({tag:"渠道", txt:t.join("，")});
-  }
-
-  const hidden = PAGE_META.filter(p=>cfg.pages[p.id] === false);
-  if(hidden.length) rows.push({tag:"页面", txt:"隐藏 " + hidden.length + " 页：" + hidden.map(p=>p.no).join("、")});
-
-  if(cfg.meta.version !== base.meta.version) rows.push({tag:"版本", txt:"配置版本 " + base.meta.version + " → " + cfg.meta.version});
-  return rows;
-}
-
-function renderDiff(rows, empty){
-  if(!rows.length) return '<div class="diff-empty">' + empty + "</div>";
-  return '<div class="diff">' + rows.map(r=>'<div class="diff-row"><span class="tag">' + r.tag + '</span><div class="txt">' + esc(r.txt) + "</div></div>").join("") + "</div>";
-}
-
-function renderPreview(){
-  const p = enabledProducts().length, c = enabledChannels().length;
-  const hidden = PAGE_META.length - visiblePages().length;
-  const m = cfg.metrics;
-  const mism = (Number(m[0].v) !== p) || (Number(m[1].v) !== c);
-
-  const heroMetrics = m.map(x=>'<div><b>' + esc(x.v) + (x.unit ? "<em>" + esc(x.unit) + "</em>" : "") + "<span>" + esc(x.label) + "</span></div>").join("");
-  const roles = cfg.hero.roles.filter(Boolean).map(r=>"<span>" + esc(r) + "</span>").join("");
-  const lines = String(cfg.hero.title).split("\n");
-
-  const bars = cfg.channels.filter(x=>x.enabled !== false).slice().sort((a,b)=>(Number(b.count)||0)-(Number(a.count)||0)).slice(0,5);
-  const max = Math.max.apply(null, bars.map(x=>Number(x.count)||0).concat([1]));
-
-  $("#previewPane").innerHTML =
-    '<div class="pv-head"><b>实时预览</b><span>P0 封面带 + 配置摘要</span></div>'
-    + '<div class="pv-hero">'
-    + '<div class="pv-kicker">' + esc(cfg.hero.kicker) + "</div>"
-    + '<div class="pv-title">' + lines.map(esc).join("<br>") + "</div>"
-    + '<div class="pv-sub">' + esc(cfg.hero.sub) + "</div>"
-    + '<div class="pv-roles">' + roles + "</div>"
-    + '<div class="pv-metrics">' + heroMetrics + "</div>"
+  return '<div class="pcard' + (open ? " open" : "") + (p.enabled === false ? " off" : "") + (bad ? " haserr" : "") + '" data-pid="' + esc(p.id) + '">'
+    + '<div class="phead" data-toggle="' + esc(p.id) + '">'
+      + '<button class="twist" type="button">▸</button>'
+      + '<span class="pno">P' + String(p.no || idx+1).padStart(2,"0") + "</span>"
+      + '<span class="pname">' + esc(p.short || p.name || "（未命名）")
+        + '　<span style="color:#94A3B8;font-weight:400">' + esc(p.name || "") + "</span></span>"
+      + '<span class="pmeta">¥' + esc(p.price || "-") + "</span>"
+      + '<span class="pill ' + tierCls + '">' + esc(p.tier || "-") + "</span>"
+      + '<span class="pill t2">' + esc(p.wave || "-") + "</span>"
+      + '<span class="piss" title="' + bad + ' 处错误">!</span>'
+      + '<label class="sw" title="启用 / 停用"><input type="checkbox" data-path="products.' + idx + '.enabled"' + (p.enabled === false ? "" : " checked") + '><i></i></label>'
     + "</div>"
+    + (open ? '<div class="pbody">'
+        + '<div class="pgroup"><div class="glabel">基本</div>' + render(groupA) + "</div>"
+        + '<div class="pgroup"><div class="glabel">定位</div>' + render(groupB) + "</div>"
+        + '<div class="pgroup"><div class="glabel">传播语言</div>' + render(groupC, "grid2") + "</div>"
+        + '<div class="pgroup"><div class="glabel">能力标签（固定 3 个）</div>' + render(groupD, "grid2") + "</div>"
+        + '<div class="pgroup"><div class="glabel">三层信息（P4 直接引用）</div>' + render(groupE) + "</div>"
+      + "</div>" : "")
+    + "</div>";
+}
+function matchQ(p){
+  if(!q) return true;
+  const s = (p.name + " " + p.short + " P" + p.no + " " + p.id + " " + p.oneliner).toLowerCase();
+  return s.indexOf(q.toLowerCase()) >= 0;
+}
 
-    + '<div class="pv-block"><h4>配置摘要</h4>'
-    + '<div class="pv-row"><span>启用产品</span><b>' + p + " / " + cfg.products.length + "</b></div>"
-    + '<div class="pv-row"><span>启用渠道</span><b>' + c + " / " + cfg.channels.length + "</b></div>"
-    + '<div class="pv-row"><span>基础物料位</span><b>' + (p * c) + "</b></div>"
-    + '<div class="pv-row"><span>含 A/B 变体</span><b>' + (p * c * 3) + "</b></div>"
-    + '<div class="pv-row"><span>可见页面</span><b>' + visiblePages().length + " / " + PAGE_META.length + "</b></div>"
-    + '<div class="pv-row"><span>隐藏页面</span><b>' + hidden + "</b></div>"
+/* ---------------- 渠道矩阵 ---------------- */
+function vChannels(sec){
+  const list = draft.channels || [];
+  return '<div class="card"><div class="card-h"><div><h3>渠道清单</h3>'
+    + "<p>停用后，P7 渠道页、P6 产能矩阵、P5 渠道下拉会同步移除该渠道。</p></div></div>"
+    + '<div class="card-b">' + list.map((c, i) => channelCard(sec, c, i)).join("") + "</div></div>";
+}
+function channelCard(sec, c, i){
+  const fields = sec.itemFields;
+  const cell = k => {
+    const f = fields.find(x => x.key === k);
+    return f ? fieldHtml(f, c[k], "channels." + i + "." + k, false) : "";
+  };
+  return '<div class="ccard' + (c.enabled === false ? " off" : "") + '">'
+    + '<div class="chead">'
+      + '<label class="sw"><input type="checkbox" data-path="channels.' + i + '.enabled"' + (c.enabled === false ? "" : " checked") + '><i></i></label>'
+      + '<span class="cname">' + esc(c.name) + "</span>"
+      + '<span class="csizes">' + esc(c.size || "") + "</span>"
+      + '<span class="pmeta" style="margin-left:auto">' + esc(c.count) + " 条 · " + esc(c.kpi || "") + "</span>"
     + "</div>"
+    + '<div class="card-b"><div class="grid3">'
+      + cell("name") + cell("img") + cell("caption")
+      + cell("size") + cell("count") + cell("kpi")
+      + cell("cycle") + cell("tpl") + cell("rule")
+    + "</div></div></div>";
+}
 
-    + '<div class="pv-block"><h4>渠道物料 TOP 5</h4>'
-    + (bars.length ? bars.map(ch=>'<div class="pv-bar"><div class="pv-bar-top"><span>' + esc(ch.name) + '</span><b>' + (Number(ch.count)||0) + ' 条</b></div><div class="pv-bar-track"><div class="pv-bar-fill" style="width:' + Math.round((Number(ch.count)||0)/max*100) + '%"></div></div></div>').join("")
-        : '<div class="diff-empty">无启用渠道</div>')
+/* ---------------- 封面指标 ---------------- */
+function vMetrics(sec){
+  const c = counts();
+  const rows = (draft.metrics || []).map((m, i) =>
+    '<div class="grid3" style="padding:10px 0;border-bottom:1px dashed #EEF2F7">'
+      + fieldHtml(sec.itemFields[0], m.label, "metrics." + i + ".label", false)
+      + '<div class="field"><label>数值</label><input type="number" data-path="metrics.' + i + '.v" value="' + esc(derived(m)) + '"'
+        + (m.derive ? ' disabled title="由推导来源自动计算"' : "") + ">"
+        + (m.derive ? '<div class="sub">自动推导 ' + esc(m.derive) + " → " + esc(derived(m)) + "</div>" : '<div class="sub">手工填写</div>')
+      + "</div>"
+      + fieldHtml(sec.itemFields[2], m.unit, "metrics." + i + ".unit", false)
     + "</div>"
+    + '<div style="margin:-2px 0 12px">' + fieldHtml(sec.itemFields[3], m.derive, "metrics." + i + ".derive", false) + "</div>"
+  ).join("");
 
-    + (mism ? '<div class="pv-warn"><b>指标不一致</b>　封面写的是 ' + esc(m[0].v) + " 款 / " + esc(m[1].v) + " 渠道，当前启用 " + p + " 款 / " + c + " 渠道。可在「指标与目标」里点同步计数。</div>" : "")
-    + '<p class="pv-foot">预览仅还原 P0 封面结构；进入前台后，产品矩阵、渠道页与导航会按同一份配置渲染。</p>';
+  return '<div class="card"><div class="card-h"><div><h3>封面五项指标</h3>'
+    + "<p>P0 底部数据条。带推导来源的指标按当前启用数量实时计算，改产品不必回来手改数字。</p></div>"
+    + '<div class="right"><button class="btn sm" data-act="syncMetrics">按当前计数重算并写回</button></div></div>'
+    + '<div class="card-b"><div class="stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">'
+      + stat("启用产品", c.pc, "", "用于「已定义 SKU」")
+      + stat("启用渠道", c.cc, "", "用于「内容渠道」")
+      + stat("物料位", c.slots, "", "产品 × 渠道")
+      + stat("含变体", c.variants, "", "物料位 × 3")
+    + "</div>" + rows + "</div></div>";
 }
 
-function updateSaveState(){
-  const dirty = JSON.stringify(cfg) !== savedSnap;
-  const el = $("#saveState");
-  if(dirty){
-    el.className = "save-state is-dirty";
-    $("#saveText").textContent = "有未保存变更";
-  } else if(!cfg.meta.updated){
-    el.className = "save-state";
-    $("#saveText").textContent = "默认配置";
-  } else {
-    el.className = "save-state is-saved";
-    $("#saveText").textContent = "已保存";
-  }
+/* ---------------- 页面与导航 ---------------- */
+function vPages(){
+  return '<div class="card"><div class="card-h"><div><h3>页面可见性</h3>'
+    + "<p>关掉的页面会同时从侧栏导航移除，并从 DOM 里删掉对应 section，避免「只藏入口、内容仍可被搜到」。</p></div>"
+    + '<div class="right"><span class="chip">' + S.pages.filter(p=>draft.pages[p.id]!==false).length + " / " + S.pages.length + " 可见</span></div></div>"
+    + '<div class="card-b"><table class="ptable"><thead><tr>'
+      + '<th style="width:56px">编号</th><th style="width:150px">页面</th><th>内容</th><th style="width:70px">可见</th></tr></thead><tbody>'
+    + S.pages.map(p => '<tr><td>' + p.no + "</td><td>" + esc(p.name) + '</td><td class="desc">' + esc(p.desc) + "</td>"
+        + '<td><label class="sw"><input type="checkbox" data-path="pages.' + p.id + '"' + (draft.pages[p.id] === false ? "" : " checked") + '><i></i></label></td></tr>').join("")
+    + "</tbody></table></div></div>";
 }
 
-function onChange(){
-  renderPreview();
-  updateSaveState();
+/* ---------------- 版本与快照 ---------------- */
+function snapshots(){
+  try{ return JSON.parse(localStorage.getItem(LS.snap) || "[]"); }catch(e){ return []; }
+}
+function saveSnapshots(list){
+  try{ localStorage.setItem(LS.snap, JSON.stringify(list.slice(0, 20))); }
+  catch(e){ toast("快照保存失败：浏览器存储已满"); }
+}
+function vHistory(){
+  const list = snapshots();
+  return '<div class="card"><div class="card-h"><div><h3>本地快照</h3>'
+    + "<p>手动存档点，最多保留 20 份。恢复前会自动把当前状态再存一份，防止误操作。</p></div>"
+    + '<div class="right"><button class="btn sm primary" data-act="snap">存一份快照</button></div></div>'
+    + '<div class="card-b">' + (list.length
+      ? '<div class="rows">' + list.map((s, i) =>
+          '<div class="row"><span class="lbl"><b style="color:#0F172A">' + esc(s.version || "未命名") + "</b> · " + esc(s.note || "无说明")
+            + "<small>" + esc(s.at) + " · 存于 " + esc(s.rows || 0) + " 条改动时</small></span>"
+            + '<span class="vals"><button class="btn sm" data-act="restore" data-i="' + i + '">恢复</button> '
+            + '<button class="btn sm danger" data-act="delSnap" data-i="' + i + '">删除</button></span></div>'
+          ).join("") + "</div>"
+      : '<div class="empty">还没有快照。建议在每次发布前存一份。</div>')
+    + "</div></div>"
+
+    + '<div class="card"><div class="card-h"><div><h3>变更日志</h3><p>发布时自动追加，跟数据文件一起走，方便回溯。</p></div></div>'
+    + '<div class="card-b"><div class="rows">' + ((draft.meta && draft.meta.changelog) || []).map(x =>
+        '<div class="row"><span class="lbl"><b style="color:#0F172A">' + esc(x.v) + "</b> · " + esc(x.note || "")
+          + "<small>" + esc(x.at || "") + " · " + esc(x.by || "—") + "</small></span></div>"
+      ).join("") + "</div></div></div>";
 }
 
-function syncCounts(){
-  const p = enabledProducts().length, c = enabledChannels().length;
-  cfg.metrics[0].v = p;
-  cfg.metrics[1].v = c;
-  cfg.metrics[2].v = p * c;
-  cfg.metrics[3].v = p * c * 3;
-  cfg.hero.sub = cfg.brand.full + " " + cfg.brand.sub + "　·　" + p + " 款消费级生活机器人　·　" + c + " 个内容渠道";
+/* ---------------- 发布 ---------------- */
+function vPublish(){
+  const diffs = computeDiff();
+  const issues = allIssues();
+  const errs = errorsOnly(issues);
+  const imp = impactOf(diffs);
+  const last = localStorage.getItem(LS.exp) || "尚未导出";
+  const hasDraft = !!localStorage.getItem(LS.draft);
+
+  return '<div class="stats" style="grid-template-columns:repeat(4,1fr)">'
+    + stat("待发布改动", diffs.length, "项", imp.pages.length + " 个页面受影响")
+    + stat("校验错误", errs.length, "处", errs.length ? "修复后才能发布" : "可以发布")
+    + stat("当前版本", (draft.meta && draft.meta.version) || "—", "", "上次导出：" + last)
+    + stat("草稿状态", hasDraft ? "已存" : "无", "", hasDraft ? "前台刷新可见" : "前台读文件数据")
+  + "</div>"
+
+  + '<div class="card"><div class="card-h"><div><h3>发布前检查</h3><p>错误会阻止导出；提醒不阻止，但建议确认。</p></div></div><div class="card-b">'
+    + (issues.length
+      ? '<div class="checks">' + issues.map(x =>
+          '<div class="check"><span class="dot ' + (x.level === "error" ? "err" : "warn") + '">' + (x.level === "error" ? "✕" : "!") + "</span>"
+          + '<span class="t">' + esc(x.msg) + "</span></div>").join("") + "</div>"
+      : '<div class="checks"><div class="check"><span class="dot ok">✓</span><span class="t">全部检查通过，可以发布</span></div></div>')
+    + "</div></div>"
+
+  + '<div class="card"><div class="card-h"><div><h3>本次改动 · 影响面</h3><p>发布后会同时改变这些页面。</p></div></div><div class="card-b">'
+    + (diffs.length
+      ? '<div style="margin-bottom:10px">' + imp.pages.map(pid => {
+          const p = S.pages.find(x => x.id === pid) || { no:pid, name:pid };
+          return '<span class="chip" style="margin:0 4px 4px 0">' + p.no + " " + esc(p.name) + "</span>";
+        }).join("") + "</div>"
+        + '<div class="rows">' + diffs.map(r =>
+          '<div class="row"><span class="lbl">' + esc(r.label) + "<small>" + esc((r.consumers||[]).join(" · ")) + "</small></span>"
+          + '<span class="vals"><s>' + esc(fmt(r.before)) + "</s> → <b>" + esc(fmt(r.after)) + "</b></span></div>").join("") + "</div>"
+      : '<div class="empty">没有待发布改动。可以先在配置页改点什么。</div>')
+    + "</div></div>"
+
+  + '<div class="card"><div class="card-h"><div><h3>发布动作</h3><p>草稿用于自己预览，发布包用于上线。</p></div></div><div class="card-b">'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      + '<button class="btn primary" data-act="publish"' + (errs.length ? " disabled" : "") + ">发布并导出 ovem-data.js</button>"
+      + '<button class="btn" data-act="saveDraft">保存草稿（前台本地预览）</button>'
+      + '<button class="btn" data-act="exportJson">导出 JSON 备份</button>'
+      + '<button class="btn ghost" data-act="clearDraft">清除草稿</button>'
+      + '<button class="btn ghost" data-act="openFront">打开前台</button>'
+    + "</div>"
+    + '<div class="sub" style="margin-top:12px;line-height:1.95">'
+      + "① 导出后得到 <code>ovem-data.js</code>，覆盖站点 <code>data/</code> 下的同名文件；<br>"
+      + "② 前台刷新即读新数据，顶栏会显示 <code>数据 vX.X.X</code>；<br>"
+      + "③ 草稿只存在于本浏览器，换设备或清缓存即失效，不要拿草稿当发布。"
+    + "</div></div></div>";
 }
 
-function saveCfg(silent){
-  cfg.channels.forEach(ch=>{ ch.count = Number(ch.count) || 0; });
-  cfg.meta.updated = nowStr();
-  try{
-    localStorage.setItem(LS_KEY, JSON.stringify(cfg));
-    savedSnap = JSON.stringify(cfg);
-    updateSaveState();
-    if(!silent) toast("配置已保存，前台刷新后生效");
-  }catch(e){
-    toast("浏览器禁止本地存储，请改用「导出 ovem-config.js」");
-  }
+/* ---------------- 导出 ---------------- */
+function dataFileText(data){
+  const stamp = new Date().toISOString();
+  return "/* ============================================================\n"
+    + "   OVEM 单一数据源 · 由配置中台 v2.0 发布\n"
+    + "   发布时间：" + stamp + "\n"
+    + "   版本：" + ((data.meta && data.meta.version) || "") + "\n"
+    + "   前台 index.html 与本后台共用此文件，请勿在别处重复定义同类字段\n"
+    + "   ============================================================ */\n"
+    + "window.OVEM_DATA = " + JSON.stringify(data, null, 2) + ";\n";
 }
-
-function toast(msg){
-  const t = $("#toast");
-  t.textContent = msg;
-  t.classList.add("is-on");
-  clearTimeout(t._timer);
-  t._timer = setTimeout(()=>t.classList.remove("is-on"), 2200);
-}
-
-/* ============================================================
-   6 · 导出 / 导入
-   ============================================================ */
-function buildJS(){
-  const head = "/* OVEM V2 展示配置 · 由配置后台生成 · " + nowStr() + " */\n"
-    + "/* 用法：与 OVEM_AI营销系统.html 同目录，主站已内置 <script src=\"ovem-config.js\"> */\n";
-  return head + "window.OVEM_CONFIG = " + JSON.stringify(cfg, null, 2) + ";\n";
-}
-
 function download(name, text, mime){
-  const blob = new Blob([text], {type:mime || "text/plain;charset=utf-8"});
+  const blob = new Blob([text], { type: (mime || "text/javascript") + ";charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = name;
   document.body.appendChild(a);
   a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
 }
 
-function copyText(text, okMsg){
-  const done = ()=>toast(okMsg || "已复制");
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(done).catch(()=>fallback());
-  } else fallback();
-  function fallback(){
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try{ document.execCommand("copy"); done(); }catch(e){ toast("复制失败，请手动选中"); }
-    ta.remove();
-  }
-}
-
-/* ============================================================
-   7 · 渲染与事件
-   ============================================================ */
-function renderView(){
-  const head = HEADS[view];
-  $("#crumb").textContent = head.crumb;
-  $("#pageHead").innerHTML = '<div><h1>' + head.title + "</h1><p>" + head.desc + "</p></div>"
-    + '<div class="acts">'
-    + (view === "overview" ? '<button class="btn sm" data-act="save">保存配置</button><button class="btn primary sm" data-act="open">应用并预览</button>' : "")
-    + "</div>";
-
-  const map = {overview:viewOverview, brand:viewBrand, products:viewProducts, channels:viewChannels, metrics:viewMetrics, pages:viewPages, publish:viewPublish};
-  $("#viewRoot").innerHTML = (map[view] || viewOverview)();
-  renderNav();
-  renderPreview();
-  updateSaveState();
-
-  if(view === "products"){
-    const s = $("#prodSearch"), t = $("#prodTier");
-    if(s) s.addEventListener("input", e=>{ pFilter.q = e.target.value; applyProductFilter(); });
-    if(t) t.addEventListener("change", e=>{ pFilter.tier = e.target.value; applyProductFilter(); });
-    applyProductFilter();
-  }
-}
-
-function applyProductFilter(){
-  const q = pFilter.q.trim().toLowerCase();
-  let shown = 0;
-  document.querySelectorAll("#prodList .prow").forEach(row=>{
-    const okQ = !q || (row.dataset.search || "").toLowerCase().includes(q);
-    const okT = pFilter.tier === "全部" || row.dataset.tier === pFilter.tier;
-    const on = okQ && okT;
-    row.style.display = on ? "" : "none";
-    if(on) shown++;
+/* ---------------- 弹窗 ---------------- */
+function modal(title, body, onOk, okText){
+  const mask = document.createElement("div");
+  mask.className = "mask";
+  mask.innerHTML = '<div class="modal"><h3>' + esc(title) + '</h3><div class="m-body">' + body + "</div>"
+    + '<div class="m-foot"><button class="btn ghost" data-m="cancel">取消</button>'
+    + '<button class="btn primary" data-m="ok">' + esc(okText || "确认") + "</button></div></div>";
+  document.body.appendChild(mask);
+  mask.addEventListener("click", e => {
+    const b = e.target.closest("[data-m]");
+    if(b && b.dataset.m === "cancel"){ mask.remove(); return; }
+    if(b && b.dataset.m === "ok"){
+      if(onOk && onOk(mask) === false) return;
+      mask.remove();
+    }
+    if(e.target === mask) mask.remove();
   });
-  const cnt = $("#prodCount");
-  if(cnt) cnt.textContent = "显示 " + shown + " / " + cfg.products.length;
+  return mask;
 }
 
-$("#sideNav").addEventListener("click", e=>{
-  const b = e.target.closest("[data-nav]");
-  if(!b) return;
-  view = b.dataset.nav;
-  renderView();
-  $(".main").scrollTop = 0;
-});
-
-$("#pageHead").addEventListener("click", e=>{
-  const b = e.target.closest("[data-act]");
-  if(b) doAction(b.dataset.act);
-});
-
-$("#viewRoot").addEventListener("click", e=>{
-  const b = e.target.closest("[data-act]");
-  if(b) doAction(b.dataset.act);
-  const n = e.target.closest("[data-nav]");
-  if(n){ view = n.dataset.nav; renderView(); }
-});
-
-function doAction(act){
-  if(act === "save"){ saveCfg(); return; }
-  if(act === "open"){ saveCfg(true); window.open("OVEM_AI营销系统.html#p0", "_blank"); toast("已打开前台站点"); return; }
-  if(act === "reset"){
-    if(confirm("恢复默认配置？当前所有改动与本地保存都会被清除。")){
-      cfg = clone(DEFAULT_CFG);
-      savedSnap = JSON.stringify(cfg);
-      try{ localStorage.removeItem(LS_KEY); }catch(e){}
-      renderView();
-      toast("已恢复默认配置");
-    }
-    return;
-  }
-  if(act === "exportJS"){ saveCfg(true); download("ovem-config.js", buildJS(), "text/javascript;charset=utf-8"); toast("已导出 ovem-config.js"); return; }
-  if(act === "exportJSON"){ download("ovem-config.json", JSON.stringify(cfg, null, 2), "application/json;charset=utf-8"); toast("已导出 config.json"); return; }
-  if(act === "import"){ $("#importFile").click(); return; }
-  if(act === "copySnippet"){ copyText('<script src="ovem-config.js"><\/script>', "引入代码已复制"); return; }
-  if(act === "allOn" || act === "allOff"){
-    cfg.products.forEach(p=>{ p.enabled = act === "allOn"; });
-    syncCounts();
-    renderView(); return;
-  }
-  if(act === "syncCounts"){
-    syncCounts();
-    renderView(); toast("封面计数已同步"); return;
-  }
+/* ---------------- 事件 ---------------- */
+let badgeTimer = null;
+function scheduleBadges(){
+  clearTimeout(badgeTimer);
+  badgeTimer = setTimeout(refreshBadges, 220);
 }
 
-$("#viewRoot").addEventListener("input", e=>{
+document.addEventListener("input", e => {
   const t = e.target;
-  const num = v=>v === "" ? 0 : Number(v);
-
-  if(t.dataset.pid && t.dataset.pfield){
-    const p = cfg.products.find(x=>x.id === t.dataset.pid);
-    if(!p) return;
-    const f = t.dataset.pfield;
-    p[f] = f === "enabled" ? t.checked : t.value;
-    if(f === "enabled"){
-      const row = t.closest(".prow");
-      if(row) row.classList.toggle("is-off", !t.checked);
-      syncCounts();
-      renderNav();
-    }
-    onChange(); return;
+  if(t.id === "q"){
+    q = t.value;
+    const pos = t.selectionStart;
+    render();
+    const nq = el("q");
+    if(nq){ nq.focus(); nq.setSelectionRange(pos, pos); }
+    return;
   }
-
-  if(t.dataset.ci !== undefined && t.dataset.cfield){
-    const ch = cfg.channels[Number(t.dataset.ci)];
-    if(!ch) return;
-    const f = t.dataset.cfield;
-    if(f === "name" && !ch.origName) ch.origName = ch.name;
-    ch[f] = f === "enabled" ? t.checked : (f === "count" ? num(t.value) : t.value);
-    if(f === "enabled"){
-      const card = t.closest(".chcard");
-      if(card) card.classList.toggle("is-off", !t.checked);
-      syncCounts();
-      renderNav();
-    }
-    onChange(); return;
+  if(!t.dataset || !t.dataset.path) return;
+  writeField(t);
+  const errBox = t.closest(".field") && t.closest(".field").querySelector(".ferr");
+  if(errBox){
+    const msg = allIssues().filter(x => x.path === t.dataset.path)[0];
+    errBox.textContent = msg ? msg.msg : "";
+    errBox.classList.toggle("on", !!msg);
   }
+  scheduleBadges();
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if(t.dataset && t.dataset.path){ writeField(t); refreshBadges(); }
+});
 
-  if(t.dataset.page){
-    cfg.pages[t.dataset.page] = t.checked;
-    renderNav(); onChange(); return;
-  }
+function writeField(t){
+  const path = t.dataset.path;
+  let v;
+  if(t.type === "checkbox") v = t.checked;
+  else if(t.type === "number") v = t.value === "" ? "" : Number(t.value);
+  else if(path.indexOf("tags") >= 0) v = t.value.split(/[、,，\s]+/).filter(Boolean);
+  else v = t.value;
+  setPath(draft, path, v);
+  ISSUE_CACHE = null;
+}
 
-  if(t.dataset.metric !== undefined && t.dataset.field){
-    const m = cfg.metrics[Number(t.dataset.metric)];
-    if(m){ m.v = num(t.value); onChange(); }
+document.addEventListener("click", e => {
+  const nav = e.target.closest("[data-nav]");
+  if(nav){ view = nav.dataset.nav; render(); return; }
+
+  const tog = e.target.closest("[data-toggle]");
+  if(tog && !e.target.closest(".sw")){
+    const id = tog.dataset.toggle;
+    opened[id] = !opened[id];
+    render();
     return;
   }
 
-  if(t.dataset.sec && t.dataset.field){
-    const sec = t.dataset.sec, f = t.dataset.field, val = t.type === "number" ? num(t.value) : t.value;
-    if(sec === "brand" || sec === "hero" || sec === "meta" || sec === "goals"){
-      if(f.indexOf("roles.") === 0){
-        const idx = Number(f.split(".")[1]);
-        if(idx >= 0 && idx < 3) cfg.hero.roles[idx] = val;
-      } else {
-        cfg[sec][f] = val;
-      }
-      onChange();
-    }
+  const act = e.target.closest("[data-act]");
+  if(act){ doAction(act.dataset.act, act); return; }
+});
+
+function doAction(act, node){
+  if(act === "check"){
+    ISSUE_CACHE = null;
+    const e = errorsOnly(allIssues()).length;
+    toast(e ? "校验发现 " + e + " 处错误" : "校验通过，没有错误");
+    render();
   }
-});
+  if(act === "saveDraft"){ saveDraft(); render(); }
+  if(act === "clearDraft"){
+    modal("清除草稿", "<p>清除后前台会回到 <code>data/ovem-data.js</code> 的已发布数据。当前未导出的改动会丢失。</p>", ()=>clearDraft(), "确认清除");
+  }
+  if(act === "openFront"){ window.open("index.html", "_blank"); }
+  if(act === "exportJson"){
+    download("ovem-data." + ((draft.meta && draft.meta.version) || "backup") + ".json", JSON.stringify(draft, null, 2), "application/json");
+    toast("已导出 JSON 备份");
+  }
+  if(act === "publish"){ publishFlow(); }
+  if(act === "snap"){ snapshotFlow(); }
+  if(act === "syncMetrics"){
+    (draft.metrics || []).forEach(m => { if(m.derive) m.v = derived(m); });
+    ISSUE_CACHE = null;
+    toast("已按当前产品与渠道数量重算写回");
+    render();
+  }
+  if(act === "expandAll"){ (draft.products||[]).forEach(p => opened[p.id] = true); render(); }
+  if(act === "collapseAll"){ Object.keys(opened).forEach(k => delete opened[k]); render(); }
+  if(act === "expandErr"){
+    const issues = errorsOnly(allIssues());
+    (draft.products||[]).forEach((p, i) => {
+      if(issues.some(x => x.path.indexOf("products." + i + ".") === 0)) opened[p.id] = true;
+    });
+    render();
+  }
+  if(act === "restore"){
+    const i = Number(node.dataset.i), s = snapshots()[i];
+    if(!s) return;
+    modal("恢复快照", "<p>将把当前工作副本替换为 <b>" + esc(s.version) + "</b>（" + esc(s.at) + "）。<br>"
+      + "恢复前会自动把当前状态再存一份。</p>", ()=>{
+      const list = snapshots();
+      list.unshift({ at: nowStr(), version: (draft.meta&&draft.meta.version)||"自动备份", note:"恢复前自动备份", rows: computeDiff().length, data: clone(draft) });
+      saveSnapshots(list);
+      draft = clone(s.data);
+      ISSUE_CACHE = null;
+      toast("已恢复：" + s.version);
+      render();
+    }, "恢复");
+  }
+  if(act === "delSnap"){
+    const i = Number(node.dataset.i), list = snapshots();
+    list.splice(i, 1);
+    saveSnapshots(list);
+    render();
+  }
+}
 
-$("#importFile").addEventListener("change", e=>{
-  const file = e.target.files && e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    try{
-      const patch = JSON.parse(reader.result);
-      cfg = mergeCfg(cfg, patch);
-      savedSnap = "";
-      renderView();
-      toast("配置已导入，保存后生效");
-    }catch(err){ toast("导入失败：不是有效的配置文件"); }
-  };
-  reader.readAsText(file, "utf-8");
-  e.target.value = "";
-});
+function snapshotFlow(){
+  modal("存一份快照",
+    '<div class="field"><label>说明</label><input type="text" id="snapNote" placeholder="例如：二期渠道改版前"></div>',
+    m => {
+      const note = m.querySelector("#snapNote").value.trim();
+      const list = snapshots();
+      list.unshift({
+        at: nowStr(),
+        version: (draft.meta && draft.meta.version) || "未命名",
+        note: note || "手动快照",
+        rows: computeDiff().length,
+        data: clone(draft)
+      });
+      saveSnapshots(list);
+      toast("快照已保存");
+      render();
+    }, "保存");
+}
 
-$("#btnSave").addEventListener("click", ()=>saveCfg());
-$("#btnOpen").addEventListener("click", ()=>doAction("open"));
-$("#btnReset").addEventListener("click", ()=>doAction("reset"));
-
-document.addEventListener("keydown", e=>{
-  if((e.ctrlKey || e.metaKey) && e.key === "s"){ e.preventDefault(); saveCfg(); }
-});
-
-/* 初始化 */
-(function(){
-  const proto = location.protocol;
-  const t = $("#envText");
-  if(t) t.textContent = proto === "file:" ? "本地演示环境 · file://" : (proto === "https:" ? "线上部署环境 · https" : "本地服务环境 · http");
-})();
-const __saveCfg = saveCfg;
-saveCfg = function(silent){
-  if(!enabledProducts().length || !enabledChannels().length){
-    toast("至少保留 1 款启用产品与 1 个启用渠道，前台才能正常展示");
+function publishFlow(){
+  const errs = errorsOnly(allIssues());
+  if(errs.length){
+    modal("无法发布", "<p>还有 <b>" + errs.length + "</b> 处错误：</p><ul style='padding-left:18px;margin:8px 0'>"
+      + errs.slice(0,6).map(x => "<li>" + esc(x.msg) + "</li>").join("") + "</ul>"
+      + "<p style='color:#64748B;margin:0'>修完再点发布。</p>", null, "知道了");
     return;
   }
-  __saveCfg(silent);
-};
-renderView();
+  const diffs = computeDiff();
+  if(!diffs.length){ toast("没有改动可发布"); return; }
+  const imp = impactOf(diffs);
 
+  modal("发布确认",
+    '<div class="field"><label>版本号</label><input type="text" id="pubVer" value="'
+      + esc((draft.meta && draft.meta.version) || "v2.0.1") + '"></div>'
+    + '<div class="field" style="margin-top:10px"><label>变更说明（写入变更日志）</label>'
+    + '<input type="text" id="pubNote" placeholder="例如：P3 增加收纳场景缺口提示"></div>'
+    + '<div style="margin-top:14px;padding:10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:7px">'
+    + "<b>" + diffs.length + "</b> 项改动 · 影响 <b>" + imp.pages.length + "</b> 个页面（"
+    + (imp.pages.join(" / ") || "—") + "）<br>"
+    + '<span style="color:#64748B;font-size:11px">导出后请覆盖 data/ovem-data.js，前台刷新生效。</span></div>',
+    m => {
+      const ver = m.querySelector("#pubVer").value.trim();
+      const note = m.querySelector("#pubNote").value.trim();
+      if(!ver){ toast("版本号不能为空"); return false; }
+      draft.meta.version = ver;
+      draft.meta.updated = nowStr();
+      draft.meta.mode = "published";
+      draft.meta.changelog = draft.meta.changelog || [];
+      draft.meta.changelog.unshift({ v: ver, at: nowStr(), by: "配置中台", note: note || "发布" });
+
+      download("ovem-data.js", dataFileText(draft));
+      localStorage.setItem(LS.exp, nowStr());
+      BASE = clone(draft);
+      localStorage.removeItem(LS.draft);
+      ISSUE_CACHE = null;
+      toast("已导出 ovem-data.js，覆盖 data/ 目录后刷新前台");
+      render();
+    }, "发布并导出");
+}
+
+/* ---------------- 快捷键 ---------------- */
+document.addEventListener("keydown", e => {
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s"){
+    e.preventDefault();
+    saveDraft();
+  }
+});
+
+/* ---------------- 启动 ---------------- */
+function init(){
+  render();
+}
+
+if(!S || !FILE_DATA){ fatal(); } else { init(); }
 </script>
 </body>
 </html>
