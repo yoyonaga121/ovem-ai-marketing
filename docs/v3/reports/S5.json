@@ -2,11 +2,11 @@
   "stage": "S5",
   "title": "评测 · 护栏 · 演示编排",
   "suite": "A5",
-  "at": "2026-11-20T08:18:25.226Z",
+  "at": "2026-11-20T08:18:55.290Z",
   "git": {
-    "ref": "2b0d7df",
-    "tag": "v3.0-s4",
-    "dirty": true
+    "ref": "848dad8",
+    "tag": "v3.0-s5",
+    "dirty": false
   },
   "source": {
     "dataset": "data/ovem-evals.js",
