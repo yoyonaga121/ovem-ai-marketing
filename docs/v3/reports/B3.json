@@ -1,0 +1,295 @@
+{
+  "stage": "B3",
+  "title": "OVEM B3 完整系统验收",
+  "at": "2026-11-20T12:08:13.841Z",
+  "env": {
+    "node": "v22.23.2",
+    "sqlite": "node:sqlite",
+    "fakeProvider": "tools/fake-ark.js",
+    "db": "temp"
+  },
+  "summary": {
+    "total": 46,
+    "passed": 46,
+    "failed": 0
+  },
+  "cases": [
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/server.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/db.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/auth.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/audit.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/repo.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/store-adapter.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/runtime-loader.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/job-runner.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/ark.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/provider.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/live-tools.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 server/publish.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 login.html",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 runtime/ovem-api.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 runtime/ovem-platform.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 runtime/ovem-publish.js",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B5-STATIC",
+      "title": "文件存在 docs/v3/reports/B2.json",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "B3-00",
+      "title": "服务 health 可达",
+      "status": "pass",
+      "detail": "http://127.0.0.1:4397/api/health"
+    },
+    {
+      "id": "B2-01",
+      "title": "owner 登录，默认租户 t-ovem",
+      "status": "pass",
+      "detail": "t-ovem · owner"
+    },
+    {
+      "id": "B2-02",
+      "title": "租户列表含 t-ovem / t-beichen",
+      "status": "pass",
+      "detail": "t-ovem/t-beichen"
+    },
+    {
+      "id": "B2-03",
+      "title": "SQLite 14 张表",
+      "status": "pass",
+      "detail": "tables=14"
+    },
+    {
+      "id": "B3-01",
+      "title": "无 key 租户 live 返回 422，mock 仍可创建",
+      "status": "pass",
+      "detail": "status=422"
+    },
+    {
+      "id": "B2-04",
+      "title": "viewer 无创建 Job 权限",
+      "status": "pass",
+      "detail": "status=403"
+    },
+    {
+      "id": "B3-02",
+      "title": "key 返回掩码，不返回明文",
+      "status": "pass",
+      "detail": "••••••-key"
+    },
+    {
+      "id": "B3-02b",
+      "title": "SQLite 只存 AES-GCM 密文",
+      "status": "pass",
+      "detail": "cipher_len=54"
+    },
+    {
+      "id": "B3-03",
+      "title": "live Job 创建为 queued",
+      "status": "pass",
+      "detail": "J-0001 / R-0001"
+    },
+    {
+      "id": "B3-03b",
+      "title": "Job 到达 review",
+      "status": "pass",
+      "detail": "review"
+    },
+    {
+      "id": "B3-04",
+      "title": "7 step.start / 9 tool.call / 9 tool.result",
+      "status": "pass",
+      "detail": "7/9/9"
+    },
+    {
+      "id": "B3-05",
+      "title": "tool.result 记录模型名与 token",
+      "status": "pass",
+      "detail": "fake-text,fake-image,heuristic:pixel,artifact.land"
+    },
+    {
+      "id": "B3-06",
+      "title": "真实图片 URL 数量 = 渠道数",
+      "status": "pass",
+      "detail": "artifacts=3"
+    },
+    {
+      "id": "B3-07",
+      "title": "QA 含真实像素主色占比",
+      "status": "pass",
+      "detail": "#0B1F3A 100% | #2F6FED 100% | #0B1F3A 100%"
+    },
+    {
+      "id": "B3-10",
+      "title": "成本对账 = trace 成本和 run stats",
+      "status": "pass",
+      "detail": "stats=0.1018 trace=0.1018"
+    },
+    {
+      "id": "B3-08a",
+      "title": "预算 80% 触发 blocked",
+      "status": "pass",
+      "detail": "pct=1.011"
+    },
+    {
+      "id": "B3-08b",
+      "title": "批准后 Job 完成 review",
+      "status": "pass",
+      "detail": "review"
+    },
+    {
+      "id": "B3-08c",
+      "title": "第二次闸门 blocked",
+      "status": "pass",
+      "detail": "status=blocked"
+    },
+    {
+      "id": "B3-08d",
+      "title": "驳回后 Job failed",
+      "status": "pass",
+      "detail": "failed"
+    },
+    {
+      "id": "B3-09",
+      "title": "provider 失败后降级 mock，trace 标 degraded",
+      "status": "pass",
+      "detail": "degraded=3"
+    },
+    {
+      "id": "B4-02",
+      "title": "review run 提交发布生成 pending",
+      "status": "pass",
+      "detail": "v1"
+    },
+    {
+      "id": "B4-03",
+      "title": "editor 不能审批（需 admin+）",
+      "status": "pass",
+      "detail": "status=403"
+    },
+    {
+      "id": "B4-04",
+      "title": "批准生成版本包 + manifest hash",
+      "status": "pass",
+      "detail": "/published/ovem-demo/R-0001/v1/index.html"
+    },
+    {
+      "id": "B4-08",
+      "title": "版本包 HTTP 200，17 页 index 未改写",
+      "status": "pass",
+      "detail": "hash unchanged"
+    },
+    {
+      "id": "B4-06",
+      "title": "同一 run 二次发布生成 v2，不覆盖 v1",
+      "status": "pass",
+      "detail": "v2 path=/published/ovem-demo/R-0001/v2/index.html"
+    },
+    {
+      "id": "B4-05",
+      "title": "驳回保留原因、run failed、无版本包",
+      "status": "pass",
+      "detail": "主色偏离品牌色"
+    },
+    {
+      "id": "B4-01",
+      "title": "非 review run 提交发布返回 409",
+      "status": "pass",
+      "detail": "status=409"
+    },
+    {
+      "id": "B4-07",
+      "title": "审计可按 runId 串 request/approve",
+      "status": "pass",
+      "detail": "events=5"
+    },
+    {
+      "id": "B4-07b",
+      "title": "回滚写审计",
+      "status": "pass",
+      "detail": "rolled_back"
+    }
+  ],
+  "note": "本次 live 链路使用本地 fake Ark 验证 provider 契约；真实火山方舟调用需在 Provider 配置 key 与 endpoint id 后补测。"
+}

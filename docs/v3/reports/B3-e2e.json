@@ -1,0 +1,73 @@
+{
+  "stage": "B3",
+  "at": "2026-11-20T12:08:39.584Z",
+  "base": "http://127.0.0.1:4318",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0
+  },
+  "cases": [
+    {
+      "id": "E2E-01",
+      "title": "health 服务在线 · live 标记",
+      "status": "pass",
+      "detail": "{\"ok\":true,\"service\":\"ovem-b3\",\"version\":\"4.0.0-b3\",\"time\":\"2026-11-20T12:08:39.324Z\",\"auth\":\"sqlite\",\"tenants\":2,\"live\""
+    },
+    {
+      "id": "E2E-02",
+      "title": "登录页 200",
+      "status": "pass",
+      "detail": "bytes=8843"
+    },
+    {
+      "id": "E2E-03",
+      "title": "owner 登录 + CSRF",
+      "status": "pass",
+      "detail": "t-ovem"
+    },
+    {
+      "id": "E2E-04",
+      "title": "schema 17 页 / 6 组，工作台有 tab 容器",
+      "status": "pass",
+      "detail": "17/6"
+    },
+    {
+      "id": "E2E-05",
+      "title": "B3 live / B4 发布脚本已加载",
+      "status": "pass",
+      "detail": "ok"
+    },
+    {
+      "id": "E2E-06",
+      "title": "会话回读 owner / t-ovem",
+      "status": "pass",
+      "detail": "owner"
+    },
+    {
+      "id": "E2E-07",
+      "title": "runs 列表可读",
+      "status": "pass",
+      "detail": "runs=12"
+    },
+    {
+      "id": "E2E-08",
+      "title": "publications 可读",
+      "status": "pass",
+      "detail": "publications=6"
+    },
+    {
+      "id": "E2E-09",
+      "title": "B4 已批准版本包 HTTP 200",
+      "status": "pass",
+      "detail": "/published/ovem-demo/R-0012/v1/index.html · bytes=1689"
+    },
+    {
+      "id": "E2E-10",
+      "title": "未登录 /api/jobs 401",
+      "status": "pass",
+      "detail": "status=401"
+    }
+  ],
+  "note": "只读 smoke；交互式浏览器验收见 B3_workbench.png / B4_publish.png 与 B3 report。"
+}
