@@ -2,10 +2,10 @@
   "stage": "S4",
   "title": "成果层联动",
   "suite": "A4",
-  "at": "2026-11-20T08:00:29.743Z",
+  "at": "2026-11-20T13:31:39.585Z",
   "git": {
-    "ref": "66cdd47",
-    "tag": "v3.0-s4",
+    "ref": "f01fe02",
+    "tag": "v4.0-b3",
     "dirty": false
   },
   "source": {
@@ -126,9 +126,9 @@
     },
     {
       "id": "S4-03",
-      "title": "成果层按 schema→agent→trace→store→lineage 顺序加载",
+      "title": "成果层按 schema→agent→trace→store→lineage→embed 顺序加载",
       "ok": true,
-      "detail": "data/ovem-schema.js → data/ovem-agent.js → runtime/ovem-trace.js → runtime/ovem-store.js → runtime/ovem-lineage.js"
+      "detail": "data/ovem-schema.js → data/ovem-agent.js → runtime/ovem-trace.js → runtime/ovem-store.js → runtime/ovem-lineage.js → runtime/ovem-agent-embed.js"
     },
     {
       "id": "S4-04",

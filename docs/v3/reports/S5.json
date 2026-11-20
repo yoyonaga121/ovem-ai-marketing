@@ -2,10 +2,10 @@
   "stage": "S5",
   "title": "评测 · 护栏 · 演示编排",
   "suite": "A5",
-  "at": "2026-11-20T08:23:32.461Z",
+  "at": "2026-11-20T13:31:59.445Z",
   "git": {
-    "ref": "8519b71",
-    "tag": "v3.0-s5",
+    "ref": "f01fe02",
+    "tag": "v4.0-b3",
     "dirty": false
   },
   "source": {
@@ -102,7 +102,7 @@
       "id": "S5-05",
       "title": "评测面板接入：按钮 / 进度 / 双版本 / 明细 / 导出",
       "ok": true,
-      "detail": "scripts=11 · eval order=✓ · panel=6/6"
+      "detail": "scripts=14 · eval order=✓ · panel=6/6"
     },
     {
       "id": "S5-06",

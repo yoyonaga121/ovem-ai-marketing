@@ -2,10 +2,10 @@
   "stage": "S3",
   "title": "Agent 工作台壳层",
   "suite": "A3",
-  "at": "2026-11-20T07:48:12.281Z",
+  "at": "2026-11-20T13:31:58.217Z",
   "git": {
-    "ref": "88c6ddb",
-    "tag": "v3.0-s3",
+    "ref": "f01fe02",
+    "tag": "v4.0-b3",
     "dirty": false
   },
   "source": {
@@ -18,7 +18,7 @@
   "metrics": {
     "views": 6,
     "nav": 6,
-    "scripts": 8,
+    "scripts": 14,
     "presets": 3,
     "pageGroups": 6,
     "pageLinks": 17,
@@ -106,7 +106,7 @@
       "id": "S3-01",
       "title": "壳层 + 5 个运行时模块存在且语法通过",
       "ok": true,
-      "detail": "workbench=47425 chars · modules=5/5 · syntax=5/5"
+      "detail": "workbench=69861 chars · modules=5/5 · syntax=5/5"
     },
     {
       "id": "S3-02",
@@ -116,9 +116,9 @@
     },
     {
       "id": "S3-03",
-      "title": "8 个 classic script 按依赖顺序加载",
+      "title": "8 个核心 classic script 按依赖顺序加载",
       "ok": true,
-      "detail": "scripts=8/8 · order=data→trace→store→tools→executor→ui"
+      "detail": "scripts=14（core 8 + S5 增量） · order=data→trace→store→tools→executor→ui"
     },
     {
       "id": "S3-04",
