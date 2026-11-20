@@ -85,3 +85,37 @@ OVEM站点_v2.0/
 - **v1.0（线上现存）**：https://yoyonaga121.github.io/ovem-ai-marketing/ ，对应冻结副本 `../OVEM站点_v1.0_冻结_20261120/`（未再改动）。
 - **v2.0（本目录）**：静态托管即可，无需构建、无需服务端。若要上线，把本目录文件覆盖到 Pages 仓库根目录后推送 `main` 分支即可。
 - 本地直接双击 `index.html` 或 `OVEM配置后台.html` 均可运行，无需任何依赖。
+
+---
+
+## 七、v3.0 · Agent 工作台改造（进行中）
+
+完整路线见仓库根目录 `../04_Agent工作台_方案A执行路线图.md`（六阶段 / 12 工作日 / 37 条验收用例）。
+
+**当前进度：S0 基线冻结与契约设计 已完成（A0 5/5 通过）**
+
+| 项 | 值 |
+|---|---|
+| 基线 commit | `c7290f9` |
+| 基线 tag | `v3.0-s0` |
+| 阶段报告 | `docs/v3/reports/S0.json` |
+| 验收证据 | `docs/v3/evidence/S0_A0-05_idb.png` |
+
+**自检方式（S0）**
+
+```bash
+# 静态核对：v1 冻结副本哈希、前台脚本可解析、17 页齐全、数据与契约版本
+node tools/verify-baseline.js --idb pass --idb-note "stores=6/6 · indexes=18/18"
+
+# 运行态前置确认：file:// 下 IndexedDB 建库（6 store / 18 索引）
+# 浏览器打开：tools/selftest.html?suite=A0
+```
+
+**已冻结的边界**
+
+- 17 页成果层（`index.html`）版式与内容不动，壳页不计入页数。
+- 业务数据 `data/ovem-data.js` 保持 v2.0.x，不随 Agent 配置升版。
+- 运行态（missions / runs / traces / artifacts / reviews / evals）将落 IndexedDB，不进 git。
+
+**后续阶段**：S1 Agent 配置层 → S2 运行时与工具层 → S3 工作台壳 → S4 成果层联动 → S5 评测与演示编排。
+

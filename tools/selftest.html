@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>OVEM 自检台 · A0</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#F5F7FA;color:#0F172A;font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;
+       padding:36px 40px 48px;min-height:100vh}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid #E3EAF3;padding-bottom:16px}
+  .kicker{font-size:11px;letter-spacing:2px;color:#2F6FED;font-weight:600}
+  h1{font-size:22px;margin:6px 0 4px;font-weight:700}
+  .sub{font-size:12.5px;color:#64748B}
+  .tools{display:flex;gap:10px;align-items:center}
+  button{border:1px solid #D8E2F0;background:#fff;color:#16306F;font-size:12.5px;padding:8px 14px;
+         border-radius:8px;cursor:pointer;font-family:inherit}
+  button.primary{background:#2F6FED;border-color:#2F6FED;color:#fff}
+  .panel{background:#fff;border:1px solid #E3EAF3;border-radius:14px;margin-top:22px;overflow:hidden}
+  .bar{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #EEF3F9;background:#FBFCFE}
+  .suite{font-family:Consolas,monospace;font-size:12px;color:#2F6FED;background:#EEF3FF;padding:3px 8px;border-radius:5px}
+  .verdict{margin-left:auto;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:#F1F5F9;color:#64748B}
+  .verdict.pass{background:#E8F6F5;color:#0B6F6D}
+  .verdict.fail{background:#FDF1F0;color:#9C3A2C}
+  table{width:100%;border-collapse:collapse;font-size:12.8px}
+  th,td{text-align:left;padding:11px 18px;border-bottom:1px solid #F1F5F9}
+  th{font-size:11.5px;color:#94A3B8;font-weight:500;background:#FCFDFF}
+  td.id{font-family:Consolas,monospace;color:#2F6FED;width:96px}
+  td.st{width:82px}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#CBD5E1;margin-right:7px;vertical-align:middle}
+  .dot.pass{background:#0E8F8C}.dot.fail{background:#C2564B}.dot.run{background:#2F6FED}
+  .mono{font-family:Consolas,monospace;font-size:11.8px;color:#5B6B82;white-space:pre-wrap;word-break:break-all}
+  .foot{margin-top:16px;display:flex;justify-content:space-between;font-size:11px;color:#94A3B8}
+  pre{margin:0;padding:16px 18px;background:#0F172A;color:#D6E3FA;font-family:Consolas,monospace;
+      font-size:11.5px;line-height:1.7;max-height:220px;overflow:auto}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div>
+      <div class="kicker">OVEM OS · SELFTEST HARNESS</div>
+      <h1>自检台 · A0 基线套件</h1>
+      <div class="sub">验证 <code>file://</code> 环境下 IndexedDB 可建库（6 store / 18 索引），为 S2 运行态落地做前置确认。</div>
+    </div>
+    <div class="tools">
+      <button id="rerun">重跑本套件</button>
+      <button id="copy" class="primary">复制 JSON</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="bar">
+      <span class="suite">suite=A0</span>
+      <span class="sub" id="meta">等待执行…</span>
+      <span class="verdict" id="verdict">未执行</span>
+    </div>
+    <table>
+      <thead><tr><th>用例</th><th>状态</th><th>断言</th><th>详情</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="4" style="color:#94A3B8">点击「重跑本套件」开始</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <div class="bar"><span class="suite">result.json</span><span class="sub">供 S0 报告合并使用</span></div>
+    <pre id="json">{}</pre>
+  </div>
+
+  <div class="foot"><span>OVEM Marketing OS · v3.0 / S0 基线</span><span id="stamp"></span></div>
+
+<script>
+const DB_NAME = "ovem-os-v3-probe";
+const STORE_DEFS = {
+  missions:  { keyPath: "id", idx: [["status","status"],["createdAt","createdAt"]] },
+  runs:      { keyPath: "id", idx: [["missionId","missionId"],["status","status"],["startedAt","startedAt"]] },
+  traces:    { keyPath: "id", idx: [["runId","runId"],["type","type"],["ts","ts"]] },
+  artifacts: { keyPath: "id", idx: [["runId","runId"],["productId","productId"],["channelId","channelId"],["status","status"]] },
+  reviews:   { keyPath: "id", idx: [["runId","runId"],["gate","gate"],["decision","decision"]] },
+  evals:     { keyPath: "id", idx: [["taskId","taskId"],["promptVersion","promptVersion"],["passed","passed"]] }
+};
+
+function delDB(name){
+  return new Promise((res, rej) => {
+    const r = indexedDB.deleteDatabase(name);
+    r.onsuccess = () => res(true);
+    r.onerror = () => rej(r.error);
+    r.onblocked = () => res(true);
+  });
+}
+
+function openProbe(){
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      Object.keys(STORE_DEFS).forEach(name => {
+        const def = STORE_DEFS[name];
+        const st = db.createObjectStore(name, { keyPath: def.keyPath });
+        def.idx.forEach(([field, name2]) => st.createIndex(name2, field, { unique: false }));
+      });
+    };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error || new Error("open failed"));
+    req.onblocked = () => rej(new Error("blocked"));
+  });
+}
+
+async function testIDB(){
+  const t0 = performance.now();
+  let db = null;
+  try {
+    await delDB(DB_NAME);
+    db = await openProbe();
+    const stores = Array.from(db.objectStoreNames);
+    let idx = 0;
+    stores.forEach(s => {
+      const tx = db.transaction(s, "readonly");
+      idx += tx.objectStore(s).indexNames.length;
+    });
+    db.close();
+    await delDB(DB_NAME);
+    const ok = stores.length === 6 && idx === 18;
+    return { ok, ms: Math.round(performance.now() - t0),
+             detail: "stores=" + stores.length + "/6 · indexes=" + idx + "/18 · 已清理探针库" };
+  } catch (e) {
+    if (db) { try { db.close(); } catch (_) {} }
+    return { ok: false, ms: Math.round(performance.now() - t0), detail: "失败：" + (e && e.message || e) };
+  }
+}
+
+const SUITES = {
+  A0: [{ id: "A0-05", name: "file:// 下 IndexedDB 建库", run: testIDB }]
+};
+
+const $ = id => document.getElementById(id);
+
+function render(suite, cases, summary){
+  const rows = $("rows");
+  rows.innerHTML = cases.map(c => `
+    <tr>
+      <td class="id">${c.id}</td>
+      <td class="st"><span class="dot ${c.state}"></span>${c.state === "pass" ? "PASS" : c.state === "fail" ? "FAIL" : "RUN"}</td>
+      <td>${c.name}</td>
+      <td class="mono">${c.detail.replace(/</g,"&lt;")}${c.ms ? " · " + c.ms + "ms" : ""}</td>
+    </tr>`).join("");
+  const v = $("verdict");
+  v.className = "verdict " + (summary.failed ? "fail" : summary.passed ? "pass" : "");
+  v.textContent = summary.failed ? ("失败 " + summary.failed) : ("通过 " + summary.passed + "/" + summary.total);
+  $("meta").textContent = "suite=" + suite + " · " + new Date().toLocaleTimeString("zh-CN");
+}
+
+async function runSuite(name){
+  const defs = SUITES[name];
+  if(!defs) return;
+  const cases = defs.map(d => ({ id: d.id, name: d.name, state: "run", detail: "执行中", ms: 0 }));
+  render(name, cases, { total: cases.length, passed: 0, failed: 0 });
+  for (const c of cases){
+    const d = defs.find(x => x.id === c.id);
+    const r = await d.run();
+    c.state = r.ok ? "pass" : "fail";
+    c.detail = r.detail; c.ms = r.ms || 0;
+    render(name, cases, {
+      total: cases.length,
+      passed: cases.filter(x => x.state === "pass").length,
+      failed: cases.filter(x => x.state === "fail").length
+    });
+  }
+  const result = {
+    suite: name,
+    generatedAt: new Date().toISOString(),
+    cases: cases.map(c => ({ id: c.id, ok: c.state === "pass", ms: c.ms, detail: c.detail })),
+    summary: {
+      total: cases.length,
+      passed: cases.filter(x => x.state === "pass").length,
+      failed: cases.filter(x => x.state === "fail").length
+    }
+  };
+  window.__SELFTEST__ = result;
+  $("json").textContent = JSON.stringify(result, null, 2);
+  $("stamp").textContent = "finished " + result.generatedAt;
+}
+
+$("rerun").addEventListener("click", () => runSuite("A0"));
+$("copy").addEventListener("click", async () => {
+  const txt = $("json").textContent;
+  try { await navigator.clipboard.writeText(txt); $("copy").textContent = "已复制"; }
+  catch(e){ $("copy").textContent = "请手动选择"; }
+  setTimeout(() => $("copy").textContent = "复制 JSON", 1200);
+});
+
+const qs = new URLSearchParams(location.search);
+if(qs.get("suite") === "A0" || qs.has("selftest")) runSuite("A0");
+</script>
+</body>
+</html>
