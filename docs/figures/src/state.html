@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>fig2</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1360px;background:#fff;color:#0f172a;
+       font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;
+       padding:40px 44px 26px}
+  .kicker{font-size:11.5px;letter-spacing:2px;color:#2F6FED;font-weight:600}
+  h1{font-size:25px;line-height:1.3;margin:8px 0 6px;font-weight:700}
+  .sub{font-size:13px;color:#64748B;line-height:1.7}
+  svg{display:block;margin:6px 0 0 -6px}
+  .foot{margin-top:4px;display:flex;justify-content:space-between;font-size:11px;color:#94A3B8}
+</style>
+</head>
+<body>
+  <div class="kicker">OVEM AGENT WORKBENCH · MISSION STATE MACHINE</div>
+  <h1>Mission 七态状态机：每次迁移都由 Trace 事件驱动，可重放、可审计</h1>
+  <div class="sub">状态只允许沿白名单迁移；人工驳回与重试耗尽走虚线分支，任何分支都会在 traces 里留下 level=warn 或 error 的事件。</div>
+
+  <svg width="1272" height="372" viewBox="0 0 1272 372" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#2F6FED"/>
+      </marker>
+      <marker id="arGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#B45309"/>
+      </marker>
+    </defs>
+
+    <!-- 主链 5 态 -->
+    <g font-family="Microsoft YaHei, PingFang SC, sans-serif">
+      <rect x="20" y="64" width="150" height="62" rx="10" fill="#FFFFFF" stroke="#D8E2F0" stroke-width="1.4"/>
+      <text x="95" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#0F172A">draft</text>
+      <text x="95" y="111" text-anchor="middle" font-size="11.5" fill="#7E93B4">草稿 · 待规划</text>
+
+      <rect x="270" y="64" width="150" height="62" rx="10" fill="#FFFFFF" stroke="#D8E2F0" stroke-width="1.4"/>
+      <text x="345" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#0F172A">planned</text>
+      <text x="345" y="111" text-anchor="middle" font-size="11.5" fill="#7E93B4">七步计划已生成</text>
+
+      <rect x="520" y="64" width="150" height="62" rx="10" fill="#EEF3FF" stroke="#2F6FED" stroke-width="1.8"/>
+      <text x="595" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#16306F">running</text>
+      <text x="595" y="111" text-anchor="middle" font-size="11.5" fill="#5B7FC7">工具调用 · 可重试</text>
+
+      <rect x="770" y="64" width="150" height="62" rx="10" fill="#F5F7FF" stroke="#9CC0FF" stroke-width="1.4"/>
+      <text x="845" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#0F172A">review</text>
+      <text x="845" y="111" text-anchor="middle" font-size="11.5" fill="#7E93B4">待审 · 可通过可驳回</text>
+
+      <rect x="1020" y="64" width="150" height="62" rx="10" fill="#E8F6F5" stroke="#0E8F8C" stroke-width="1.4"/>
+      <text x="1095" y="92" text-anchor="middle" font-size="15" font-weight="700" fill="#0B6F6D">done</text>
+      <text x="1095" y="111" text-anchor="middle" font-size="11.5" fill="#5B8F8C">已发布 · 产物入库</text>
+
+      <rect x="520" y="214" width="150" height="62" rx="10" fill="#FFF9EF" stroke="#C2892B" stroke-width="1.4"/>
+      <text x="595" y="242" text-anchor="middle" font-size="15" font-weight="700" fill="#8A5A12">blocked</text>
+      <text x="595" y="261" text-anchor="middle" font-size="11.5" fill="#A1741F">预算 / 发布闸门待决</text>
+
+      <rect x="800" y="214" width="150" height="62" rx="10" fill="#FDF1F0" stroke="#C2564B" stroke-width="1.4"/>
+      <text x="875" y="242" text-anchor="middle" font-size="15" font-weight="700" fill="#9C3A2C">failed</text>
+      <text x="875" y="261" text-anchor="middle" font-size="11.5" fill="#B4635A">重试耗尽 / 工具异常</text>
+    </g>
+
+    <!-- 主链箭头 -->
+    <g stroke="#2F6FED" stroke-width="1.6" fill="none">
+      <line x1="172" y1="95" x2="262" y2="95" marker-end="url(#ar)"/>
+      <line x1="422" y1="95" x2="512" y2="95" marker-end="url(#ar)"/>
+      <line x1="672" y1="95" x2="762" y2="95" marker-end="url(#ar)"/>
+      <line x1="922" y1="95" x2="1012" y2="95" marker-end="url(#ar)"/>
+    </g>
+
+    <!-- 重试自环 -->
+    <path d="M552,64 C552,26 648,26 648,58" fill="none" stroke="#2F6FED" stroke-width="1.6" marker-end="url(#ar)"/>
+
+    <!-- running ⇄ blocked -->
+    <g stroke="#2F6FED" stroke-width="1.6" fill="none">
+      <line x1="560" y1="130" x2="560" y2="206" marker-end="url(#ar)"/>
+      <line x1="578" y1="208" x2="578" y2="132" marker-end="url(#ar)"/>
+    </g>
+
+    <!-- running → failed（重试耗尽，虚线） -->
+    <line x1="664" y1="120" x2="796" y2="224" fill="none" stroke="#B45309" stroke-width="1.6"
+          stroke-dasharray="6 4" marker-end="url(#arGray)"/>
+
+    <!-- blocked → failed（人工驳回） -->
+    <line x1="670" y1="245" x2="792" y2="245" fill="none" stroke="#B45309" stroke-width="1.6"
+          stroke-dasharray="6 4" marker-end="url(#arGray)"/>
+
+    <!-- 箭头标签 -->
+    <g font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="10.5" fill="#5B7FC7">
+      <text x="217" y="85" text-anchor="middle">plan.compiled</text>
+      <text x="467" y="85" text-anchor="middle">step.start</text>
+      <text x="717" y="85" text-anchor="middle">artifact.landed</text>
+      <text x="967" y="85" text-anchor="middle">review.approve</text>
+      <text x="600" y="20" text-anchor="middle">retry.scheduled · ≤1 / 步</text>
+      <text x="590" y="180" fill="#2F6FED">hitl.requested</text>
+      <text x="546" y="200" text-anchor="end" fill="#2F6FED">hitl.approve</text>
+      <text x="760" y="206" text-anchor="end" fill="#B45309">重试耗尽</text>
+      <text x="731" y="236" text-anchor="middle" fill="#B45309">hitl.reject</text>
+    </g>
+
+    <!-- 图例 -->
+    <g font-family="Microsoft YaHei, PingFang SC, sans-serif" font-size="11.5" fill="#64748B">
+      <line x1="20" y1="340" x2="56" y2="340" stroke="#2F6FED" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="64" y="344">自动迁移</text>
+      <line x1="150" y1="340" x2="186" y2="340" stroke="#B45309" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arGray)"/>
+      <text x="194" y="344">人工 / 异常迁移</text>
+      <text x="330" y="344" fill="#94A3B8">未绘制但生效的两条：review --review.reject--> running；failed --replan--> planned。状态不可直改，只能由事件触发。</text>
+    </g>
+  </svg>
+
+  <div class="foot"><span>图 2 / 3 · Mission 状态机与迁移事件</span><span>OVEM Marketing OS · v3.0 规划稿 2026-11-20</span></div>
+</body>
+</html>

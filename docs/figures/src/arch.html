@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>fig1</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{width:1360px;background:#fff;color:#0f172a;
+       font-family:"Microsoft YaHei","PingFang SC",-apple-system,"Segoe UI",sans-serif;
+       padding:40px 44px 34px}
+  .kicker{font-size:11.5px;letter-spacing:2px;color:#2F6FED;font-weight:600}
+  h1{font-size:25px;line-height:1.3;margin:8px 0 6px;font-weight:700}
+  .sub{font-size:13px;color:#64748B;line-height:1.7}
+  .band{position:relative;margin-top:30px;border:1px solid #E7EDF5;border-radius:16px;
+        padding:22px 20px 18px;background:#FBFCFE}
+  .lbl{position:absolute;left:20px;top:-11px;background:#0F172A;color:#fff;font-size:11.5px;
+       padding:3px 10px;border-radius:999px;letter-spacing:.4px}
+  .lbl b{color:#9CC0FF;font-weight:600}
+  .row{display:grid;gap:14px;align-items:stretch}
+  .r4{grid-template-columns:repeat(4,1fr)}
+  .r3{grid-template-columns:repeat(3,1fr)}
+  .card{border:1px solid #E3EAF3;border-radius:12px;background:#fff;padding:14px 16px 13px;
+        box-shadow:0 1px 2px rgba(15,23,42,.04);display:flex;flex-direction:column}
+  .card h3{font-size:14.5px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .dot{width:7px;height:7px;border-radius:50%;background:#2F6FED;flex:0 0 auto}
+  .card p{font-size:12.3px;color:#5B6B82;line-height:1.72}
+  .tag{display:inline-block;margin-top:auto;font-size:10.8px;padding:2px 7px;border-radius:5px;
+       background:#EEF3FF;color:#2F6FED;font-family:Consolas,monospace;align-self:flex-start}
+  .tag.warn{background:#FDF3E3;color:#B45309}
+  .tag.ok{background:#E8F6F5;color:#0E8F8C}
+  .conn{height:30px;position:relative;margin-top:10px}
+  .conn i{position:absolute;left:50%;top:0;width:1px;height:18px;background:#C7D5EA}
+  .conn span{position:absolute;left:50%;top:20px;transform:translateX(-50%);font-size:10.5px;
+             color:#8FA3C4;white-space:nowrap}
+  .conn b{position:absolute;left:50%;top:15px;transform:translateX(-50%) rotate(45deg);
+          width:7px;height:7px;border-right:1px solid #C7D5EA;border-bottom:1px solid #C7D5EA}
+  .foot{margin-top:26px;display:flex;justify-content:space-between;font-size:11px;color:#94A3B8}
+</style>
+</head>
+<body>
+  <div class="kicker">OVEM AGENT WORKBENCH · PLAN A</div>
+  <h1>方案 A 三层架构：壳层只做编排与呈现，运行时只做执行与记账，数据层只做契约与持久化</h1>
+  <div class="sub">17 页成果层原样保留；新增 1 个壳页（workbench.html）、7 个运行时模块、1 个自检模块、3 份数据文件（Agent 配置 / 契约 / 评测集）。所有运行时模块不依赖 DOM，供方案 B 直接复用。</div>
+
+  <div class="band">
+    <div class="lbl">① 入口层 <b>/ Shell</b></div>
+    <div class="row r4">
+      <div class="card">
+        <h3><span class="dot"></span>任务入口</h3>
+        <p>3 条预设 Mission：旗舰全渠道、引流快反、落地页改版。输入一句业务目标即可开工。</p>
+        <span class="tag">workbench.html</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>执行可视</h3>
+        <p>Plan 七步步骤条、Trace 调用流水、失败重试链并排对比、产物画廊。</p>
+        <span class="tag">runtime/ovem-ui.js</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>人工闸门</h3>
+        <p>预算达 80% 或发布前强制人工确认，记录介入人、时间与理由。</p>
+        <span class="tag warn">HITL Gate</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>评测面板</h3>
+        <p>20 条评测集、通过率、平均步数、单任务成本，支持 prompt 版本回归对比。</p>
+        <span class="tag">runtime/ovem-eval.js</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><i></i><b></b><span>调用 · 订阅</span></div>
+
+  <div class="band">
+    <div class="lbl">② 运行时层 <b>/ Runtime（无 DOM 依赖）</b></div>
+    <div class="row r4">
+      <div class="card">
+        <h3><span class="dot"></span>Trace 总线</h3>
+        <p>11 类事件、单调序号、毫秒时间戳；每一步的 token 与成本在此累加，可回放。</p>
+        <span class="tag">ovem-trace.js</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>Executor</h3>
+        <p>Planner 生成步骤 → 工具调用 → Critic 裁决 → 失败带修正重试 → 触发闸门。</p>
+        <span class="tag">ovem-executor.js</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>Tool Registry</h3>
+        <p>9 个工具：product.get / brand.recall / channel.spec / template.pick / prompt.compile / image.gen / qa.check / copy.write / artifact.land。</p>
+        <span class="tag">ovem-tools.js</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>Provider 适配</h3>
+        <p>mock / replay / live 三种模式同一接口；换模型只换 adapter，不动编排与评测。</p>
+        <span class="tag ok">provider adapter</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><i></i><b></b><span>读写 · 记账</span></div>
+
+  <div class="band">
+    <div class="lbl">③ 数据层 <b>/ Config + State</b></div>
+    <div class="row r4">
+      <div class="card">
+        <h3><span class="dot"></span>业务配置</h3>
+        <p>data/ovem-data.js：20 产品、8 渠道、17 页定义，256 项必填，版本保持 v2.0.x 不动。</p>
+        <span class="tag">git 追踪 · 快照可回滚</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>Agent 配置</h3>
+        <p>data/ovem-agent.js：3 个 Agent、9 个工具、4 条 Prompt、7 条跨字段规则，独立版本 v3.0.0。</p>
+        <span class="tag">ovem-agent.schema.js</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>评测集</h3>
+        <p>data/ovem-evals.js：20 条标准任务与期望产物特征，用于回归与通过率统计。</p>
+        <span class="tag">S5 阶段落地</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>运行态</h3>
+        <p>IndexedDB ovem-os-v3：missions / runs / traces / artifacts / reviews / evals 六个 store，不进 git。</p>
+        <span class="tag warn">ovem-store.js</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="conn"><i></i><b></b><span>lineage 注入</span></div>
+
+  <div class="band">
+    <div class="lbl">④ 成果层 <b>/ Evidence（对话之外的人类可读证据）</b></div>
+    <div class="row r3">
+      <div class="card">
+        <h3><span class="dot"></span>index.html · 17 页</h3>
+        <p>页面角色不变，新增顶部血缘条（本页数据由哪些工具产出 / 最近 run / 查看 trace）与「返回工作台」入口。</p>
+        <span class="tag">runtime/ovem-lineage.js</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>OVEM配置后台.html</h3>
+        <p>11 个分区扩到 12 个：新增「Agent 管理」（注册表 / 工具 / Prompt / 护栏 / 运行记录只读）。</p>
+        <span class="tag">S1 + S4 阶段落地</span>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span>OVEM_AI营销系统.html</h3>
+        <p>1.1KB 跳转桩的目标改为 workbench.html，hash 透传保留，旧链接不失效。</p>
+        <span class="tag ok">兼容入口</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>图 1 / 3 · 方案 A 三层架构与数据流</span><span>OVEM Marketing OS · v3.0 规划稿 2026-11-20</span></div>
+</body>
+</html>
